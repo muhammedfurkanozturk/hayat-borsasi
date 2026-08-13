@@ -1,39 +1,51 @@
+"use client";
+
+import { AddCategoryTile } from "@/components/dashboard/AddCategoryTile";
 import { CategoryTile } from "@/components/dashboard/CategoryTile";
 import { DailyChecklist } from "@/components/dashboard/DailyChecklist";
-import { HeroIndexCard } from "@/components/dashboard/HeroIndexCard";
+import { PeriodIndexCard } from "@/components/dashboard/PeriodIndexCard";
 import { ScoreChart } from "@/components/dashboard/ScoreChart";
-import { TopBar } from "@/components/dashboard/TopBar";
-import { categoryScores, dailyIndex, trendSeries, weeklyIndex } from "@/lib/mock/dashboard-data";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { calculateScore } from "@/lib/scoring";
+import { useAppData } from "@/lib/supabase/app-data-context";
 
 export default function Home() {
-  const sparklineData = trendSeries.map((point) => point.score);
+  const { categories, tasks, previousCategoryScores } = useAppData();
+
+  const categoryTiles = categories.map((category) => {
+    const categoryTasks = tasks.filter((task) => task.categoryId === category.id);
+    const score = calculateScore(categoryTasks);
+    return {
+      id: category.id,
+      name: category.name,
+      icon: category.icon,
+      score,
+      delta: score - (previousCategoryScores[category.id] ?? 0),
+    };
+  });
 
   return (
     <div className="flex flex-1 flex-col">
-      <TopBar />
+      <PageHeader title="Dashboard" subtitle="Bugünkü genel görünüm" />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-8 sm:px-10">
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <HeroIndexCard
-            label={dailyIndex.label}
-            value={dailyIndex.value}
-            delta={dailyIndex.delta}
-            sparklineData={sparklineData.slice(-7)}
-            accent
-          />
-          <HeroIndexCard
-            label={weeklyIndex.label}
-            value={weeklyIndex.value}
-            delta={weeklyIndex.delta}
-            sparklineData={sparklineData}
-          />
-        </div>
+      <main className="flex w-full flex-1 flex-col gap-6 px-6 py-8 sm:px-10">
+        <PeriodIndexCard />
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {categoryScores.map((category) => (
-            <CategoryTile key={category.key} category={category} />
-          ))}
-        </div>
+        {categories.length === 0 ? (
+          <div className="flex flex-col gap-4 rounded-2xl border border-border-soft p-8 text-center">
+            <p className="text-base font-medium text-foreground">
+              Henüz hiç kategorin yok. İlk kategorini oluştur.
+            </p>
+            <AddCategoryTile emptyState />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {categoryTiles.map((category) => (
+              <CategoryTile key={category.id} category={category} />
+            ))}
+            <AddCategoryTile />
+          </div>
+        )}
 
         <ScoreChart />
 

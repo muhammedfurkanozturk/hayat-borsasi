@@ -1,0 +1,56 @@
+"use client";
+
+import { useState } from "react";
+import { AppIcon, iconPalette, type IconKey } from "@/components/icons";
+import { useAppData } from "@/lib/supabase/app-data-context";
+
+const iconOptions = Object.keys(iconPalette) as IconKey[];
+
+export function CategoryIconEditor({ categoryId, icon }: { categoryId: string; icon: IconKey }) {
+  const { changeCategoryIcon } = useAppData();
+  const [open, setOpen] = useState(false);
+
+  async function handlePick(key: IconKey) {
+    setOpen(false);
+    if (key === icon) return;
+    await changeCategoryIcon(categoryId, key);
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Sembolü değiştir"
+        className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-accent transition-colors hover:bg-accent/25"
+      >
+        <AppIcon name={icon} width={30} height={30} />
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 top-full z-50 mt-2 w-56 rounded-2xl border border-border bg-background-elevated p-3 shadow-xl">
+            <span className="mb-2 block text-xs text-muted">Sembol seç</span>
+            <div className="flex flex-wrap gap-2">
+              {iconOptions.map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => handlePick(key)}
+                  className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
+                    icon === key
+                      ? "border-accent/50 bg-accent-soft text-accent"
+                      : "border-border-soft text-muted hover:border-border hover:text-foreground"
+                  }`}
+                >
+                  <AppIcon name={key} width={18} height={18} />
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
