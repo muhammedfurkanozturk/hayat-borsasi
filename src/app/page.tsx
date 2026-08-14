@@ -16,7 +16,7 @@ export default function LandingPage() {
         eyebrow="Kategori & Görev"
         title="Kendi kategorilerini, kendi kurallarınla yarat"
         description="Hazır bir şablon dayatmıyoruz. Girişimcilik, Sağlık, Disiplin — sana anlamlı gelen kategorileri sen oluşturursun, her görevin önemini sen belirlersin."
-        image="/landing/kategori-gorev.png"
+        image="/landing/kategori-gorev.webp"
         imageAlt="Kategori ve görev kartlarını gösteren uygulama arayüzü"
       />
 
@@ -25,7 +25,7 @@ export default function LandingPage() {
         eyebrow="Endeks"
         title="Günlük, haftalık, aylık, yıllık endeks"
         description="Gelişimin bir borsa endeksi gibi anlık hesaplanır, zaman içindeki trendini tek bakışta görürsün."
-        image="/landing/endeks.png"
+        image="/landing/endeks.webp"
         imageAlt="Kendi gelişimini takip eden bir kullanıcı"
         reverse
       />
@@ -35,7 +35,7 @@ export default function LandingPage() {
         eyebrow="Karakter Kartı"
         title="Tüm kategorilerin tek bir kartta"
         description="Kategorilerine göre otomatik hesaplanan bir gelişim profili — hangi alanda güçlüsün, hangisinde geride kaldığını bir bakışta gör."
-        image="/landing/karakter-karti.png"
+        image="/landing/karakter-karti.webp"
         imageAlt="Kategorilere göre hesaplanan karakter kartı arayüzü"
       />
 

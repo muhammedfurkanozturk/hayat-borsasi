@@ -37,7 +37,7 @@ export function Hero() {
 
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border-soft bg-surface lg:w-[52%]">
         <Image
-          src="/landing/hero.png"
+          src="/landing/hero.webp"
           alt="Hayat Borsası uygulamasını telefonda kullanan bir kişi"
           fill
           priority
