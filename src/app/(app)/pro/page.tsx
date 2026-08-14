@@ -102,7 +102,7 @@ export default function ProPage() {
                 <button
                   type="button"
                   disabled
-                  className="w-full cursor-not-allowed rounded-lg bg-pro py-3 text-sm font-semibold text-pro-foreground opacity-50"
+                  className="w-full cursor-not-allowed rounded-lg bg-pro py-3 text-sm font-semibold text-pro-foreground"
                 >
                   Pro&apos;ya Geç · Yakında
                 </button>
