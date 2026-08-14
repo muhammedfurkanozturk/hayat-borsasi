@@ -3,24 +3,16 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { GearIcon, SignOutIcon } from "@/components/icons";
+import { CrownIcon, GearIcon, SignOutIcon } from "@/components/icons";
+import { useTheme } from "@/lib/theme-context";
 import { createClient } from "@/lib/supabase/client";
 import { useProfile } from "@/lib/supabase/profile-context";
-
-function Avatar({ initial, size = "md" }: { initial: string; size?: "sm" | "md" }) {
-  const dimension = size === "md" ? "h-11 w-11 text-sm" : "h-9 w-9 text-xs";
-  return (
-    <div
-      className={`flex ${dimension} shrink-0 items-center justify-center rounded-full bg-accent font-semibold text-white`}
-    >
-      {initial}
-    </div>
-  );
-}
+import { Avatar } from "./Avatar";
 
 export function ProfileMenu() {
   const router = useRouter();
-  const { displayName } = useProfile();
+  const { displayName, isPro } = useProfile();
+  const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -54,14 +46,48 @@ export function ProfileMenu() {
         aria-expanded={open}
         className="transition-opacity hover:opacity-90"
       >
-        <Avatar initial={initial} />
+        <Avatar initial={initial} isPro={isPro} />
       </button>
 
       {open && (
         <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-border bg-background-elevated p-1.5 shadow-lg">
           <div className="flex items-center gap-3 px-2.5 py-2.5">
-            <Avatar initial={initial} size="sm" />
-            <span className="truncate text-sm font-medium text-foreground">{displayName}</span>
+            <Avatar initial={initial} size="sm" isPro={isPro} />
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-medium text-foreground">{displayName}</span>
+              {isPro && (
+                <span className="flex w-fit items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-pro">
+                  <CrownIcon width={10} height={10} strokeWidth={2.5} />
+                  Pro Üye
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="my-1 border-t border-border-soft" />
+
+          <div className="flex items-center justify-between gap-2 px-2.5 py-1.5">
+            <span className="text-xs text-muted">Tema</span>
+            <div className="flex items-center gap-1 rounded-lg border border-border-soft bg-surface p-0.5">
+              <button
+                type="button"
+                onClick={() => setTheme("dark")}
+                className={`rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
+                  theme === "dark" ? "bg-accent-soft text-accent" : "text-muted hover:text-foreground"
+                }`}
+              >
+                Koyu
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme("light")}
+                className={`rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
+                  theme === "light" ? "bg-accent-soft text-accent" : "text-muted hover:text-foreground"
+                }`}
+              >
+                Açık
+              </button>
+            </div>
           </div>
 
           <div className="my-1 border-t border-border-soft" />

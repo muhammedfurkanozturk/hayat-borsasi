@@ -1,23 +1,53 @@
 @import "tailwindcss";
 
 :root {
-  --background: #08090d;
-  --background-elevated: #0e1016;
-  --surface: #12141b;
-  --surface-hover: #171a23;
-  --border: #23262f;
-  --border-soft: #1a1c24;
-  --foreground: #e8e9ed;
-  --muted: #b8bac2;
-  --muted-soft: #b8bac2;
-  --accent: #8b7cf6;
-  --accent-soft: #8b7cf61a;
-  --positive: #3ddc97;
-  --positive-soft: #3ddc971a;
-  --negative: #f45d6e;
-  --negative-soft: #f45d6e1a;
+  --background: #040506;
+  --background-elevated: #0f1115;
+  --surface: #0a0c0f;
+  --surface-hover: #15191e;
+  --border: #303d50;
+  --border-soft: #1a212b;
+  --foreground: #e5e7eb;
+  --muted: #9ba0ab;
+  --muted-soft: #9ba0ab;
+  --accent: #0ad1eb;
+  --accent-soft: #0ad1eb1a;
+  --positive: #36d39f;
+  --positive-soft: #36d39f1a;
+  --negative: #f43e5c;
+  --negative-soft: #f43e5c1a;
+  --pro: #f5b400;
+  --pro-soft: #f5b40024;
+  /* Sabit — hangi temada olursak olalım, altın Pro zemininin üstündeki yazı
+     hep aynı koyu tonda kalsın (background değişkenine bağlı olursa açık
+     temada neredeyse beyaz olup okunmaz hale gelirdi). */
+  --pro-foreground: #1a1400;
+  /* Koyu temada düz siyah gölge (Tailwind'in varsayılanı) neredeyse hiç
+     görünmüyordu — üstte hafif bir ışık çizgisi + altta yumuşak bir gölgeyle
+     kartın zeminden "kalktığı" hissini veriyoruz. */
+  --shadow-card: 0 1px 0 0 rgba(255, 255, 255, 0.07) inset, 0 10px 24px -8px rgba(0, 0, 0, 0.6);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+/* Açık tema — apple.com/tr/airpods paletinden türetildi. */
+:root[data-theme="light"] {
+  --background: #f5f5f7;
+  --background-elevated: #ffffff;
+  --surface: #ffffff;
+  --surface-hover: #f0f0f2;
+  --border: #d2d2d7;
+  --border-soft: #e8e8ed;
+  --foreground: #1d1d1f;
+  --muted: #48484c;
+  --muted-soft: #48484c;
+  --accent: #0071e3;
+  --accent-soft: #0071e31a;
+  --positive: #16a34a;
+  --positive-soft: #16a34a1a;
+  --negative: #dc2626;
+  --negative-soft: #dc26261a;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 20px -6px rgba(0, 0, 0, 0.12);
 }
 
 @theme inline {
@@ -36,6 +66,9 @@
   --color-positive-soft: var(--positive-soft);
   --color-negative: var(--negative);
   --color-negative-soft: var(--negative-soft);
+  --color-pro: var(--pro);
+  --color-pro-soft: var(--pro-soft);
+  --color-pro-foreground: var(--pro-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -44,17 +77,39 @@ html {
   scrollbar-gutter: stable;
 }
 
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   background-image:
-    radial-gradient(circle at 15% 0%, #1a1530 0%, transparent 45%),
-    radial-gradient(circle at 85% 8%, #0f1f27 0%, transparent 40%);
+    radial-gradient(circle at 15% 0%, rgba(10, 209, 235, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 85% 8%, rgba(251, 189, 35, 0.05) 0%, transparent 40%);
   background-attachment: fixed;
 }
 
+[data-theme="light"] body {
+  /* Apple'ın kendi sayfası gibi düz, parıltısız açık gri zemin. */
+  background-image: none;
+}
+
 ::selection {
-  background: var(--accent-soft);
-  color: var(--foreground);
+  background: var(--accent);
+  color: var(--background);
+}
+
+@keyframes wave-dot {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-7px);
+    opacity: 1;
+  }
 }

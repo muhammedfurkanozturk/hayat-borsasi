@@ -5,6 +5,7 @@ import { createClient } from "./client";
 
 interface ProfileContextValue {
   displayName: string;
+  isPro: boolean;
   loading: boolean;
   updateDisplayName: (name: string) => Promise<{ error: string | null }>;
 }
@@ -13,6 +14,7 @@ const ProfileContext = createContext<ProfileContextValue | null>(null);
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [displayName, setDisplayNameState] = useState("");
+  const [isPro, setIsPro] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadProfile = useCallback(async () => {
@@ -28,12 +30,13 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
     const { data } = await supabase
       .from("profiles")
-      .select("display_name")
+      .select("display_name, is_pro")
       .eq("id", user.id)
       .maybeSingle();
 
     if (data) {
       setDisplayNameState(data.display_name ?? "Kullanıcı");
+      setIsPro(data.is_pro ?? false);
     } else {
       // profiles satırı yoksa (örn. daha önce elle silindiyse) burada
       // yeniden oluşturuyoruz — auth kaydı var ama profil eksik kalmasın.
@@ -41,6 +44,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         (user.user_metadata?.display_name as string | undefined) ?? "Kullanıcı";
       await supabase.from("profiles").upsert({ id: user.id, display_name: fallbackName });
       setDisplayNameState(fallbackName);
+      setIsPro(false);
     }
     setLoading(false);
   }, []);
@@ -81,7 +85,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ProfileContext.Provider value={{ displayName, loading, updateDisplayName }}>
+    <ProfileContext.Provider value={{ displayName, isPro, loading, updateDisplayName }}>
       {children}
     </ProfileContext.Provider>
   );

@@ -13,6 +13,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Oturum bulunamadı." }, { status: 401 });
   }
 
+  // AI Rapor bir Pro özelliği — istemci tarafındaki kilit sadece görsel,
+  // asıl erişim kontrolü burada. Bypass edilmesin diye profildeki is_pro
+  // burada da ayrıca kontrol ediliyor.
+  const { data: profile } = await supabase.from("profiles").select("is_pro").eq("id", user.id).maybeSingle();
+  if (!profile?.is_pro) {
+    return NextResponse.json({ error: "Bu özellik Pro üyelere özel." }, { status: 403 });
+  }
+
   const body = (await request.json()) as ReportInput;
 
   try {

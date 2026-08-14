@@ -1,13 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { CrownIcon } from "@/components/icons";
+import { Avatar } from "@/components/layout/Avatar";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { useTheme } from "@/lib/theme-context";
 import { useProfile } from "@/lib/supabase/profile-context";
 import { useAppData } from "@/lib/supabase/app-data-context";
 
 export default function AyarlarPage() {
-  const { displayName, loading, updateDisplayName } = useProfile();
+  const { displayName, isPro, loading, updateDisplayName } = useProfile();
   const { resetAllCategories } = useAppData();
+  const { theme, setTheme } = useTheme();
 
   const [draftName, setDraftName] = useState(displayName);
   const [syncedDisplayName, setSyncedDisplayName] = useState(displayName);
@@ -33,16 +38,18 @@ export default function AyarlarPage() {
     setSaving(false);
   }
 
+  const initial = displayName.trim().charAt(0).toUpperCase() || "?";
+
   return (
     <div className="flex flex-1 flex-col">
       <PageHeader title="Ayarlar" subtitle="Profil ve uygulama tercihlerin" />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-6 py-8 sm:px-10">
-        <section className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5">
+        <section className="flex flex-col gap-4 rounded-2xl border border-border bg-surface shadow-card p-5">
           <h2 className="text-sm font-medium text-foreground">Profil</h2>
 
           <form onSubmit={handleSaveName} className="flex items-center gap-3">
-            <div className="h-11 w-11 shrink-0 rounded-full border border-border-soft bg-background-elevated" />
+            <Avatar initial={initial} isPro={isPro} />
             <input
               value={draftName}
               onChange={(e) => setDraftName(e.target.value)}
@@ -61,36 +68,61 @@ export default function AyarlarPage() {
           {saveError && <p className="text-xs text-negative">{saveError}</p>}
         </section>
 
-        <section className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-5">
+        <section className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface shadow-card p-5">
           <div className="flex flex-col gap-1">
             <h2 className="text-sm font-medium text-foreground">Plan</h2>
-            <p className="text-xs text-muted">Şu an ücretsiz plandasın.</p>
+            <p className="text-xs text-muted">{isPro ? "Pro plandasın." : "Şu an ücretsiz plandasın."}</p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="rounded-full border border-border-soft px-2.5 py-1 text-[11px] text-muted">
-              Ücretsiz
-            </span>
-            <button
-              type="button"
-              disabled
-              className="cursor-not-allowed rounded-lg bg-accent-soft px-3 py-1.5 text-xs font-medium text-accent opacity-50"
-            >
-              Pro&apos;ya Geç · Yakında
-            </button>
+            {isPro ? (
+              <span className="flex items-center gap-1 rounded-full bg-pro-soft px-2.5 py-1 text-[11px] font-semibold text-pro">
+                <CrownIcon width={11} height={11} strokeWidth={2.5} />
+                Pro
+              </span>
+            ) : (
+              <>
+                <span className="rounded-full border border-border-soft px-2.5 py-1 text-[11px] text-muted">
+                  Ücretsiz
+                </span>
+                <Link
+                  href="/pro"
+                  className="rounded-lg bg-pro px-3 py-1.5 text-xs font-semibold text-pro-foreground hover:opacity-90"
+                >
+                  Pro&apos;ya Geç
+                </Link>
+              </>
+            )}
           </div>
         </section>
 
-        <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5">
+        <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface shadow-card p-5">
           <h2 className="text-sm font-medium text-foreground">Görünüm</h2>
           <div className="flex items-center justify-between gap-4">
-            <p className="text-xs text-muted">Hayat Borsası şu an sadece koyu temada.</p>
-            <span className="rounded-full border border-border-soft bg-background-elevated px-2.5 py-1 text-[11px] text-muted">
-              Koyu Tema
-            </span>
+            <p className="text-xs text-muted">Tema tercihini seç.</p>
+            <div className="flex items-center gap-1 rounded-lg border border-border-soft bg-background-elevated p-1">
+              <button
+                type="button"
+                onClick={() => setTheme("dark")}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  theme === "dark" ? "bg-accent-soft text-accent" : "text-muted hover:text-foreground"
+                }`}
+              >
+                Koyu Tema
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme("light")}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  theme === "light" ? "bg-accent-soft text-accent" : "text-muted hover:text-foreground"
+                }`}
+              >
+                Açık Tema
+              </button>
+            </div>
           </div>
         </section>
 
-        <section className="flex flex-col gap-3 rounded-2xl border border-negative/25 bg-negative-soft/30 p-5">
+        <section className="flex flex-col gap-3 rounded-2xl border border-negative/25 bg-negative-soft/30 p-5 shadow-card">
           <h2 className="text-sm font-medium text-foreground">Veriler</h2>
           <p className="text-xs text-muted">
             Bu işlem, hesabındaki tüm kategorileri ve altlarındaki görevleri kalıcı olarak siler

@@ -1,14 +1,31 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
-import { buildHourlySeries, calculateScore } from "@/lib/scoring";
+import {
+  buildCalendarMonthSeries,
+  buildCalendarYearSeries,
+  buildDailySeries,
+  buildTwoHourSeries,
+} from "@/lib/chartSeries";
+import { calculateScore } from "@/lib/scoring";
+import { todayIso } from "@/lib/supabase/daily";
 import { useAppData } from "@/lib/supabase/app-data-context";
 
 const ranges = ["Günlük", "Haftalık", "Aylık", "Yıllık"] as const;
 type Range = (typeof ranges)[number];
+
+const chartTypes = ["Sütun", "Çizgisel"] as const;
+type ChartType = (typeof chartTypes)[number];
+
+const rangeSubtitle: Record<Range, string> = {
+  Günlük: "Bugün 2 saatlik dilimlerle görev tamamlama seyri",
+  Haftalık: "Son 7 günün seyri",
+  Aylık: "Bu ayın 1'inden bugüne, gün gün",
+  Yıllık: "Bu yılın Ocak'ından itibaren, ay ay ortalama",
+};
 
 function ChartTooltip({ active, payload, label }: TooltipProps<ValueType, NameType>) {
   if (!active || !payload?.length || payload[0].value == null) return null;
@@ -23,74 +40,112 @@ function ChartTooltip({ active, payload, label }: TooltipProps<ValueType, NameTy
 }
 
 export function ScoreChart() {
-  const [range, setRange] = useState<Range>("Aylık");
-  const { tasks } = useAppData();
+  const [range, setRange] = useState<Range>("Günlük");
+  const [chartType, setChartType] = useState<ChartType>("Sütun");
+  const { tasks, dailyHistory } = useAppData();
 
-  // Henüz gün-gün geçmiş veri biriktirmiyoruz (Supabase'e yeni geçtik), o
-  // yüzden Haftalık/Aylık/Yıllık için uydurma dalgalı bir grafik göstermek
-  // yerine sadece bugünün gerçek skorunu tek nokta olarak gösteriyoruz —
-  // geçmiş veri birikince gerçek çoklu-gün serisiyle değiştireceğiz.
+  // Günlük sekmesi bugünü 2 saatlik dilimlerle (12 kutu) gösterir (canlı).
+  // Haftalık/Aylık/Yıllık ise dailyHistory'deki gerçek geçmiş günlere
+  // dayanır — bugünün payı için her zaman canlı tasks state'inden
+  // hesaplanan güncel skor kullanılır. Aylık her zaman ayın 1'inden,
+  // Yıllık her zaman Ocak'tan başlar (takvime hizalı, kaydırmalı pencere değil).
   const data = useMemo(() => {
-    if (range === "Günlük") return buildHourlySeries(tasks);
-    return [{ label: "Bugün", score: calculateScore(tasks) }];
-  }, [range, tasks]);
+    if (range === "Günlük") return buildTwoHourSeries(tasks);
 
-  const tickInterval = range === "Günlük" ? 2 : 0;
+    const today = todayIso();
+    const todayScore = calculateScore(tasks);
+    const historyByDate = new Map(dailyHistory.map((h) => [h.date, h.overallScore]));
+    const scoreForDate = (date: string) => (date === today ? todayScore : (historyByDate.get(date) ?? 0));
+
+    if (range === "Haftalık") return buildDailySeries(scoreForDate, 7);
+    if (range === "Aylık") return buildCalendarMonthSeries(scoreForDate);
+    return buildCalendarYearSeries(scoreForDate);
+  }, [range, tasks, dailyHistory]);
+
+  const tickFontSize = range === "Aylık" ? 9 : 11;
+  const barGap = range === "Aylık" ? "6%" : "20%";
 
   return (
-    <div className="flex flex-1 flex-col rounded-2xl border border-border bg-surface p-5">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="flex flex-1 flex-col rounded-2xl border border-border bg-surface shadow-card p-5">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-medium text-foreground">Skor Trendi</h2>
-          <p className="text-xs text-muted">
-            {range === "Günlük"
-              ? "Bugün saat saat görev tamamlama seyri"
-              : "Genel gelişim endeksinin zaman içindeki seyri"}
-          </p>
+          <p className="text-xs text-muted">{rangeSubtitle[range]}</p>
         </div>
-        <div className="flex items-center gap-1 rounded-lg border border-border-soft bg-background-elevated p-1">
-          {ranges.map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRange(r)}
-              className={`rounded-md px-2.5 py-1 text-xs transition-colors ${
-                range === r ? "bg-accent-soft text-accent" : "text-muted hover:text-foreground"
-              }`}
-            >
-              {r}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1 rounded-lg border border-border-soft bg-background-elevated p-1">
+            {chartTypes.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setChartType(t)}
+                className={`rounded-md px-2.5 py-1 text-xs transition-colors ${
+                  chartType === t ? "bg-accent-soft text-accent" : "text-muted hover:text-foreground"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1 rounded-lg border border-border-soft bg-background-elevated p-1">
+            {ranges.map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setRange(r)}
+                className={`rounded-md px-2.5 py-1 text-xs transition-colors ${
+                  range === r ? "bg-accent-soft text-accent" : "text-muted hover:text-foreground"
+                }`}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="scoreFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.35} />
-                <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <XAxis
-              dataKey="label"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "var(--muted-soft)", fontSize: 11 }}
-              interval={tickInterval}
-            />
-            <YAxis hide domain={["dataMin - 8", "dataMax + 8"]} />
-            <Tooltip content={ChartTooltip} cursor={{ stroke: "var(--border)" }} />
-            <Area
-              type="monotone"
-              dataKey="score"
-              stroke="var(--accent)"
-              strokeWidth={2}
-              fill="url(#scoreFill)"
-              connectNulls={false}
-            />
-          </AreaChart>
+          {chartType === "Sütun" ? (
+            <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap={barGap}>
+              <XAxis
+                dataKey="label"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "var(--muted-soft)", fontSize: tickFontSize }}
+                interval={0}
+              />
+              <YAxis hide domain={[0, 100]} />
+              <Tooltip content={ChartTooltip} cursor={{ fill: "var(--border-soft)" }} />
+              <Bar dataKey="score" fill="var(--accent)" radius={[3, 3, 0, 0]} />
+            </BarChart>
+          ) : (
+            <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="scoreFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis
+                dataKey="label"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "var(--muted-soft)", fontSize: tickFontSize }}
+                interval={0}
+              />
+              <YAxis hide domain={["dataMin - 8", "dataMax + 8"]} />
+              <Tooltip content={ChartTooltip} cursor={{ stroke: "var(--border)" }} />
+              <Area
+                type="monotone"
+                dataKey="score"
+                stroke="var(--accent)"
+                strokeWidth={2}
+                fill="url(#scoreFill)"
+                connectNulls={false}
+              />
+            </AreaChart>
+          )}
         </ResponsiveContainer>
       </div>
     </div>

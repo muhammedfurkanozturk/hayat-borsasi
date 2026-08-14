@@ -35,7 +35,7 @@ export function DailyChecklist() {
     .filter((group) => group.tasks.length > 0);
 
   return (
-    <div className="flex flex-1 flex-col rounded-2xl border border-border bg-surface p-5">
+    <div className="flex flex-1 flex-col rounded-2xl border border-border bg-surface shadow-card p-5">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-sm font-medium text-foreground">Görevler</h2>

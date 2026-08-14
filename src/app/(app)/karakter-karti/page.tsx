@@ -39,7 +39,7 @@ export default function KarakterKartiPage() {
       <PageHeader title="Karakter Kartı" subtitle="Kategorilere göre otomatik hesaplanan gelişim profilin" />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-6 py-8 sm:px-10">
-        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5">
+        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface shadow-card p-5">
           <div className="flex items-center gap-1 self-start rounded-lg border border-border-soft bg-background-elevated p-1">
             {periods.map((p) => (
               <button

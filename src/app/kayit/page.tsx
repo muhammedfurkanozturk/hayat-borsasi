@@ -45,7 +45,7 @@ export default function KayitPage() {
 
   return (
     <div className="flex flex-1 items-center justify-center px-6 py-12">
-      <div className="w-full max-w-sm rounded-2xl border border-border bg-surface p-6">
+      <div className="w-full max-w-sm rounded-2xl border border-border bg-surface shadow-card p-6">
         <Link href="/" className="mb-6 flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-soft text-accent">
             <TrendUpIcon width={16} height={16} />

@@ -13,9 +13,9 @@ import {
 import { useAppData } from "@/lib/supabase/app-data-context";
 
 const activeNavItems = [
-  { label: "Günlükler", icon: PencilIcon, href: "/gunluk-giris" },
-  { label: "AI Rapor", icon: FileTextIcon, href: "/rapor" },
-  { label: "Karakter Kartı", icon: BadgeIcon, href: "/karakter-karti" },
+  { label: "Günlükler", icon: PencilIcon, href: "/gunluk-giris", pro: false },
+  { label: "AI Rapor", icon: FileTextIcon, href: "/rapor", pro: true },
+  { label: "Karakter Kartı", icon: BadgeIcon, href: "/karakter-karti", pro: false },
 ];
 
 export function Sidebar() {
@@ -24,7 +24,7 @@ export function Sidebar() {
   const isCategorySectionActive = pathname.startsWith("/kategori/");
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col border-r border-border-soft bg-background-elevated">
+    <aside className="flex w-56 shrink-0 flex-col border-r border-border bg-background-elevated">
       <Link href="/dashboard" className="flex items-center gap-2.5 px-5 py-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-soft text-accent">
           <TrendUpIcon width={16} height={16} />
@@ -98,7 +98,12 @@ export function Sidebar() {
                 }`}
               >
                 <Icon width={16} height={16} />
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {item.pro && (
+                  <span className="rounded-full bg-pro-soft px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-pro">
+                    PRO
+                  </span>
+                )}
               </Link>
             );
           })}

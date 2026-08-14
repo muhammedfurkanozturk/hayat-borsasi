@@ -37,7 +37,7 @@ export function ArchivedReportView({ date, dateLabel }: { date: string; dateLabe
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-border bg-surface p-5">
+      <div className="rounded-2xl border border-border bg-surface shadow-card p-5">
         <p className="text-sm text-muted">Yükleniyor...</p>
       </div>
     );
@@ -45,7 +45,7 @@ export function ArchivedReportView({ date, dateLabel }: { date: string; dateLabe
 
   if (reports.length === 0) {
     return (
-      <div className="rounded-2xl border border-border bg-surface p-5">
+      <div className="rounded-2xl border border-border bg-surface shadow-card p-5">
         <h2 className="mb-2 text-sm font-medium text-foreground">{dateLabel}</h2>
         <p className="text-sm text-muted">Bu tarih için arşivlenmiş bir AI raporu yok.</p>
       </div>
@@ -55,7 +55,7 @@ export function ArchivedReportView({ date, dateLabel }: { date: string; dateLabe
   return (
     <div className="flex flex-col gap-3">
       {reports.map((report) => (
-        <div key={report.id} className="rounded-2xl border border-border bg-surface p-5">
+        <div key={report.id} className="rounded-2xl border border-border bg-surface shadow-card p-5">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-xs font-medium uppercase tracking-wider text-muted">
               {periodTypeToLabel(report.period_type)} Rapor

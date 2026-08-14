@@ -10,52 +10,15 @@ export interface DbReport {
   created_at: string;
 }
 
-const periodTypeMap: Record<ReportPeriod, "daily" | "weekly" | "monthly"> = {
-  Günlük: "daily",
-  Haftalık: "weekly",
-  Aylık: "monthly",
-};
-
 const periodLabelMap: Record<string, ReportPeriod> = {
   daily: "Günlük",
   weekly: "Haftalık",
   monthly: "Aylık",
+  yearly: "Yıllık",
 };
 
 export function periodTypeToLabel(periodType: string): ReportPeriod {
   return periodLabelMap[periodType] ?? "Günlük";
-}
-
-export async function fetchReports(supabase: SupabaseClient): Promise<DbReport[]> {
-  const { data, error } = await supabase
-    .from("ai_reports")
-    .select("id, period_type, period_start, period_end, content_text, created_at")
-    .order("created_at", { ascending: false })
-    .limit(1);
-  if (error) throw error;
-  return data ?? [];
-}
-
-export async function insertReport(
-  supabase: SupabaseClient,
-  userId: string,
-  period: ReportPeriod,
-  contentText: string
-): Promise<DbReport> {
-  const today = new Date().toISOString().slice(0, 10);
-  const { data, error } = await supabase
-    .from("ai_reports")
-    .insert({
-      user_id: userId,
-      period_type: periodTypeMap[period],
-      period_start: today,
-      period_end: today,
-      content_text: contentText,
-    })
-    .select("id, period_type, period_start, period_end, content_text, created_at")
-    .single();
-  if (error) throw error;
-  return data;
 }
 
 // Bir ayda hangi günlerde kayıtlı rapor var — takvimde nokta işareti için.

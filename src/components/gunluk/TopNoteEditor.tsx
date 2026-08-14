@@ -136,7 +136,7 @@ export function TopNoteEditor({
       return (
         <div
           ref={containerRef}
-          className="flex min-h-[140px] w-full animate-pulse items-center justify-center rounded-2xl border border-dashed border-border-soft bg-surface px-6 py-10"
+          className="flex min-h-[140px] w-full animate-pulse items-center justify-center rounded-2xl border border-dashed border-border-soft bg-surface shadow-card px-6 py-10"
         >
           <span className="text-sm text-muted">Yükleniyor...</span>
         </div>
@@ -161,7 +161,7 @@ export function TopNoteEditor({
   }
 
   return (
-    <div ref={containerRef} className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5">
+    <div ref={containerRef} className="flex flex-col gap-3 rounded-2xl border border-border bg-surface shadow-card p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-medium text-foreground">

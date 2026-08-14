@@ -10,12 +10,15 @@ import { CategoryNameEditor } from "@/components/kategori/CategoryNameEditor";
 import { DeleteCategoryButton } from "@/components/kategori/DeleteCategoryButton";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { calculateScore } from "@/lib/scoring";
+import { todayIso } from "@/lib/supabase/daily";
 import { useAppData } from "@/lib/supabase/app-data-context";
+
+const YEARLY_WINDOW_DAYS = 365;
 
 export default function KategoriPage() {
   const { slug } = useParams<{ slug: string }>();
 
-  const { categories, tasks: allTasks, previousCategoryScores, removeTask } = useAppData();
+  const { categories, tasks: allTasks, dailyHistory, removeTask } = useAppData();
 
   const category = categories.find((c) => c.id === slug);
   const tasks = allTasks
@@ -34,7 +37,14 @@ export default function KategoriPage() {
   }
 
   const score = calculateScore(tasks);
-  const delta = score - (previousCategoryScores[category.id] ?? 0);
+  // Dashboard'daki kategori kutucuklarıyla aynı mantık: dün-bugün kıyası
+  // yerine yılın kaç gününe karşılık geldiğini gösteren yavaş büyüyen bir
+  // katkı oranı (bkz. src/app/(app)/dashboard/page.tsx).
+  const today = todayIso();
+  const historicalSum = dailyHistory
+    .filter((day) => day.date !== today)
+    .reduce((sum, day) => sum + (day.categoryScores[category.id] ?? 0), 0);
+  const delta = (historicalSum + score) / YEARLY_WINDOW_DAYS;
 
   return (
     <div className="flex flex-1 flex-col">
@@ -51,15 +61,20 @@ export default function KategoriPage() {
       </PageHeader>
 
       <main className="flex w-full flex-1 flex-col gap-6 px-6 py-8 sm:px-10">
-        <div className="flex items-center gap-5 rounded-2xl border border-border bg-surface px-6 py-6">
+        <div className="flex items-center gap-5 rounded-2xl border border-border bg-surface shadow-card px-6 py-6">
           <CategoryIconEditor categoryId={category.id} icon={category.icon} />
           <div className="flex flex-1 items-center gap-3">
             <span className="text-lg uppercase tracking-wider text-muted">{category.name} Endeksi</span>
-            <DeltaBadge delta={delta} size="lg" className="ml-auto" />
+            <div className="ml-auto flex flex-col items-end gap-1">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-muted">
+                Yıllık Kazanılan Endeks
+              </span>
+              <DeltaBadge delta={delta} size="lg" />
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5">
+        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface shadow-card p-5">
           <h2 className="text-sm font-medium text-foreground">Görevler</h2>
 
           <ul className="flex flex-col gap-1">

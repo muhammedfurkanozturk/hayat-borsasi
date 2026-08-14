@@ -49,14 +49,14 @@ export function ArchivedNoteView({
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5">
+      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface shadow-card p-5">
         <p className="text-sm text-muted">Yükleniyor...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5">
+    <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface shadow-card p-5">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-medium text-foreground">{dateLabel}</h2>
         <button

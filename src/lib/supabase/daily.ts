@@ -22,6 +22,12 @@ export function yesterdayIso(): string {
   return date.toISOString().slice(0, 10);
 }
 
+export function daysAgoIso(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return date.toISOString().slice(0, 10);
+}
+
 export async function fetchEntryForDate(
   supabase: SupabaseClient,
   userId: string,

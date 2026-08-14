@@ -30,9 +30,9 @@ export function CategoryIconEditor({ categoryId, icon }: { categoryId: string; i
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full z-50 mt-2 w-56 rounded-2xl border border-border bg-background-elevated p-3 shadow-xl">
+          <div className="absolute left-0 top-full z-50 mt-2 w-80 rounded-2xl border border-border bg-background-elevated p-3 shadow-xl">
             <span className="mb-2 block text-xs text-muted">Sembol seç</span>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid max-h-64 grid-cols-6 gap-2 overflow-y-auto pr-1">
               {iconOptions.map((key) => (
                 <button
                   key={key}

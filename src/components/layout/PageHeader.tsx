@@ -13,7 +13,7 @@ export function PageHeader({
   children?: ReactNode;
 }) {
   return (
-    <header className="flex items-center justify-between border-b border-border-soft px-6 py-5 sm:px-10">
+    <header className="flex items-center justify-between border-b border-border px-6 py-5 sm:px-10">
       <div className="flex flex-col gap-1">
         {children ?? (
           <>

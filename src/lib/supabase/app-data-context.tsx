@@ -14,12 +14,14 @@ import {
 } from "./categories";
 import { deleteTaskById, fetchTasks, insertTask, updateTaskFrequency, type TaskFrequency } from "./tasks";
 import {
+  daysAgoIso,
   fetchTaskLogs,
   fetchYesterdayTaskLogs,
   getOrCreateTodayEntry,
   toggleTaskLog,
   updateDailyNote,
 } from "./daily";
+import { fetchDailyHistory } from "./history";
 import {
   deleteSubtaskById,
   fetchSubtaskLogs,
@@ -57,6 +59,16 @@ export interface Subtask {
   completed: boolean;
 }
 
+// Geçmişteki bir günün genel ve kategori bazlı skoru — Skor Trendi
+// grafiğinde ve kategori kutucuklarındaki yıllık katkı oranında kullanılır.
+// Güncel görev/kategori tanımları o günün işaretleme kayıtlarıyla eşleştirilerek
+// hesaplanır (bkz. previousDailyScore ile aynı yaklaşım).
+export interface DailyScorePoint {
+  date: string;
+  overallScore: number;
+  categoryScores: Record<string, number>;
+}
+
 interface AppDataContextValue {
   loading: boolean;
   categories: Category[];
@@ -64,7 +76,7 @@ interface AppDataContextValue {
   subtasks: Subtask[];
   dailyNote: string;
   previousDailyScore: number;
-  previousCategoryScores: Record<string, number>;
+  dailyHistory: DailyScorePoint[];
   addCategory: (name: string, icon: IconKey) => Promise<void>;
   removeCategory: (categoryId: string) => Promise<void>;
   renameCategory: (categoryId: string, name: string) => Promise<void>;
@@ -92,7 +104,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [dailyNote, setDailyNoteState] = useState("");
   const [previousDailyScore, setPreviousDailyScore] = useState(0);
-  const [previousCategoryScores, setPreviousCategoryScores] = useState<Record<string, number>>({});
+  const [dailyHistory, setDailyHistory] = useState<DailyScorePoint[]>([]);
 
   const load = useCallback(async () => {
     const supabase = createClient();
@@ -112,11 +124,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       getOrCreateTodayEntry(supabase, user.id),
     ]);
 
-    const [logs, subtaskLogs, yesterdayLogs, yesterdaySubtaskLogs] = await Promise.all([
+    const [logs, subtaskLogs, yesterdayLogs, yesterdaySubtaskLogs, historyEntries] = await Promise.all([
       fetchTaskLogs(supabase, entry.id),
       fetchSubtaskLogs(supabase, entry.id),
       fetchYesterdayTaskLogs(supabase, user.id),
       fetchYesterdaySubtaskLogs(supabase, user.id),
+      fetchDailyHistory(supabase, user.id, daysAgoIso(365)),
     ]);
     const logByTaskId = new Map(logs.map((log) => [log.task_id, log]));
     const subtaskLogById = new Map(subtaskLogs.map((log) => [log.subtask_id, log]));
@@ -168,18 +181,41 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       };
     });
 
-    const nextPreviousCategoryScores: Record<string, number> = {};
-    for (const category of dbCategories) {
-      const categoryYesterdayTasks = yesterdayWeighted.filter((t) => t.categoryId === category.id);
-      nextPreviousCategoryScores[category.id] = calculateScore(categoryYesterdayTasks);
-    }
+    // Geçmişteki her gün için, o günün işaretlenme kayıtlarını güncel görev/
+    // kategori tanımlarıyla eşleştirip o günün skorunu çıkarıyoruz (bugünkü
+    // satır da dahil, ama bugünkü canlı değeri kullanan bileşenler bunu
+    // kendi anlık hesaplamalarıyla ezip günceller — bkz. Dashboard/ScoreChart).
+    const nextDailyHistory: DailyScorePoint[] = historyEntries.map((day) => {
+      const dayTaskLogById = new Map(day.daily_task_logs.map((l) => [l.task_id, l.completed]));
+      const dayCompletedSubtaskIds = new Set(
+        day.daily_subtask_logs.filter((l) => l.completed).map((l) => l.subtask_id)
+      );
+
+      const dayWeighted = dbTasks.map((t) => {
+        const taskSubtasks = subtasksByTaskId.get(t.id) ?? [];
+        return {
+          weight: t.weight,
+          completed: dayTaskLogById.get(t.id) ?? false,
+          categoryId: t.category_id,
+          subtaskTotal: taskSubtasks.length,
+          subtaskCompleted: taskSubtasks.filter((s) => dayCompletedSubtaskIds.has(s.id)).length,
+        };
+      });
+
+      const categoryScores: Record<string, number> = {};
+      for (const category of dbCategories) {
+        categoryScores[category.id] = calculateScore(dayWeighted.filter((t) => t.categoryId === category.id));
+      }
+
+      return { date: day.date, overallScore: calculateScore(dayWeighted), categoryScores };
+    });
 
     setUserId(user.id);
     setCategories(dbCategories.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon) })));
     setTasks(nextTasks);
     setSubtasks(nextSubtasks);
     setPreviousDailyScore(calculateScore(yesterdayWeighted));
-    setPreviousCategoryScores(nextPreviousCategoryScores);
+    setDailyHistory(nextDailyHistory);
     setDailyEntryId(entry.id);
     setDailyNoteState(entry.note_text);
     setLoading(false);
@@ -387,7 +423,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         subtasks,
         dailyNote,
         previousDailyScore,
-        previousCategoryScores,
+        dailyHistory,
         addCategory,
         removeCategory,
         renameCategory,

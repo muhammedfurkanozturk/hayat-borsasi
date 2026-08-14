@@ -96,7 +96,7 @@ export function NoteArchive({ onEdit }: { onEdit: (target: EditTarget) => void }
     const todayDay = Number(todayIso().slice(8, 10));
 
     return (
-      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5">
+      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface shadow-card p-5">
         <button
           type="button"
           onClick={() => setView("months")}
@@ -139,7 +139,7 @@ export function NoteArchive({ onEdit }: { onEdit: (target: EditTarget) => void }
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5">
+    <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface shadow-card p-5">
       <h2 className="text-sm font-medium text-foreground">Günlükler Arşivi</h2>
       <div className="flex items-center gap-2">
         <button

@@ -8,6 +8,7 @@ const periodWord: Record<ReportPeriod, string> = {
   Günlük: "bugünkü",
   Haftalık: "bu haftaki",
   Aylık: "bu ayki",
+  Yıllık: "bu yılki",
 };
 
 export interface ReportInput {
