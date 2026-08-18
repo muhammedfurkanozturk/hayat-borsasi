@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { TrendUpIcon } from "@/components/icons";
+import { motion } from "motion/react";
+import { LockIcon, MailIcon } from "@/components/icons";
+import { AuthShell } from "@/components/ui/AuthShell";
+import { TextField } from "@/components/ui/TextField";
 import { createClient } from "@/lib/supabase/client";
 
 export default function GirisPage() {
@@ -32,54 +35,48 @@ export default function GirisPage() {
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center px-6 py-12">
-      <div className="w-full max-w-sm rounded-2xl border border-border bg-surface shadow-card p-6">
-        <Link href="/" className="mb-6 flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-soft text-accent">
-            <TrendUpIcon width={16} height={16} />
-          </div>
-          <span className="text-sm font-semibold tracking-tight text-foreground">Hayat Borsası</span>
+    <AuthShell>
+      <h1 className="mb-1 text-xl font-semibold text-foreground">Giriş Yap</h1>
+      <p className="mb-6 text-sm text-muted">Endeksine kaldığın yerden devam et.</p>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <TextField
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="E-posta"
+          icon={<MailIcon width={16} height={16} />}
+        />
+        <TextField
+          type="password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Şifre"
+          icon={<LockIcon width={16} height={16} />}
+        />
+
+        {error && <p className="text-xs text-negative">{error}</p>}
+
+        <motion.button
+          type="submit"
+          disabled={loading}
+          whileHover={{ scale: 1.015 }}
+          whileTap={{ scale: 0.97 }}
+          transition={{ type: "spring", stiffness: 480, damping: 28, mass: 0.7 }}
+          className="mt-1 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition-colors hover:brightness-110 disabled:pointer-events-none disabled:opacity-50"
+        >
+          {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
+        </motion.button>
+      </form>
+
+      <p className="mt-5 text-center text-sm text-muted">
+        Hesabın yok mu?{" "}
+        <Link href="/kayit" className="btn rounded-md text-accent hover:underline">
+          Kayıt ol
         </Link>
-
-        <h1 className="mb-1 text-xl font-semibold text-foreground">Giriş Yap</h1>
-        <p className="mb-6 text-sm text-muted">Endeksine kaldığın yerden devam et.</p>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="E-posta"
-            className="rounded-lg border border-border-soft bg-background-elevated px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-soft focus:border-accent/50"
-          />
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Şifre"
-            className="rounded-lg border border-border-soft bg-background-elevated px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-soft focus:border-accent/50"
-          />
-
-          {error && <p className="text-xs text-negative">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-1 rounded-lg bg-accent-soft px-4 py-2.5 text-sm font-semibold text-accent hover:bg-accent/25 disabled:pointer-events-none disabled:opacity-50"
-          >
-            {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
-          </button>
-        </form>
-
-        <p className="mt-5 text-center text-sm text-muted">
-          Hesabın yok mu?{" "}
-          <Link href="/kayit" className="text-accent hover:underline">
-            Kayıt ol
-          </Link>
-        </p>
-      </div>
-    </div>
+      </p>
+    </AuthShell>
   );
 }

@@ -9,10 +9,12 @@ import {
   buildCalendarYearSeries,
   buildDailySeries,
   buildTwoHourSeries,
+  makeScoreForDate,
 } from "@/lib/chartSeries";
 import { calculateScore } from "@/lib/scoring";
 import { todayIso } from "@/lib/supabase/daily";
 import { useAppData } from "@/lib/supabase/app-data-context";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 const ranges = ["Günlük", "Haftalık", "Aylık", "Yıllık"] as const;
 type Range = (typeof ranges)[number];
@@ -54,8 +56,7 @@ export function ScoreChart() {
 
     const today = todayIso();
     const todayScore = calculateScore(tasks);
-    const historyByDate = new Map(dailyHistory.map((h) => [h.date, h.overallScore]));
-    const scoreForDate = (date: string) => (date === today ? todayScore : (historyByDate.get(date) ?? 0));
+    const scoreForDate = makeScoreForDate(dailyHistory, today, todayScore, (d) => d.overallScore);
 
     if (range === "Haftalık") return buildDailySeries(scoreForDate, 7);
     if (range === "Aylık") return buildCalendarMonthSeries(scoreForDate);
@@ -73,34 +74,12 @@ export function ScoreChart() {
           <p className="text-xs text-muted">{rangeSubtitle[range]}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg border border-border-soft bg-background-elevated p-1">
-            {chartTypes.map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setChartType(t)}
-                className={`rounded-md px-2.5 py-1 text-xs transition-colors ${
-                  chartType === t ? "bg-accent-soft text-accent" : "text-muted hover:text-foreground"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-1 rounded-lg border border-border-soft bg-background-elevated p-1">
-            {ranges.map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => setRange(r)}
-                className={`rounded-md px-2.5 py-1 text-xs transition-colors ${
-                  range === r ? "bg-accent-soft text-accent" : "text-muted hover:text-foreground"
-                }`}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            options={chartTypes.map((t) => ({ value: t, label: t }))}
+            value={chartType}
+            onChange={setChartType}
+          />
+          <SegmentedControl options={ranges.map((r) => ({ value: r, label: r }))} value={range} onChange={setRange} />
         </div>
       </div>
 

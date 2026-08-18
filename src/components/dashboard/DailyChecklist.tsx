@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AppIcon } from "@/components/icons";
 import { TaskRow } from "@/components/TaskRow";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { formatTodayLong } from "@/lib/format";
 import { useAppData, type TaskFrequency } from "@/lib/supabase/app-data-context";
 
@@ -44,20 +45,12 @@ export function DailyChecklist() {
           </p>
         </div>
 
-        <div className="flex items-center gap-1 self-start rounded-lg border border-border-soft bg-background-elevated p-1 sm:self-auto">
-          {periodOptions.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setPeriod(option.value)}
-              className={`rounded-md px-2.5 py-1 text-xs transition-colors ${
-                period === option.value ? "bg-accent-soft text-accent" : "text-muted hover:text-foreground"
-              }`}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          className="self-start sm:self-auto"
+          options={periodOptions}
+          value={period}
+          onChange={setPeriod}
+        />
 
         <span className="font-mono text-xs tabular-nums text-muted">
           {completedWeight}/{totalWeight} ağırlık

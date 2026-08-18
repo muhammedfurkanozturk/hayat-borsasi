@@ -6,10 +6,13 @@ import {
   buildCalendarYearSeries,
   buildDailySeries,
   buildTwoHourSeries,
+  makeScoreForDate,
+  nonNullScores,
 } from "@/lib/chartSeries";
 import { average, calculateScore } from "@/lib/scoring";
 import { daysAgoIso, todayIso } from "@/lib/supabase/daily";
 import { useAppData } from "@/lib/supabase/app-data-context";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { DeltaBadge } from "./DeltaBadge";
 import { Sparkline } from "./Sparkline";
 
@@ -17,10 +20,6 @@ const periods = ["Günlük", "Haftalık", "Aylık", "Yıllık"] as const;
 type Period = (typeof periods)[number];
 
 const YEARLY_WINDOW_DAYS = 365;
-
-function nonNullScores(points: { score: number | null }[]): number[] {
-  return points.map((p) => p.score).filter((s): s is number => s !== null);
-}
 
 export function PeriodIndexCard() {
   const [period, setPeriod] = useState<Period>("Günlük");
@@ -32,8 +31,7 @@ export function PeriodIndexCard() {
   const { value, delta, sparklineData } = useMemo(() => {
     const today = todayIso();
     const todayScore = calculateScore(tasks);
-    const historyByDate = new Map(dailyHistory.map((h) => [h.date, h.overallScore]));
-    const scoreForDate = (date: string) => (date === today ? todayScore : (historyByDate.get(date) ?? 0));
+    const scoreForDate = makeScoreForDate(dailyHistory, today, todayScore, (d) => d.overallScore);
 
     if (period === "Günlük") {
       const sparklineData = nonNullScores(buildTwoHourSeries(tasks));
@@ -73,20 +71,12 @@ export function PeriodIndexCard() {
   return (
     <div className="flex flex-col gap-5 rounded-2xl border border-border bg-surface shadow-card p-5 ring-1 ring-accent/25 sm:flex-row sm:items-center sm:gap-6">
       <div className="flex flex-col gap-4 sm:w-[35%] sm:shrink-0">
-        <div className="flex items-center gap-1 self-start rounded-lg border border-border-soft bg-background-elevated p-1">
-          {periods.map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPeriod(p)}
-              className={`rounded-md px-2.5 py-1 text-xs transition-colors ${
-                period === p ? "bg-accent-soft text-accent" : "text-muted hover:text-foreground"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          className="self-start"
+          options={periods.map((p) => ({ value: p, label: p }))}
+          value={period}
+          onChange={setPeriod}
+        />
 
         <div className="flex flex-col gap-2">
           <span className="text-xs font-medium uppercase tracking-wider text-muted">

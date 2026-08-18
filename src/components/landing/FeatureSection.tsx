@@ -1,6 +1,11 @@
+"use client";
+
 import Image from "next/image";
+import { motion } from "motion/react";
 import type { IconKey } from "@/components/icons";
 import { AppIcon } from "@/components/icons";
+import { GlassPanel } from "@/components/ui/GlassPanel";
+import { SectionGlow } from "@/components/ui/SectionGlow";
 
 export function FeatureSection({
   icon,
@@ -9,6 +14,8 @@ export function FeatureSection({
   description,
   image,
   imageAlt,
+  gradient,
+  glow,
   reverse = false,
 }: {
   icon: IconKey;
@@ -17,31 +24,49 @@ export function FeatureSection({
   description: string;
   image: string;
   imageAlt: string;
+  gradient: string;
+  glow: string;
   reverse?: boolean;
 }) {
   return (
-    <section
-      className={`mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10 sm:px-10 lg:flex-row lg:items-center lg:gap-16 ${
-        reverse ? "lg:flex-row-reverse" : ""
-      }`}
-    >
-      <div className="flex flex-col gap-4 lg:w-[45%]">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
-          <AppIcon name={icon} width={18} height={18} />
-        </div>
-        <span className="text-xs font-medium uppercase tracking-wider text-muted">{eyebrow}</span>
-        <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{title}</h2>
-        <p className="text-sm leading-relaxed text-muted sm:text-base">{description}</p>
-      </div>
+    <section className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-4 py-24 sm:px-6">
+      <SectionGlow rgb={glow} />
+      <div className="relative z-10 mx-auto w-full max-w-[1400px]">
+        <GlassPanel gradient={gradient} className="min-h-[65vh]">
+          <div
+            className={`flex flex-col gap-8 p-6 sm:gap-10 sm:p-10 lg:flex-row lg:items-stretch lg:gap-16 lg:p-16 ${
+              reverse ? "lg:flex-row-reverse" : ""
+            }`}
+          >
+            <motion.div
+              initial={{ opacity: 0, x: reverse ? 40 : -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.5 }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col justify-center gap-5 lg:w-[45%]"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                <AppIcon name={icon} width={22} height={22} />
+              </div>
+              <span className="text-xs font-medium uppercase tracking-wider text-muted">{eyebrow}</span>
+              <h2 className="text-3xl font-semibold leading-[1.15] tracking-tight text-foreground sm:text-4xl lg:text-5xl">{title}</h2>
+              <p className="text-base leading-relaxed text-muted sm:text-lg lg:text-xl">{description}</p>
+            </motion.div>
 
-      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-border-soft bg-surface lg:w-[55%]">
-        <Image
-          src={image}
-          alt={imageAlt}
-          fill
-          sizes="(min-width: 1024px) 55vw, 100vw"
-          className="object-cover"
-        />
+            <div
+              className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-border-soft lg:w-[55%]"
+              style={{ background: gradient }}
+            >
+              <Image
+                src={image}
+                alt={imageAlt}
+                fill
+                sizes="(min-width: 1024px) 55vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+          </div>
+        </GlassPanel>
       </div>
     </section>
   );

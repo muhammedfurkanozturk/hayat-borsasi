@@ -68,11 +68,11 @@ export function NoteArchive({ onEdit }: { onEdit: (target: EditTarget) => void }
     const dateIso = `${year}-${pad(month + 1)}-${pad(day)}`;
     const label = `${day} ${monthNames[month]} ${year} nasıl geçti?`;
     return (
-      <div className="flex flex-col gap-3">
+      <div className="modal-in flex flex-col gap-3">
         <button
           type="button"
           onClick={() => setView("day")}
-          className="flex w-fit items-center gap-2 text-sm text-muted hover:text-foreground"
+          className="btn flex w-fit items-center gap-2 rounded-md text-sm text-muted hover:text-foreground"
         >
           <ArrowLeftIcon width={16} height={16} />
           {monthNames[month]} {year}
@@ -96,11 +96,11 @@ export function NoteArchive({ onEdit }: { onEdit: (target: EditTarget) => void }
     const todayDay = Number(todayIso().slice(8, 10));
 
     return (
-      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface shadow-card p-5">
+      <div className="modal-in flex flex-col gap-4 rounded-2xl border border-border bg-surface shadow-card p-5">
         <button
           type="button"
           onClick={() => setView("months")}
-          className="flex w-fit items-center gap-2 text-sm text-muted hover:text-foreground"
+          className="btn flex w-fit items-center gap-2 rounded-md text-sm text-muted hover:text-foreground"
         >
           <ArrowLeftIcon width={16} height={16} />
           {year}
@@ -118,7 +118,7 @@ export function NoteArchive({ onEdit }: { onEdit: (target: EditTarget) => void }
                   setDay(d);
                   setView("note");
                 }}
-                className={`relative flex h-12 items-center justify-center rounded-lg border-2 font-mono text-sm tabular-nums transition-colors ${
+                className={`btn relative flex h-12 items-center justify-center rounded-lg border-2 font-mono text-sm tabular-nums ${
                   isFuture
                     ? "cursor-not-allowed border-border-soft text-muted-soft opacity-40"
                     : isCurrentMonth && d === todayDay
@@ -145,7 +145,7 @@ export function NoteArchive({ onEdit }: { onEdit: (target: EditTarget) => void }
         <button
           type="button"
           onClick={() => setYear((y) => y - 1)}
-          className="flex h-11 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-muted/30 bg-background-elevated text-muted hover:border-accent/50"
+          className="btn flex h-11 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-muted/30 bg-background-elevated text-muted hover:border-accent/50"
           aria-label="Önceki yıl"
         >
           ‹
@@ -156,7 +156,7 @@ export function NoteArchive({ onEdit }: { onEdit: (target: EditTarget) => void }
         <button
           type="button"
           onClick={() => setYear((y) => y + 1)}
-          className="flex h-11 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-muted/30 bg-background-elevated text-muted hover:border-accent/50"
+          className="btn flex h-11 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-muted/30 bg-background-elevated text-muted hover:border-accent/50"
           aria-label="Sonraki yıl"
         >
           ›
@@ -172,7 +172,7 @@ export function NoteArchive({ onEdit }: { onEdit: (target: EditTarget) => void }
               setMonth(idx);
               setView("day");
             }}
-            className="flex h-14 items-center justify-center rounded-lg border-2 border-muted/30 bg-background-elevated text-sm font-medium text-foreground hover:border-accent/50"
+            className="btn card-lift flex h-14 items-center justify-center rounded-lg border-2 border-muted/30 bg-background-elevated text-sm font-medium text-foreground hover:border-accent/50"
           >
             {name}
           </button>

@@ -1,8 +1,25 @@
 import { buildHourlySeries, type TimedTask } from "@/lib/scoring";
+import type { DailyScorePoint } from "@/lib/supabase/app-data-context";
 
 export interface ChartPoint {
   label: string;
   score: number | null;
+}
+
+// Bugün için canlı (optimistic) değeri, geçmiş günler için dailyHistory'deki
+// gerçek kaydı kullanan bir "tarihe göre skor" fonksiyonu üretir.
+export function makeScoreForDate(
+  dailyHistory: DailyScorePoint[],
+  today: string,
+  liveScore: number,
+  pick: (day: DailyScorePoint) => number
+): (date: string) => number {
+  const byDate = new Map(dailyHistory.map((h) => [h.date, pick(h)]));
+  return (date: string) => (date === today ? liveScore : (byDate.get(date) ?? 0));
+}
+
+export function nonNullScores(points: ChartPoint[]): number[] {
+  return points.map((p) => p.score).filter((s): s is number => s !== null);
 }
 
 export const monthNamesShort = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];

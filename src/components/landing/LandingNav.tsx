@@ -1,30 +1,48 @@
+"use client";
+
 import Link from "next/link";
-import { TrendUpIcon } from "@/components/icons";
+import { MoonStarIcon, SunIcon, TrendUpIcon } from "@/components/icons";
+import { MotionCtaLink } from "@/components/ui/MotionCtaLink";
+import { useTheme } from "@/lib/theme-context";
 
 export function LandingNav() {
-  return (
-    <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6 sm:px-10">
-      <div className="flex items-center gap-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-soft text-accent">
-          <TrendUpIcon width={16} height={16} />
-        </div>
-        <span className="text-sm font-semibold tracking-tight text-foreground">Hayat Borsası</span>
-      </div>
+  const { theme, setTheme } = useTheme();
 
-      <nav className="flex items-center gap-2">
-        <Link
-          href="/giris"
-          className="hidden rounded-lg px-3 py-2 text-sm text-muted hover:text-foreground sm:inline-flex"
-        >
-          Giriş Yap
-        </Link>
-        <Link
-          href="/kayit"
-          className="rounded-lg bg-accent-soft px-4 py-2 text-sm font-medium text-accent hover:bg-accent/25"
-        >
-          Ücretsiz Başla
-        </Link>
-      </nav>
+  return (
+    <header className="fixed inset-x-0 top-0 z-40 border-b border-border-soft/50 bg-background/60 backdrop-blur-md">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6 sm:py-5 md:px-10">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent sm:h-8 sm:w-8">
+            <TrendUpIcon width={16} height={16} />
+          </div>
+          <span className="truncate text-sm font-semibold tracking-tight whitespace-nowrap text-foreground">
+            Hayat Borsası
+          </span>
+        </div>
+
+        <nav className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <button
+            type="button"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            aria-label="Temayı değiştir"
+            className="btn flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-foreground hover:bg-surface-hover hover:text-accent sm:h-9 sm:w-9"
+          >
+            {theme === "dark" ? <SunIcon width={16} height={16} /> : <MoonStarIcon width={16} height={16} />}
+          </button>
+          <Link
+            href="/giris"
+            className="btn hidden whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:text-accent sm:inline-flex"
+          >
+            Giriş Yap
+          </Link>
+          <MotionCtaLink
+            href="/kayit"
+            className="whitespace-nowrap rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground shadow-[0_1px_0_0_rgba(255,255,255,0.25)_inset] transition-colors hover:brightness-110 sm:px-4"
+          >
+            Ücretsiz Başla
+          </MotionCtaLink>
+        </nav>
+      </div>
     </header>
   );
 }

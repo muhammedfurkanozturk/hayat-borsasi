@@ -56,13 +56,13 @@ export function ArchivedNoteView({
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface shadow-card p-5">
+    <div className="modal-in flex flex-col gap-3 rounded-2xl border border-border bg-surface shadow-card p-5">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-medium text-foreground">{dateLabel}</h2>
         <button
           type="button"
           onClick={() => onEdit({ date, dateLabel, entryId, noteText })}
-          className="flex items-center gap-1.5 rounded-lg border-2 border-muted/30 bg-background-elevated px-3 py-2 text-sm font-medium text-foreground hover:border-accent/50"
+          className="btn flex items-center gap-1.5 rounded-lg border-2 border-muted/30 bg-background-elevated px-3 py-2 text-sm font-medium text-foreground hover:border-accent/50"
         >
           <PencilIcon width={14} height={14} />
           Düzenle

@@ -149,7 +149,7 @@ export function TopNoteEditor({
         <button
           type="button"
           onClick={startEditingToday}
-          className="flex min-h-[140px] w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-accent/40 bg-accent-soft px-6 py-10 text-accent transition-colors hover:border-accent/60 hover:bg-accent/25"
+          className="btn flex min-h-[140px] w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-accent/40 bg-accent-soft px-6 py-10 text-accent hover:border-accent/60 hover:bg-accent/25"
         >
           <PencilIcon width={22} height={22} />
           <span className="text-base font-semibold">
@@ -161,7 +161,7 @@ export function TopNoteEditor({
   }
 
   return (
-    <div ref={containerRef} className="flex flex-col gap-3 rounded-2xl border border-border bg-surface shadow-card p-5">
+    <div ref={containerRef} className="modal-in flex flex-col gap-3 rounded-2xl border border-border bg-surface shadow-card p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-medium text-foreground">
@@ -179,9 +179,9 @@ export function TopNoteEditor({
           onClick={toggleListening}
           aria-pressed={listening}
           aria-label={listening ? "Sesli notu durdur" : "Sesli not al"}
-          className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+          className={`btn flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 ${
             listening
-              ? "border-negative/50 bg-negative-soft text-negative"
+              ? "border-negative/50 bg-negative-soft text-negative scale-105"
               : "border-muted/40 text-muted hover:border-accent/50 hover:text-accent"
           }`}
         >
@@ -195,13 +195,13 @@ export function TopNoteEditor({
         placeholder="Neler yaşadın, neler hissettin?"
         rows={7}
         autoFocus
-        className="resize-none rounded-lg border border-border-soft bg-background-elevated px-3 py-3 text-sm leading-relaxed text-foreground outline-none placeholder:text-muted focus:border-accent/50"
+        className="resize-none rounded-lg border border-border-soft bg-background-elevated px-3 py-3 text-sm leading-relaxed text-foreground outline-none transition-colors placeholder:text-muted focus:border-accent/50"
       />
 
       <button
         type="button"
         onClick={handleSave}
-        className="self-end rounded-lg bg-accent-soft px-5 py-2.5 text-sm font-semibold text-accent hover:bg-accent/25"
+        className="btn self-end rounded-lg bg-accent-soft px-5 py-2.5 text-sm font-semibold text-accent hover:-translate-y-px hover:bg-accent/25"
       >
         Kaydet
       </button>

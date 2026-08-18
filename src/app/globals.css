@@ -12,6 +12,9 @@
   --muted-soft: #9ba0ab;
   --accent: #0ad1eb;
   --accent-soft: #0ad1eb1a;
+  /* Dolu (solid) accent zemin üstündeki yazı — parlak camgöbeği üstünde
+     koyu, sabit kontrast için arka plan tonunu kullanıyoruz. */
+  --accent-foreground: #04191d;
   --positive: #36d39f;
   --positive-soft: #36d39f1a;
   --negative: #f43e5c;
@@ -26,8 +29,26 @@
      görünmüyordu — üstte hafif bir ışık çizgisi + altta yumuşak bir gölgeyle
      kartın zeminden "kalktığı" hissini veriyoruz. */
   --shadow-card: 0 1px 0 0 rgba(255, 255, 255, 0.07) inset, 0 10px 24px -8px rgba(0, 0, 0, 0.6);
+  /* Kart/tile hover'ında zeminden biraz daha "kalkma" hissi için. */
+  --shadow-card-hover: 0 1px 0 0 rgba(255, 255, 255, 0.09) inset, 0 18px 34px -10px rgba(0, 0, 0, 0.65);
+  --focus-ring: 0 0 0 2px var(--background), 0 0 0 4px var(--accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Borsa terminali hissine uygun, "confident" bir varış eğrisi — tüm
+     buton/kart/panel geçişleri bu tek eğriyi paylaşır. Süreler mesafe ve
+     sonucun ağırlığına göre kademeli: anlık geri bildirim hızlı, katman/panel
+     geçişleri biraz daha yavaş. */
+  --ease-snap: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 140ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+
+  /* Landing hero'daki "buzlu cam" panel — koyu temada karanlık zeminden hafif
+     ayrışan yarı saydam bir yüzey. */
+  --glass-bg: rgba(15, 17, 21, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.09);
+  --glass-shadow: 0 24px 70px -12px rgba(0, 0, 0, 0.55);
 }
 
 /* Açık tema — apple.com/tr/airpods paletinden türetildi. */
@@ -43,11 +64,16 @@
   --muted-soft: #48484c;
   --accent: #0071e3;
   --accent-soft: #0071e31a;
+  --accent-foreground: #ffffff;
   --positive: #16a34a;
   --positive-soft: #16a34a1a;
   --negative: #dc2626;
   --negative-soft: #dc26261a;
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 20px -6px rgba(0, 0, 0, 0.12);
+  --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.05), 0 16px 30px -8px rgba(0, 0, 0, 0.16);
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-shadow: 0 24px 70px -16px rgba(0, 0, 0, 0.18);
 }
 
 @theme inline {
@@ -62,6 +88,7 @@
   --color-muted-soft: var(--muted-soft);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-foreground);
   --color-positive: var(--positive);
   --color-positive-soft: var(--positive-soft);
   --color-negative: var(--negative);
@@ -81,6 +108,108 @@ html {
   box-shadow: var(--shadow-card);
 }
 
+/* ---- Etkileşim hareket sistemi -------------------------------------------
+   Uygulama genelinde tüm buton/link/tile'lar bu iki sınıfı paylaşır, böylece
+   basma/hover geçişleri her ekranda aynı "confident" eğri ve süreyle çalışır
+   (21st.dev tarzı yumuşak, tutarlı mikro-etkileşimler). Renk/boşluk gibi
+   görsel özellikler Tailwind utility'leriyle bileşen içinde kalır — bu
+   sınıflar sadece geçiş/tepki davranışını standardize eder. */
+.btn {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: var(--dur-base);
+  transition-timing-function: var(--ease-snap);
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.965);
+  transition-duration: var(--dur-fast);
+}
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.card-lift {
+  transition-property: transform, border-color, background-color, box-shadow;
+  transition-duration: var(--dur-base);
+  transition-timing-function: var(--ease-snap);
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-hover);
+}
+.card-lift:active {
+  transform: translateY(-1px);
+  transition-duration: var(--dur-fast);
+}
+
+/* Açılır panel/menü/modal içerikleri (dropdown, popover, dialog) bu geçiş
+   sınıflarıyla zaten görünür bir varsayılan konumdan (opacity 1, scale 1)
+   hafifçe büyüyerek/kayarak beliriyor — script çalışmazsa içerik yine de
+   normal görünür kalır. */
+@keyframes popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.popover-in {
+  animation: popover-in var(--dur-base) var(--ease-snap);
+  transform-origin: top;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.modal-in {
+  animation: modal-in var(--dur-slow) var(--ease-snap);
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.backdrop-in {
+  animation: backdrop-in var(--dur-base) var(--ease-snap);
+}
+
+@keyframes check-pop {
+  0% {
+    transform: scale(0.7);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.check-pop {
+  animation: check-pop var(--dur-slow) var(--ease-snap);
+}
+
+/* Tema değiştirirken tüm renk/arka plan geçiş animasyonlarını geçici
+   kapatır — aksi halde yüzlerce eleman kendi transition-colors süresince
+   ayrı ayrı animasyon oynatıp kaotik bir "renk patlaması" görünümü verir. */
+.theme-switching,
+.theme-switching * {
+  transition: none !important;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -88,7 +217,6 @@ body {
   background-image:
     radial-gradient(circle at 15% 0%, rgba(10, 209, 235, 0.08) 0%, transparent 45%),
     radial-gradient(circle at 85% 8%, rgba(251, 189, 35, 0.05) 0%, transparent 40%);
-  background-attachment: fixed;
 }
 
 [data-theme="light"] body {
@@ -111,5 +239,61 @@ body {
   30% {
     transform: translateY(-7px);
     opacity: 1;
+  }
+}
+
+@keyframes card-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Klavyeyle gezinirken her odaklanabilir elemanda görünür, temayla uyumlu bir
+   halka — fare tıklamasında görünmez (focus-visible). */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: 0.5rem;
+}
+
+/* Kaydırma çubuğunu koyu/açık temaya göre boyar — tarayıcı varsayılanı
+   terminal estetiğinde göze batıyordu. */
+* {
+  scrollbar-color: var(--border) transparent;
+  scrollbar-width: thin;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 999px;
+  border: 2px solid var(--background);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .card-lift:hover {
+    transform: none;
   }
 }

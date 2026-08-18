@@ -210,6 +210,14 @@ export function ChevronDownIcon(props: IconProps) {
   );
 }
 
+export function MenuIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 6.5h16M4 12h16M4 17.5h16" />
+    </svg>
+  );
+}
+
 export function TrashIcon(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -454,6 +462,43 @@ export function LockIcon(props: IconProps) {
       <rect x="5" y="10.5" width="14" height="9.5" rx="2" />
       <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" />
       <circle cx="12" cy="15" r="1.3" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function UserIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" />
+    </svg>
+  );
+}
+
+export function MailIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
+      <path d="M4 7l8 6 8-6" />
+    </svg>
+  );
+}
+
+export function EyeIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M2.5 12S5.7 5.5 12 5.5 21.5 12 21.5 12 18.3 18.5 12 18.5 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+export function EyeOffIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+      <path d="M6.6 6.7C4.2 8.3 2.5 12 2.5 12s3.2 6.5 9.5 6.5c1.4 0 2.6-.24 3.7-.66M17.4 17.3c2.4-1.6 4.1-5.3 4.1-5.3s-3-6.5-9.5-6.5c-.7 0-1.3.06-1.9.18" />
+      <path d="M3 3l18 18" />
     </svg>
   );
 }

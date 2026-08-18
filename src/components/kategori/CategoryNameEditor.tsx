@@ -26,7 +26,7 @@ export function CategoryNameEditor({ categoryId, name }: { categoryId: string; n
           e.preventDefault();
           save();
         }}
-        className="flex items-center gap-2"
+        className="popover-in flex items-center gap-2"
       >
         <input
           autoFocus
@@ -38,7 +38,7 @@ export function CategoryNameEditor({ categoryId, name }: { categoryId: string; n
         <button
           type="submit"
           aria-label="Kaydet"
-          className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-accent hover:bg-accent/25"
+          className="btn flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-accent hover:bg-accent/25"
         >
           <CheckIcon width={18} height={18} />
         </button>
@@ -53,13 +53,14 @@ export function CategoryNameEditor({ categoryId, name }: { categoryId: string; n
         setDraft(name);
         setEditing(true);
       }}
-      className="group flex items-center gap-2.5"
+      className="btn group flex items-center gap-2.5 rounded-lg"
     >
       <h1 className="text-xl font-semibold tracking-tight text-foreground">{name}</h1>
       <PencilIcon
         width={22}
         height={22}
-        className="text-muted transition-colors group-hover:text-accent"
+        className="text-muted transition-colors group-hover:text-accent group-hover:scale-110"
+        style={{ transitionDuration: "var(--dur-base)", transitionTimingFunction: "var(--ease-snap)" }}
       />
     </button>
   );

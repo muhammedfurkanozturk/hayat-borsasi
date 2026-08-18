@@ -53,7 +53,7 @@ export function ArchivedReportView({ date, dateLabel }: { date: string; dateLabe
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="modal-in flex flex-col gap-3">
       {reports.map((report) => (
         <div key={report.id} className="rounded-2xl border border-border bg-surface shadow-card p-5">
           <div className="mb-2 flex items-center justify-between">
