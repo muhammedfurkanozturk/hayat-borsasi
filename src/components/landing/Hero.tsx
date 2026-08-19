@@ -18,7 +18,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: false, amount: 0.5 }}
-              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-col justify-center gap-8 lg:w-[48%]"
             >
               <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border-soft px-3 py-1 text-xs text-muted">

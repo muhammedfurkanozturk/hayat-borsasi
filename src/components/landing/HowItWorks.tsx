@@ -36,7 +36,7 @@ export function HowItWorks() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: false, amount: 0.6 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.95, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-col gap-3 text-center"
             >
               <span className="text-xs font-medium uppercase tracking-wider text-muted">Nasıl çalışır</span>
@@ -53,7 +53,7 @@ export function HowItWorks() {
                   whileInView={{
                     opacity: 1,
                     y: 0,
-                    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: i * 0.15 },
+                    transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: i * 0.15 },
                   }}
                   viewport={{ once: false, amount: 0.4 }}
                   whileHover={{

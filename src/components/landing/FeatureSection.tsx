@@ -42,7 +42,7 @@ export function FeatureSection({
               initial={{ opacity: 0, x: reverse ? 40 : -40 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: false, amount: 0.5 }}
-              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-col justify-center gap-5 lg:w-[45%]"
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft text-accent">

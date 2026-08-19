@@ -9,7 +9,13 @@ export function LandingNav() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 border-b border-border-soft/50 bg-background/60 backdrop-blur-md">
+    <header
+      className="fixed inset-x-0 top-0 z-40 bg-background/70 backdrop-blur-md"
+      style={{
+        maskImage: "linear-gradient(to bottom, black 65%, transparent 100%)",
+        WebkitMaskImage: "linear-gradient(to bottom, black 65%, transparent 100%)",
+      }}
+    >
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6 sm:py-5 md:px-10">
         <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent sm:h-8 sm:w-8">
