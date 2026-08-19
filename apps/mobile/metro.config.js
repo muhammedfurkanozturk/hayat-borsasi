@@ -7,18 +7,23 @@ const workspaceRoot = path.resolve(projectRoot, "../..");
 const config = getDefaultConfig(projectRoot);
 
 // Monorepo desteği: workspace kökündeki (packages/shared gibi) sembolik
-// bağlı paketleri de Metro'nun izlemesi/çözebilmesi için.
+// bağlı paketleri Metro'nun izlemesi için. Hiyerarşik arama AÇIK bırakılıyor
+// (Node'un normal node_modules yukarı-tırmanma davranışı) — bu, apps/mobile
+// dışına hoist edilmiş native paketlerin (örn. react-native-svg) kendi
+// içindeki relative import'larını (örn. "./fabric") sorunsuz çözmesi için
+// gerekli; disableHierarchicalLookup açıkken bu tür paketlerde
+// "Unable to resolve ./fabric" hatası çıkıyordu.
 config.watchFolders = [workspaceRoot];
-config.resolver.nodeModulesPaths = [
-  path.resolve(projectRoot, "node_modules"),
-  path.resolve(workspaceRoot, "node_modules"),
-];
 
-// Kritik: Metro'nun react/react-dom gibi paketleri kökteki (web uygulamasının
-// kullandığı, farklı sürümdeki) node_modules'tan bulup "duplicate React
-// instance" (useEffect null hatası) üretmesini engeller — önce her zaman
-// bu uygulamanın kendi node_modules'una bakar, sadece gerçekten sadece kökte
-// var olan (workspace) paketler için yukarı çıkar.
-config.resolver.disableHierarchicalLookup = true;
+// Bunun yerine SADECE React/React Native'in mutlaka bu uygulamanın kendi
+// node_modules'undaki (doğru sürüm) kopyasından gelmesini zorluyoruz —
+// aksi halde hiyerarşik arama, root'taki (web'in kullandığı, farklı
+// sürümdeki) kopyayı bulup "duplicate React instance" (useEffect null)
+// hatası üretiyordu.
+config.resolver.extraNodeModules = {
+  react: path.resolve(projectRoot, "node_modules/react"),
+  "react-dom": path.resolve(projectRoot, "node_modules/react-dom"),
+  "react-native": path.resolve(projectRoot, "node_modules/react-native"),
+};
 
 module.exports = config;
