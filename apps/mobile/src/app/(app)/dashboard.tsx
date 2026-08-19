@@ -1,11 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { calculateScore } from "@hayat-borsasi/shared";
+import { Feather } from "@expo/vector-icons";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { useTheme } from "@/hooks/use-theme";
-import { useAppData } from "@/lib/app-data-context";
+import { useAppData, type Subtask, type Task } from "@/lib/app-data-context";
 
 export default function DashboardScreen() {
   const theme = useTheme();
@@ -59,7 +60,7 @@ export default function DashboardScreen() {
 
           {tasks.length === 0 && (
             <ThemedText themeColor="textSecondary">
-              Henüz görev yok — web uygulamasından kategori ve görev ekleyebilirsin.
+              Henüz görev yok — Kategoriler sekmesinden kategori ve görev ekleyebilirsin.
             </ThemedText>
           )}
 
@@ -72,7 +73,7 @@ export default function DashboardScreen() {
                   {category.name}
                 </ThemedText>
                 {categoryTasks.map((task) => (
-                  <TaskRow key={task.id} title={task.title} completed={task.completed} taskId={task.id} />
+                  <TaskRow key={task.id} task={task} />
                 ))}
               </View>
             );
@@ -83,22 +84,69 @@ export default function DashboardScreen() {
   );
 }
 
-function TaskRow({ taskId, title, completed }: { taskId: string; title: string; completed: boolean }) {
+function TaskRow({ task }: { task: Task }) {
   const theme = useTheme();
-  const { toggleTask } = useAppData();
+  const { subtasks, toggleTask } = useAppData();
+  const [expanded, setExpanded] = useState(false);
+  const taskSubtasks = subtasks.filter((s) => s.taskId === task.id);
 
   return (
-    <Pressable
-      onPress={() => toggleTask(taskId)}
-      style={[styles.taskRow, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}
-    >
+    <View style={[styles.taskCard, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}>
+      <Pressable onPress={() => setExpanded((v) => !v)} style={styles.taskRow}>
+        <Pressable hitSlop={8} onPress={() => toggleTask(task.id)}>
+          <View
+            style={[
+              styles.checkbox,
+              {
+                borderColor: task.completed ? theme.accent : theme.border,
+                backgroundColor: task.completed ? theme.accent : "transparent",
+              },
+            ]}
+          />
+        </Pressable>
+        <ThemedText style={[{ flex: 1 }, task.completed && styles.taskTitleCompleted]}>{task.title}</ThemedText>
+        {task.subtaskTotal > 0 && (
+          <ThemedText themeColor="textSecondary" style={styles.subtaskCount}>
+            {task.subtaskCompleted}/{task.subtaskTotal}
+          </ThemedText>
+        )}
+        <Feather name={expanded ? "chevron-up" : "chevron-down"} size={18} color={theme.textSecondary} />
+      </Pressable>
+
+      {expanded && (
+        <View style={[styles.subtaskPanel, { borderTopColor: theme.border }]}>
+          {taskSubtasks.length === 0 && (
+            <ThemedText themeColor="textSecondary" style={styles.noSubtasks}>
+              Bu görevde alt görev yok. Kategoriler sekmesinden ekleyebilirsin.
+            </ThemedText>
+          )}
+          {taskSubtasks.map((sub) => (
+            <SubtaskRow key={sub.id} subtask={sub} />
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+function SubtaskRow({ subtask }: { subtask: Subtask }) {
+  const theme = useTheme();
+  const { toggleSubtask } = useAppData();
+
+  return (
+    <Pressable onPress={() => toggleSubtask(subtask.id)} style={styles.subtaskRow}>
       <View
         style={[
-          styles.checkbox,
-          { borderColor: completed ? theme.accent : theme.border, backgroundColor: completed ? theme.accent : "transparent" },
+          styles.subtaskCheckbox,
+          {
+            borderColor: subtask.completed ? theme.accent : theme.border,
+            backgroundColor: subtask.completed ? theme.accent : "transparent",
+          },
         ]}
       />
-      <ThemedText style={completed ? styles.taskTitleCompleted : undefined}>{title}</ThemedText>
+      <ThemedText style={[styles.subtaskTitle, subtask.completed && styles.taskTitleCompleted]}>
+        {subtask.title}
+      </ThemedText>
     </Pressable>
   );
 }
@@ -120,15 +168,20 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, lineHeight: 24, marginTop: 8 },
   categoryBlock: { gap: 8 },
   categoryLabel: { fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5 },
+  taskCard: { borderWidth: 1, borderRadius: 12, overflow: "hidden" },
   taskRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    borderWidth: 1,
-    borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 14,
   },
   checkbox: { width: 20, height: 20, borderRadius: 6, borderWidth: 2 },
   taskTitleCompleted: { textDecorationLine: "line-through", opacity: 0.6 },
+  subtaskCount: { fontSize: 11 },
+  subtaskPanel: { borderTopWidth: StyleSheet.hairlineWidth, paddingHorizontal: 14, paddingVertical: 8, gap: 4 },
+  noSubtasks: { fontSize: 12, paddingVertical: 6 },
+  subtaskRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 8, paddingLeft: 8 },
+  subtaskCheckbox: { width: 16, height: 16, borderRadius: 5, borderWidth: 2 },
+  subtaskTitle: { fontSize: 13, flex: 1 },
 });

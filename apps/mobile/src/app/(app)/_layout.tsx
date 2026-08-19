@@ -61,6 +61,7 @@ export default function AppLayout() {
               tabBarIcon: ({ color, size }) => <Feather name="settings" size={size} color={color} />,
             }}
           />
+          <Tabs.Screen name="pro" options={{ href: null }} />
         </Tabs>
       </AppDataProvider>
     </ProfileProvider>

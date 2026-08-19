@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { type IconKey, type TaskFrequency } from "@hayat-borsasi/shared";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,8 +18,10 @@ import { ThemedView } from "@/components/themed-view";
 import { useTheme } from "@/hooks/use-theme";
 import { ICON_KEY_TO_MCI } from "@/lib/icon-map";
 import { useAppData, type Task } from "@/lib/app-data-context";
+import { useProfile } from "@/lib/profile-context";
 
 const DEFAULT_ICON: IconKey = "star";
+const FREE_CATEGORY_LIMIT = 6;
 
 const FREQUENCY_OPTIONS: { value: TaskFrequency; label: string }[] = [
   { value: "daily", label: "Günlük" },
@@ -28,11 +32,19 @@ const FREQUENCY_OPTIONS: { value: TaskFrequency; label: string }[] = [
 export default function KategorilerScreen() {
   const theme = useTheme();
   const { loading, categories, tasks, addCategory, removeCategory } = useAppData();
+  const { isPro } = useProfile();
   const [newCategoryName, setNewCategoryName] = useState("");
   const [addingCategory, setAddingCategory] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [limitModalOpen, setLimitModalOpen] = useState(false);
+
+  const limitReached = !isPro && categories.length >= FREE_CATEGORY_LIMIT;
 
   async function handleAddCategory() {
+    if (limitReached) {
+      setLimitModalOpen(true);
+      return;
+    }
     if (!newCategoryName.trim()) return;
     setAddingCategory(true);
     await addCategory(newCategoryName, DEFAULT_ICON);
@@ -80,16 +92,27 @@ export default function KategorilerScreen() {
             />
             <Pressable
               onPress={handleAddCategory}
-              disabled={addingCategory || !newCategoryName.trim()}
-              style={[styles.addCategoryButton, { backgroundColor: theme.accent, opacity: newCategoryName.trim() ? 1 : 0.5 }]}
+              disabled={addingCategory || (!limitReached && !newCategoryName.trim())}
+              style={[
+                styles.addCategoryButton,
+                { backgroundColor: theme.accent, opacity: limitReached || newCategoryName.trim() ? 1 : 0.5 },
+              ]}
             >
               {addingCategory ? (
                 <ActivityIndicator color="#04191d" size="small" />
+              ) : limitReached ? (
+                <MaterialCommunityIcons name="lock-outline" size={18} color="#04191d" />
               ) : (
                 <MaterialCommunityIcons name="plus" size={18} color="#04191d" />
               )}
             </Pressable>
           </View>
+
+          {limitReached && (
+            <ThemedText themeColor="textSecondary" style={styles.limitNote}>
+              Ücretsiz planda en fazla {FREE_CATEGORY_LIMIT} kategori oluşturabilirsin.
+            </ThemedText>
+          )}
 
           {categories.length === 0 && (
             <ThemedText themeColor="textSecondary">
@@ -136,6 +159,35 @@ export default function KategorilerScreen() {
           })}
         </ScrollView>
       </SafeAreaView>
+
+      <Modal visible={limitModalOpen} transparent animationType="fade" onRequestClose={() => setLimitModalOpen(false)}>
+        <Pressable style={styles.modalBackdrop} onPress={() => setLimitModalOpen(false)}>
+          <Pressable style={[styles.modalCard, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}>
+            <View style={[styles.modalIcon, { backgroundColor: "#f5b40024" }]}>
+              <MaterialCommunityIcons name="lock-outline" size={26} color="#f5b400" />
+            </View>
+            <ThemedText style={styles.modalTitle}>Ücretsiz kategori limitine ulaştın</ThemedText>
+            <ThemedText themeColor="textSecondary" style={styles.modalSubtitle}>
+              Ücretsiz planda en fazla {FREE_CATEGORY_LIMIT} kategori oluşturabilirsin. Sınırsız kategori için
+              Pro'ya geç.
+            </ThemedText>
+            <View style={styles.modalActions}>
+              <Pressable onPress={() => setLimitModalOpen(false)} style={styles.modalCancelButton}>
+                <ThemedText themeColor="textSecondary">Vazgeç</ThemedText>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setLimitModalOpen(false);
+                  router.push("/pro");
+                }}
+                style={[styles.modalProButton, { backgroundColor: "#f5b400" }]}
+              >
+                <ThemedText style={styles.modalProButtonText}>Pro'ya Geç</ThemedText>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ThemedView>
   );
 }
@@ -287,4 +339,14 @@ const styles = StyleSheet.create({
   weightValue: { fontSize: 14, minWidth: 18, textAlign: "center" },
   addTaskButton: { marginLeft: "auto", borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
   addTaskButtonText: { color: "#04191d", fontWeight: "600", fontSize: 13 },
+  limitNote: { fontSize: 12, marginTop: -4 },
+  modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", alignItems: "center", justifyContent: "center", padding: 24 },
+  modalCard: { width: "100%", maxWidth: 340, borderWidth: 1, borderRadius: 20, padding: 24, alignItems: "center", gap: 12 },
+  modalIcon: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center" },
+  modalTitle: { fontSize: 15, fontWeight: "700", textAlign: "center" },
+  modalSubtitle: { fontSize: 13, textAlign: "center", lineHeight: 19 },
+  modalActions: { flexDirection: "row", gap: 10, width: "100%", marginTop: 4 },
+  modalCancelButton: { flex: 1, alignItems: "center", paddingVertical: 12 },
+  modalProButton: { flex: 1, alignItems: "center", borderRadius: 10, paddingVertical: 12 },
+  modalProButtonText: { color: "#1a1400", fontWeight: "700", fontSize: 13 },
 });

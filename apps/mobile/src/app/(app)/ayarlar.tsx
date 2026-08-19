@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
 import {
   ActivityIndicator,
   Alert,
@@ -18,9 +19,11 @@ import { useTheme } from "@/hooks/use-theme";
 import { useAppData } from "@/lib/app-data-context";
 import { useAuth } from "@/lib/auth-context";
 import { useProfile } from "@/lib/profile-context";
+import { useThemeMode } from "@/lib/theme-context";
 
 export default function AyarlarScreen() {
   const theme = useTheme();
+  const { theme: themeMode, setTheme: setThemeMode } = useThemeMode();
   const { signOut } = useAuth();
   const { resetAllCategories } = useAppData();
   const { displayName, email, isPro, contactInfo, loading, updateDisplayName, updateContactInfo, updateEmail } =
@@ -230,12 +233,36 @@ export default function AyarlarScreen() {
                   <ThemedText style={[styles.proBadgeText, { color: "#f5b400" }]}>Pro</ThemedText>
                 </View>
               ) : (
-                <View style={[styles.freeBadge, { borderColor: theme.border }]}>
+                <Pressable onPress={() => router.push("/pro")} style={[styles.freeBadge, { borderColor: theme.border }]}>
                   <ThemedText themeColor="textSecondary" style={styles.freeBadgeText}>
                     Ücretsiz
                   </ThemedText>
-                </View>
+                </Pressable>
               )}
+            </View>
+
+            <View style={[styles.section, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}>
+              <ThemedText style={styles.sectionTitle}>Görünüm</ThemedText>
+              <View style={[styles.themeRow, { borderColor: theme.border }]}>
+                <Pressable
+                  onPress={() => setThemeMode("dark")}
+                  style={[styles.themePill, themeMode === "dark" && { backgroundColor: theme.accent + "1a" }]}
+                >
+                  <Feather name="moon" size={13} color={themeMode === "dark" ? theme.accent : theme.textSecondary} />
+                  <ThemedText themeColor={themeMode === "dark" ? "accent" : "textSecondary"} style={styles.themePillText}>
+                    Koyu Tema
+                  </ThemedText>
+                </Pressable>
+                <Pressable
+                  onPress={() => setThemeMode("light")}
+                  style={[styles.themePill, themeMode === "light" && { backgroundColor: theme.accent + "1a" }]}
+                >
+                  <Feather name="sun" size={13} color={themeMode === "light" ? theme.accent : theme.textSecondary} />
+                  <ThemedText themeColor={themeMode === "light" ? "accent" : "textSecondary"} style={styles.themePillText}>
+                    Açık Tema
+                  </ThemedText>
+                </Pressable>
+              </View>
             </View>
 
             <View style={[styles.section, { borderColor: "#f43e5c40", backgroundColor: "#f43e5c14" }]}>
@@ -323,6 +350,9 @@ const styles = StyleSheet.create({
   proBadgeText: { fontSize: 11, fontWeight: "700" },
   freeBadge: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
   freeBadgeText: { fontSize: 11 },
+  themeRow: { flexDirection: "row", borderWidth: 1, borderRadius: 999, padding: 3, gap: 2, alignSelf: "flex-start" },
+  themePill: { flexDirection: "row", alignItems: "center", gap: 6, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
+  themePillText: { fontSize: 12, fontWeight: "600" },
   dangerText: { fontSize: 12, lineHeight: 17 },
   confirmRow: { gap: 8 },
   confirmText: { fontSize: 12 },

@@ -10,6 +10,7 @@ import {
   type ReportPeriod,
 } from "@hayat-borsasi/shared";
 import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/themed-text";
@@ -114,19 +115,9 @@ export default function RaporScreen() {
             AI Rapor
           </ThemedText>
 
-          {locked && (
-            <View style={[styles.lockNotice, { borderColor: "#f5b40040", backgroundColor: "#f5b40014" }]}>
-              <Feather name="lock" size={20} color="#f5b400" />
-              <ThemedText style={styles.lockTitle}>AI Rapor bir Pro özelliği</ThemedText>
-              <ThemedText themeColor="textSecondary" style={styles.lockSubtitle}>
-                Anlık AI özetlerine erişmek için Pro'ya geçmen gerekiyor.
-              </ThemedText>
-            </View>
-          )}
-
           <View
             pointerEvents={locked ? "none" : "auto"}
-            style={[styles.card, { borderColor: theme.border, backgroundColor: theme.backgroundElement, opacity: locked ? 0.4 : 1 }]}
+            style={[styles.card, { borderColor: theme.border, backgroundColor: theme.backgroundElement, opacity: locked ? 0.3 : 1 }]}
           >
             {PERIODS.map((period) => (
               <Pressable
@@ -171,6 +162,25 @@ export default function RaporScreen() {
           )}
         </ScrollView>
       </SafeAreaView>
+
+      {locked && (
+        <Pressable
+          style={[styles.lockOverlay, { backgroundColor: theme.background + "e6" }]}
+          onPress={() => router.push("/pro")}
+        >
+          <View style={[styles.lockIcon, { backgroundColor: "#f5b40024" }]}>
+            <Feather name="lock" size={26} color="#f5b400" />
+          </View>
+          <ThemedText style={styles.lockTitle}>AI Rapor bir Pro özelliği</ThemedText>
+          <ThemedText themeColor="textSecondary" style={styles.lockSubtitle}>
+            Anlık AI özetlerine ve arşivlenmiş raporlara erişmek için Pro'ya geç.
+          </ThemedText>
+          <View style={[styles.lockButton, { backgroundColor: "#f5b400" }]}>
+            <Feather name="lock" size={13} color="#1a1400" />
+            <ThemedText style={styles.lockButtonText}>Pro'ya Geç</ThemedText>
+          </View>
+        </Pressable>
+      )}
     </ThemedView>
   );
 }
@@ -178,9 +188,26 @@ export default function RaporScreen() {
 const styles = StyleSheet.create({
   container: { padding: 20, gap: 16 },
   headerTitle: { fontSize: 22, lineHeight: 28 },
-  lockNotice: { borderWidth: 1, borderRadius: 16, padding: 20, alignItems: "center", gap: 6 },
-  lockTitle: { fontSize: 14, fontWeight: "600" },
-  lockSubtitle: { fontSize: 12, textAlign: "center" },
+  lockOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 32,
+    gap: 8,
+  },
+  lockIcon: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center", marginBottom: 4 },
+  lockTitle: { fontSize: 15, fontWeight: "700" },
+  lockSubtitle: { fontSize: 13, textAlign: "center", lineHeight: 19, maxWidth: 260 },
+  lockButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 10,
+    paddingHorizontal: 18,
+    paddingVertical: 11,
+    marginTop: 8,
+  },
+  lockButtonText: { color: "#1a1400", fontWeight: "700", fontSize: 13 },
   card: { borderWidth: 1, borderRadius: 16, padding: 16, gap: 10 },
   periodButton: { borderWidth: 1, borderRadius: 12, paddingVertical: 14, alignItems: "center" },
   periodButtonText: { fontSize: 13, fontWeight: "600" },

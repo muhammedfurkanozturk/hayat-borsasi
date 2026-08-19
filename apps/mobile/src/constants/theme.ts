@@ -35,6 +35,7 @@ export const Colors = {
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+export type ThemeColors = Record<ThemeColor, string>;
 
 export const Fonts = Platform.select({
   ios: {
