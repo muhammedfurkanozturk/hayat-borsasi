@@ -15,6 +15,10 @@ function createBearerClient(token: string) {
   });
 }
 
+// Claude API çağrısı Vercel'in varsayılan fonksiyon süresinden (genelde 10sn)
+// uzun sürebiliyor — bu olmadan yavaş bir yanıt 503/504 ile kesiliyordu.
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   const authHeader = request.headers.get("authorization");
   const bearerToken = authHeader?.toLowerCase().startsWith("bearer ") ? authHeader.slice(7) : null;
