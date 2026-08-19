@@ -1,13 +1,28 @@
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { generateAiReport, type ReportInput } from "@/lib/ai/claude";
 import { createClient } from "@/lib/supabase/server";
 
+// Web istekleri tarayıcı çerezleriyle (createClient/server.ts) doğrulanır.
+// Mobil uygulamanın çerezi yok — bunun yerine Supabase oturum access
+// token'ını `Authorization: Bearer <token>` header'ında gönderir. Bu client,
+// o token'ı taşıyarak RLS sorgularının (profiles tablosu) doğru kullanıcı
+// olarak çalışmasını sağlar.
+function createBearerClient(token: string) {
+  return createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+}
+
 export async function POST(request: Request) {
-  const supabase = await createClient();
+  const authHeader = request.headers.get("authorization");
+  const bearerToken = authHeader?.toLowerCase().startsWith("bearer ") ? authHeader.slice(7) : null;
+
+  const supabase = bearerToken ? createBearerClient(bearerToken) : await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getUser(bearerToken ?? undefined);
 
   if (!user) {
     return NextResponse.json({ error: "Oturum bulunamadı." }, { status: 401 });

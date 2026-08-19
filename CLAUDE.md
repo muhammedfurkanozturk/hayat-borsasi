@@ -22,6 +22,8 @@ Referans arayüz hissi: Bir borsa/kripto terminali (örn. TradingView, Investing
 
 Şu anda sadece **Faz 1 (Web MVP)** üzerinde çalışıyoruz. Mobil veya ödeme kodu istenmeden yazılmayacak.
 
+**İstisna (2026-08-19, kullanıcı bilinçli onayıyla):** Faz 3 (mobil), Faz 2'yi (ödeme/iyzico) beklemeden öne çekildi — bkz. bölüm 8 ve bölüm 9. Ödeme katmanı hâlâ yok, sıradaki adım değil; mobil bitince veya paralel gündeme gelince tekrar ele alınacak.
+
 ---
 
 ## 3. Teknoloji Stack'i (KESİN — değiştirilmeyecek)
@@ -41,6 +43,8 @@ Referans arayüz hissi: Bir borsa/kripto terminali (örn. TradingView, Investing
 | Dil / lokalizasyon | Sadece **Türkçe** (ilk hedef kitle Türkiye) — tüm arayüz metinleri Türkçe olacak |
 
 **Kullanma:** .NET, Firebase, MongoDB, Redux (gerekmedikçe — React Context/Zustand yeterli), CSS-in-JS kütüphaneleri (styled-components vb.), Pages Router.
+
+**Mobil (Faz 3, 2026-08-19'da başladı — bkz. bölüm 8 istisnası):** React Native + Expo (expo-router), repo kökünde npm workspaces monorepo altında `apps/mobile`. Web ile paylaşılan iş mantığı (skor hesaplama, Supabase sorgu fonksiyonları, chart/format yardımcıları) `packages/shared` (`@hayat-borsasi/shared`) paketinde — bkz. bölüm 9.
 
 ---
 
@@ -102,12 +106,25 @@ Tüm tablolarda **Row Level Security (RLS)** aktif olacak — bir kullanıcı sa
 - Ses kaydını dosya olarak saklama — sadece deşifre edilmiş metin saklanır.
 - API anahtarlarını (Supabase service role key, Claude API key) client tarafında kullanma veya repoya committe etme — `.env.local` içinde tutulacak ve `.gitignore`'da olacak.
 - Faz 1 kapsamında olmayan özellikleri (ödeme, mobil) önceden inşa etmeye çalışma — sırayla ilerlenecek. **İstisna (2026-08-14, kullanıcı bilinçli onayıyla):** Pro/Ücretsiz görsel kısıtlama sistemi (kilit ekranları, kategori limiti, PRO rozetleri) öne çekilip Faz 1 içinde kuruldu — ama gerçek ödeme (iyzico) hâlâ Faz 2'de, henüz yok. `is_pro` bayrağı şu an sadece Supabase'de elle değiştirilerek test ediliyor.
+- **İstisna (2026-08-19, kullanıcı bilinçli onayıyla):** Faz 3 (React Native/Expo mobil), Faz 2 (ödeme) beklenmeden başlatıldı. Repo bir npm workspaces monorepo'suna dönüştürüldü (`packages/shared` + `apps/mobile`) — bkz. bölüm 9. Ödeme katmanı hâlâ Faz 2'de, henüz yok.
 
 ---
 
 ## 9. Şu Anki Durum / Sıradaki Görev
 
-> Bu bölümü proje ilerledikçe güncelle. Son güncelleme: 2026-08-14.
+> Bu bölümü proje ilerledikçe güncelle. Son güncelleme: 2026-08-19.
+
+**Mobil (Faz 3) — 2026-08-19'da başlatıldı:**
+- Repo, mevcut web uygulamasını kökten taşımadan bir **npm workspaces monorepo**'suna dönüştürüldü (kök `package.json` → `"workspaces": ["packages/*", "apps/*"]`).
+- **`packages/shared`** (`@hayat-borsasi/shared`): platform-bağımsız iş mantığı buraya taşındı — `scoring.ts`, `chartSeries.ts`, `format.ts`, `report.ts`, `types.ts` (`IconKey`, `DailyScorePoint` — tek doğruluk kaynağı burası), ve tüm `supabase/*.ts` CRUD sorgu fonksiyonları (`categories/daily/history/reports/subtasks/tasks` — hepsi `SupabaseClient`'ı parametre olarak alıyor, client'ı kendileri oluşturmuyor). Web'deki eski `src/lib/...` dosyaları artık bu pakete tek satırlık re-export shim'leri (`export * from "@hayat-borsasi/shared/..."`) — hiçbir mevcut `@/lib/...` import'u değişmedi, `npm run build` ile regresyon doğrulandı. `next.config.ts`'e `transpilePackages: ["@hayat-borsasi/shared"]` eklendi (paket ham TS olarak dağıtılıyor).
+- **`apps/mobile`** (`@hayat-borsasi/mobile`): Expo SDK 57 + expo-router (`src/app` router kökü, `@/*` → `./src/*` alias — web'le aynı konvansiyon). Supabase client'ı `@supabase/supabase-js` + `@react-native-async-storage/async-storage` ile kuruldu (native'de AsyncStorage, web'de supabase-js'in kendi SSR-güvenli varsayılan storage'ı — AsyncStorage'ın web shim'i Expo Router'ın statik dışa aktarımındaki Node render adımında `window is not defined` ile patlıyordu, `Platform.OS !== "web"` koşuluyla düzeltildi, bkz. `src/lib/supabase/client.ts`). `.env.local` içinde sadece `EXPO_PUBLIC_SUPABASE_URL`/`EXPO_PUBLIC_SUPABASE_ANON_KEY` var (public/anon anahtarlar — service-role/Anthropic/cron anahtarları mobile'a hiç kopyalanmadı).
+- Auth (giriş/kayıt, `app/(auth)/giris.tsx` + `kayit.tsx`), alt sekme (tab bar) navigasyonlu **5 ekran** — Dashboard (`dashboard.tsx`, günlük endeks + kategori bazlı checklist), Günlük Giriş (`gunluk-giris.tsx`, bugünün notu — sesli not/mikrofon henüz yok, bkz. altta), Kategoriler (`kategoriler.tsx`, kategori oluşturma/silme + her kategoriye görev ekleme/silme, ağırlık ve sıklık seçimiyle), Karakter Kartı (`karakter-karti.tsx`, tier/skor/istatistikler + kategori bazlı bar grafiği — web'in Recharts radar grafiği yerine RN'de basit bar liste, yeni bir chart kütüphanesi eklemeden), Ayarlar (`ayarlar.tsx`, profil/iletişim düzenleme, Plan durumu salt-okunur, veri sıfırlama, çıkış yap) — hepsi gerçek Supabase verisiyle, telefonda (Expo Go) ve web önizlemede elle test edildi. Yönlendirme `Stack.Protected` (expo-router SDK 53+ auth-gate deseni) ile — oturum yoksa `(auth)`, varsa `(app)` grubu (tab bar) gösteriliyor. `apps/mobile/src/lib/app-data-context.tsx` ve `profile-context.tsx`, web'deki eşdeğerlerinin shared paket + RN Supabase client kullanan birebir portları.
+- **İkon eşleme:** Web'in `IconKey` (30 değer, `@hayat-borsasi/shared/types`) → `MaterialCommunityIcons` glif ismi eşlemesi `apps/mobile/src/lib/icon-map.ts`'te — web'in kendi SVG ikon bileşenleri RN'de kullanılamadığı için.
+- **SDK 57 → 54'e düşürüldü:** İlk kurulumda kullanıcının Play Store'daki Expo Go'su SDK 57'yi desteklemiyordu (mağaza sürümü SDK 54'te sabit) — `npx expo install expo@^54.0.0 && npx expo install --fix` ile tüm expo-*/react-native paketleri SDK 54 uyumlu sürümlere indirildi.
+- **Monorepo/Metro fix:** `apps/mobile/metro.config.js` eklendi (`disableHierarchicalLookup: true` + açık `nodeModulesPaths`) — bu olmadan Metro, kökteki (web'in kullandığı, farklı sürüm) React kopyasını buluyor ve "Cannot read properties of null (reading 'useEffect')" hatasıyla çöküyordu; resmi Expo monorepo rehberindeki standart çözüm.
+- **Marka ikonu/splash:** Web navbar'ındaki cyan TrendUp SVG path'i birebir kullanılarak (AI görsel üretimi değil, `sharp` ile programatik SVG→PNG) app icon, Android adaptive icon (foreground/background/monochrome) ve splash ekranı üretildi — koyu zemin `#040506` + cyan `#0ad1eb` glif. Expo şablonunun kendi demo görselleri (react-logo, expo-logo vb.) ve riskli yeni `expo.icon` bundle formatı kaldırıldı, düz `icon.png` referansına geçildi.
+- Doğrulandı: kök `npm install` (workspace linkleri), kök + mobil `tsc --noEmit`, kök `npm run build` (web regresyon), `npx expo export --platform web` (17 route başarıyla statik derlendi), **gerçek telefonda Expo Go (tünel modu, `expo start --tunnel`) ile giriş yapıldı, görev işaretlendi, not kaydedildi, kategori/görev eklendi — hepsi gerçek Supabase verisine yazdı.** Karakter Kartı ve Ayarlar web önizlemede gerçek hesap verisiyle (profil, iletişim bilgileri, Pro durumu) doğrulandı.
+- **Sırada (henüz yapılmadı):** Rapor/AI Özet (server-side Claude çağrısı gerektiği için ayrı bir backend endpoint şart — `ai/claude.ts` mobile'a taşınamaz, `server-only`; muhtemelen mobil, web'in deploy edilmiş `/api/rapor` route'unu HTTPS üzerinden çağıracak — mobilde kalan tek ekran). Sesli not (mikrofon) — Web Speech API yerine RN'de native bir STT çözümü gerekecek, henüz araştırılmadı, kasıtlı olarak Günlük Giriş ekranından çıkarıldı. Manuel açık/koyu tema tercihi (şu an sadece cihazın sistem temasını takip ediyor, web'deki gibi elle değiştirme + kalıcı saklama yok) — Ayarlar ekranından kasıtlı olarak çıkarıldı.
 
 **Tamamlanmış (Faz 1 çekirdeği):**
 - Tüm temel ekranlar (Dashboard, Kategori/Görev, Günlükler, AI Rapor, Karakter Kartı, Ayarlar, Pro) + herkese açık landing sayfası

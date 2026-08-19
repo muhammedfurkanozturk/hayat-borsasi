@@ -1,4 +1,7 @@
-import type { SVGProps } from "react";
+import type { JSX, SVGProps } from "react";
+import type { IconKey } from "@hayat-borsasi/shared";
+
+export type { IconKey };
 
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -534,9 +537,7 @@ export const iconPalette = {
   flame: FlameIcon,
   sun: SunIcon,
   compass: CompassIcon,
-} as const;
-
-export type IconKey = keyof typeof iconPalette;
+} satisfies Record<IconKey, (props: IconProps) => JSX.Element>;
 
 export const iconLabels: Record<IconKey, string> = {
   rocket: "Girişimcilik",

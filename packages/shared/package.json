@@ -1,0 +1,27 @@
+{
+  "name": "@hayat-borsasi/shared",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./scoring": "./src/scoring.ts",
+    "./chartSeries": "./src/chartSeries.ts",
+    "./format": "./src/format.ts",
+    "./report": "./src/report.ts",
+    "./types": "./src/types.ts",
+    "./supabase/categories": "./src/supabase/categories.ts",
+    "./supabase/daily": "./src/supabase/daily.ts",
+    "./supabase/history": "./src/supabase/history.ts",
+    "./supabase/reports": "./src/supabase/reports.ts",
+    "./supabase/subtasks": "./src/supabase/subtasks.ts",
+    "./supabase/tasks": "./src/supabase/tasks.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.3"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}

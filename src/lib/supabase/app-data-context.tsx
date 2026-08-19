@@ -31,8 +31,10 @@ import {
   toggleSubtaskLog,
 } from "./subtasks";
 import { calculateScore } from "@/lib/scoring";
+import type { DailyScorePoint } from "@hayat-borsasi/shared";
 
 export type { TaskFrequency } from "./tasks";
+export type { DailyScorePoint } from "@hayat-borsasi/shared";
 
 export interface Category {
   id: string;
@@ -57,16 +59,6 @@ export interface Subtask {
   taskId: string;
   title: string;
   completed: boolean;
-}
-
-// Geçmişteki bir günün genel ve kategori bazlı skoru — Skor Trendi
-// grafiğinde ve kategori kutucuklarındaki yıllık katkı oranında kullanılır.
-// Güncel görev/kategori tanımları o günün işaretleme kayıtlarıyla eşleştirilerek
-// hesaplanır (bkz. previousDailyScore ile aynı yaklaşım).
-export interface DailyScorePoint {
-  date: string;
-  overallScore: number;
-  categoryScores: Record<string, number>;
 }
 
 interface AppDataContextValue {
