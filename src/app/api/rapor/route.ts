@@ -19,6 +19,21 @@ function createBearerClient(token: string) {
 // uzun sürebiliyor — bu olmadan yavaş bir yanıt 503/504 ile kesiliyordu.
 export const maxDuration = 60;
 
+// Mobil uygulama farklı bir origin'den (Expo dev server / native runtime)
+// istek attığı için CORS header'ları gerekiyor — web'in kendi origin'inden
+// yaptığı (çerezli) isteği etkilemez, tarayıcı zaten same-origin isteklerde
+// CORS header'ı aramaz. `*` güvenli: bu endpoint çereze değil Bearer token'a
+// güveniyor, tarayıcılar credentials:'include' isteklerde `*`'ı reddeder.
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 export async function POST(request: Request) {
   const authHeader = request.headers.get("authorization");
   const bearerToken = authHeader?.toLowerCase().startsWith("bearer ") ? authHeader.slice(7) : null;
@@ -29,7 +44,7 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser(bearerToken ?? undefined);
 
   if (!user) {
-    return NextResponse.json({ error: "Oturum bulunamadı." }, { status: 401 });
+    return NextResponse.json({ error: "Oturum bulunamadı." }, { status: 401, headers: CORS_HEADERS });
   }
 
   // AI Rapor bir Pro özelliği — istemci tarafındaki kilit sadece görsel,
@@ -37,14 +52,14 @@ export async function POST(request: Request) {
   // burada da ayrıca kontrol ediliyor.
   const { data: profile } = await supabase.from("profiles").select("is_pro").eq("id", user.id).maybeSingle();
   if (!profile?.is_pro) {
-    return NextResponse.json({ error: "Bu özellik Pro üyelere özel." }, { status: 403 });
+    return NextResponse.json({ error: "Bu özellik Pro üyelere özel." }, { status: 403, headers: CORS_HEADERS });
   }
 
   const body = (await request.json()) as ReportInput;
 
   try {
     const content = await generateAiReport(body);
-    return NextResponse.json({ content });
+    return NextResponse.json({ content }, { headers: CORS_HEADERS });
   } catch (error) {
     console.error("Rapor oluşturma hatası:", error);
 
@@ -59,6 +74,6 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500, headers: CORS_HEADERS });
   }
 }
