@@ -94,12 +94,25 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [dailyHistory, setDailyHistory] = useState<DailyScorePoint[]>([]);
 
   const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      await loadInner();
+    } catch (error) {
+      // Supabase çağrılarından biri hata fırlatırsa (ör. JWT saat kayması,
+      // ağ hatası) loading sonsuza kadar true kalmasın diye burada yakalıyoruz.
+      // Ekran boş/eski veriyle kalabilir ama en azından takılı kalmaz.
+      console.error("[AppDataProvider] load() başarısız oldu:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadInner = useCallback(async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
-      setLoading(false);
       return;
     }
 
@@ -198,7 +211,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setDailyHistory(nextDailyHistory);
     setDailyEntryId(entry.id);
     setDailyNoteState(entry.note_text);
-    setLoading(false);
   }, []);
 
   useEffect(() => {

@@ -57,13 +57,7 @@ export async function getOrCreateEntryForDate(
   userId: string,
   date: string
 ): Promise<DbDailyEntry> {
-  const { data: existing, error: selectError } = await supabase
-    .from("daily_entries")
-    .select("id, date, note_text")
-    .eq("user_id", userId)
-    .eq("date", date)
-    .maybeSingle();
-  if (selectError) throw selectError;
+  const existing = await fetchEntryForDate(supabase, userId, date);
   if (existing) return existing;
 
   const { data: created, error: insertError } = await supabase
@@ -71,8 +65,17 @@ export async function getOrCreateEntryForDate(
     .insert({ user_id: userId, date, note_text: "" })
     .select("id, date, note_text")
     .single();
-  if (insertError) throw insertError;
-  return created;
+  if (!insertError) return created;
+
+  // Aynı anda başka bir çağrı (ör. auth token yenilenirken tetiklenen ikinci
+  // bir veri yüklemesi) araya girip satırı zaten oluşturmuş olabilir — bu
+  // durumda insert benzersizlik kısıtına (user_id, date) çarpar. Hata
+  // fırlatmak yerine az önce oluşturulan satırı çekip onu döndürüyoruz.
+  if (insertError.code === "23505") {
+    const raceWinner = await fetchEntryForDate(supabase, userId, date);
+    if (raceWinner) return raceWinner;
+  }
+  throw insertError;
 }
 
 export async function getOrCreateTodayEntry(
