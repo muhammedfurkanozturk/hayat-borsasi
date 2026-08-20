@@ -7,6 +7,7 @@ import {
   deleteAllCategoriesForUser,
   deleteCategoryById,
   fetchCategories,
+  insertCategoriesFromTemplates,
   insertCategory,
   toIconKey,
   updateCategoryIcon,
@@ -70,6 +71,7 @@ interface AppDataContextValue {
   previousDailyScore: number;
   dailyHistory: DailyScorePoint[];
   addCategory: (name: string, icon: IconKey) => Promise<void>;
+  addCategoriesFromTemplates: (templates: { name: string; icon: IconKey }[]) => Promise<void>;
   removeCategory: (categoryId: string) => Promise<void>;
   renameCategory: (categoryId: string, name: string) => Promise<void>;
   changeCategoryIcon: (categoryId: string, icon: IconKey) => Promise<void>;
@@ -228,6 +230,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     const supabase = createClient();
     const created = await insertCategory(supabase, userId, trimmed, icon, categories.length);
     setCategories((prev) => [...prev, { id: created.id, name: created.name, icon: toIconKey(created.icon) }]);
+  }
+
+  async function addCategoriesFromTemplates(templates: { name: string; icon: IconKey }[]) {
+    if (!userId || templates.length === 0) return;
+
+    const supabase = createClient();
+    const created = await insertCategoriesFromTemplates(supabase, userId, templates, categories.length);
+    setCategories((prev) => [
+      ...prev,
+      ...created.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon) })),
+    ]);
   }
 
   async function removeCategory(categoryId: string) {
@@ -417,6 +430,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         previousDailyScore,
         dailyHistory,
         addCategory,
+        addCategoriesFromTemplates,
         removeCategory,
         renameCategory,
         changeCategoryIcon,

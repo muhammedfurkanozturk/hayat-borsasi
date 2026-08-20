@@ -37,6 +37,25 @@ export async function insertCategory(
   return data;
 }
 
+// Onboarding'de seçilen şablonları tek istekte kategoriye çevirir.
+export async function insertCategoriesFromTemplates(
+  supabase: SupabaseClient,
+  userId: string,
+  templates: { name: string; icon: IconKey }[],
+  startSortOrder: number
+): Promise<DbCategory[]> {
+  if (templates.length === 0) return [];
+  const rows = templates.map((t, index) => ({
+    user_id: userId,
+    name: t.name,
+    icon: t.icon,
+    sort_order: startSortOrder + index,
+  }));
+  const { data, error } = await supabase.from("categories").insert(rows).select("id, name, icon, sort_order");
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function updateCategoryName(supabase: SupabaseClient, categoryId: string, name: string) {
   const { error } = await supabase.from("categories").update({ name }).eq("id", categoryId);
   if (error) throw error;

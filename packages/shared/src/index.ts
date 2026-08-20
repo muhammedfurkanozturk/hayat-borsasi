@@ -3,6 +3,7 @@ export * from "./chartSeries";
 export * from "./format";
 export * from "./report";
 export * from "./types";
+export * from "./onboardingTemplates";
 export * from "./supabase/categories";
 export * from "./supabase/daily";
 export * from "./supabase/history";
