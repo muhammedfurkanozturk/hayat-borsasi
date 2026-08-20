@@ -1,44 +1,55 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useSyncExternalStore } from "react";
+import { Platform } from "react-native";
 import { Colors, type ThemeColor, type ThemeColors } from "@/constants/theme";
 
 export type Theme = "dark" | "light";
 
 const STORAGE_KEY = "hayat-borsasi-theme";
 
-interface ThemeContextValue {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-  colors: ThemeColors;
+// Context/Provider yerine harici (React ağacının dışında) bir store —
+// kökte iki iç içe özel Provider bileşeni (AuthProvider + bir tema
+// Provider'ı) olduğunda React Native/Expo Router'da tekrarlanabilir bir
+// "Cannot read properties of null (reading 'useState')" çöküşü oluşuyordu
+// (nedeni netleşmedi, isim çakışması değildi). Bu desen tamamen bertaraf
+// ediyor — hiçbir yerde ek bir Provider'a sarmaya gerek yok, useThemeMode()
+// doğrudan bu store'a abone oluyor.
+let currentTheme: Theme = "dark";
+const listeners = new Set<() => void>();
+
+// Web'in statik ön-render adımı (Node, window yok) bu modülü component
+// render'ından önce yükleyebiliyor — AsyncStorage'ın web shim'i orada
+// window.localStorage arayıp çöküyordu. Gerçek tarayıcıda/native'de
+// çalışırken bu koşul hep false.
+const isWebServer = Platform.OS === "web" && typeof window === "undefined";
+
+if (!isWebServer) {
+  AsyncStorage.getItem(STORAGE_KEY).then((stored) => {
+    if (stored === "dark" || stored === "light") {
+      currentTheme = stored;
+      listeners.forEach((listener) => listener());
+    }
+  });
 }
 
-const ThemeContext = createContext<ThemeContextValue | null>(null);
+function setTheme(next: Theme) {
+  currentTheme = next;
+  AsyncStorage.setItem(STORAGE_KEY, next);
+  listeners.forEach((listener) => listener());
+}
 
-// Web'deki gibi koyu tema varsayılan — kullanıcı elle değiştirmediyse
-// cihazın sistem temasını takip etmiyoruz, sabit koyu ile başlıyoruz.
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
 
-  useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((stored) => {
-      if (stored === "dark" || stored === "light") setThemeState(stored);
-    });
-  }, []);
-
-  function setTheme(next: Theme) {
-    setThemeState(next);
-    AsyncStorage.setItem(STORAGE_KEY, next);
-  }
-
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme, colors: Colors[theme] }}>{children}</ThemeContext.Provider>
-  );
+function getSnapshot() {
+  return currentTheme;
 }
 
 export function useThemeMode() {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useThemeMode, ThemeProvider içinde kullanılmalı");
-  return ctx;
+  const theme = useSyncExternalStore(subscribe, getSnapshot);
+  return { theme, setTheme, colors: Colors[theme] as ThemeColors };
 }
 
 export type { ThemeColor };

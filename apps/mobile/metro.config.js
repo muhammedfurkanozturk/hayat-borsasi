@@ -7,23 +7,17 @@ const workspaceRoot = path.resolve(projectRoot, "../..");
 const config = getDefaultConfig(projectRoot);
 
 // Monorepo desteği: workspace kökündeki (packages/shared gibi) sembolik
-// bağlı paketleri Metro'nun izlemesi için. Hiyerarşik arama AÇIK bırakılıyor
-// (Node'un normal node_modules yukarı-tırmanma davranışı) — bu, apps/mobile
-// dışına hoist edilmiş native paketlerin (örn. react-native-svg) kendi
-// içindeki relative import'larını (örn. "./fabric") sorunsuz çözmesi için
-// gerekli; disableHierarchicalLookup açıkken bu tür paketlerde
-// "Unable to resolve ./fabric" hatası çıkıyordu.
+// bağlı paketleri Metro'nun izlemesi için.
+//
+// Not: Daha önce burada react/react-dom/react-native'i apps/mobile'ın
+// kendi node_modules'una zorlayan bir extraNodeModules override'ı vardı.
+// Kaldırıldı — kök sebep, iki farklı React sürümünün (web 19.2.8, mobil
+// 19.1.0) aynı anda var olması ve npm'in hangisini nereye hoist ettiğine
+// bağlı olarak farklı bileşenlerin farklı kopyaları yüklemesiydi
+// ("Cannot read properties of null (reading 'useState')"). Kök
+// package.json'daki react/react-dom artık mobilinkiyle AYNI sürüme
+// (19.1.0) sabitlendi, böylece tüm repo'da tek bir React kopyası var —
+// hangi yoldan çözülürse çözülsün artık fark etmiyor.
 config.watchFolders = [workspaceRoot];
-
-// Bunun yerine SADECE React/React Native'in mutlaka bu uygulamanın kendi
-// node_modules'undaki (doğru sürüm) kopyasından gelmesini zorluyoruz —
-// aksi halde hiyerarşik arama, root'taki (web'in kullandığı, farklı
-// sürümdeki) kopyayı bulup "duplicate React instance" (useEffect null)
-// hatası üretiyordu.
-config.resolver.extraNodeModules = {
-  react: path.resolve(projectRoot, "node_modules/react"),
-  "react-dom": path.resolve(projectRoot, "node_modules/react-dom"),
-  "react-native": path.resolve(projectRoot, "node_modules/react-native"),
-};
 
 module.exports = config;

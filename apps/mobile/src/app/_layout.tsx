@@ -3,7 +3,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
-import { ThemeProvider, useThemeMode } from "@/lib/theme-context";
+import { useThemeMode } from "@/lib/theme-context";
 import { IntroAnimation } from "@/components/intro-animation";
 
 SplashScreen.preventAutoHideAsync();
@@ -38,10 +38,8 @@ function RootNavigator() {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <RootNavigator />
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <RootNavigator />
+    </AuthProvider>
   );
 }
