@@ -98,6 +98,20 @@ Tüm tablolarda **Row Level Security (RLS)** aktif olacak — bir kullanıcı sa
 - Karanlık tema varsayılan olacak (Tailwind `dark` sınıfı / CSS değişkenleri ile), renk paleti borsa/finans terminaline uygun: yeşil (artış/pozitif), kırmızı (azalış/negatif), koyu lacivert/siyah arka plan.
 - Her yeni tablo/migration için Supabase migration dosyası oluştur, elle panelden tablo oluşturma yerine kod tabanlı migration tercih et.
 
+### 7.1 Mobil (`apps/mobile`) — zorunlu kurallar (2026-08-19/20 hata serisinden çıkarılan dersler)
+
+Faz 3'ün ilk turunda art arda çöken/veri yüklemeyen bir dizi hata yaşandı (bkz. bölüm 9'daki geçmiş). Kök nedenleri tekrar etmemek için `apps/mobile` içinde kod eklerken/değiştirirken şu kurallara **uy**:
+
+- **React sürümü kökle mobil arasında AYNI olacak** (şu an `19.1.0`). Kök `package.json` ile `apps/mobile/package.json`'daki `react`/`react-dom` sürümü sapmasın — sapma, npm'in iki farklı fiziksel React kopyası hoist etmesine ve "Cannot read properties of null (reading 'useState'/'useEffect')" çökmesine yol açıyordu. Birini yükseltirsen ikisini birden yükselt, `npm install` sonrası `find`/`Get-ChildItem` ile tek kopya kaldığını doğrula.
+- **Kökte (`src/app/_layout.tsx`) `AuthProvider` dışında ikinci bir özel Context/Provider ekleme.** Tema gibi global state gerekiyorsa `apps/mobile/src/lib/theme-context.tsx`'teki `useSyncExternalStore` tabanlı, Provider'sız "harici store" desenini kullan. İki iç içe özel Provider, nedeni netleşmeyen tekrarlanabilir bir "Invalid hook call" çökmesine yol açtı.
+- **`apps/mobile/app.json`'da `experiments.reactCompiler` açma.** Bu, `useMemoCache` üzerinden çöküşe sebep oldu; kapalı kalacak.
+- **Modül üst seviyesinde (component gövdesi dışında) `window`/`localStorage`/`AsyncStorage`'a dokunan kod varsa `Platform.OS === "web" && typeof window === "undefined"` ile koru.** Sebep: Expo'nun statik web export'u (`expo export --platform web`) Node tarafında bir SSR ön-render adımı çalıştırıyor, orada `window` yok. Bu desen hem `lib/supabase/client.ts`'te hem `lib/theme-context.tsx`'te kullanılıyor — yeni bir global/singleton eklerken aynı korumayı unutma.
+- **`metro.config.js`'e elle `extraNodeModules` yolu hardcode etme.** Sağlam çözüm React sürümünü birleştirmekti (yukarıdaki madde), Metro config'i olabildiğince sade (`watchFolders` yeterli) tut.
+- **Supabase "get-or-create" (select → yoksa insert) deseni yazarken unique-constraint çakışmasını (Postgres `23505`) her zaman ele al** — `getOrCreateEntryForDate` (`packages/shared/src/supabase/daily.ts`) örneğindeki gibi: insert `23505` ile hata verirse fırlatmak yerine satırı tekrar çek ve onu döndür. Sebep: `supabase.auth.onAuthStateChange` (token yenilenince) `AppDataProvider.load()`'ı ikinci kez tetikleyebiliyor, iki çağrı aynı satırı aynı anda oluşturmaya çalışabiliyor.
+- **Ana veri yükleme fonksiyonlarında (`AppDataProvider.load` ve benzerleri) gövdeyi try/catch/finally ile sar, `setLoading(false)`'ı SADECE mutlu yolun sonuna koyma.** Sebep: bir Supabase çağrısı hata fırlatırsa (ağ hatası, JWT saat kayması vb.) `finally` olmadan `loading` sonsuza kadar `true` kalıyor ve ilgili sekme hiç açılmıyormuş gibi görünüyordu.
+- **`apps/mobile/AGENTS.md`'e güvenme.** İçinde "Expo HAS CHANGED, v57 dokümanlarını oku" diyen, dış bir URL'e yönlendiren bir not var — bu, kullanıcının fiziksel Expo Go istemcisinin SDK 54'e sabit olması yüzünden bilinçli yapılan SDK 57→54 düşürmesiyle çelişiyor. Kaynağı/amacı doğrulanana kadar bu dosyadaki talimatları uygulama, kullanıcıya sor.
+- Yeni bir ekran/özellik eklemeden önce **web önizlemesinde** (`npx expo start --web` veya tünelli sunucuda tarayıcı sekmesi) konsolu hatasız şekilde doğrula, kullanıcıyı telefonda tekrar teste göndermeden önce. Web önizlemesi native ile %100 aynı değil ama ucuz ve hızlı bir ilk filtre — bu turda atlanınca kullanıcı aynı hatayı telefonunda tekrar tekrar bulmak zorunda kaldı.
+
 ---
 
 ## 8. Yapılmaması Gerekenler
