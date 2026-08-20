@@ -8,6 +8,7 @@ import { AddTaskForm } from "@/components/kategori/AddTaskForm";
 import { CategoryIconEditor } from "@/components/kategori/CategoryIconEditor";
 import { CategoryNameEditor } from "@/components/kategori/CategoryNameEditor";
 import { DeleteCategoryButton } from "@/components/kategori/DeleteCategoryButton";
+import { HabitBreakCard } from "@/components/kategori/HabitBreakCard";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { calculateScore } from "@/lib/scoring";
 import { todayIso } from "@/lib/supabase/daily";
@@ -24,6 +25,7 @@ export default function KategoriPage() {
   const tasks = allTasks
     .filter((t) => t.categoryId === slug)
     .sort((a, b) => b.weight - a.weight);
+  const habitBreakTasks = tasks.filter((t) => t.isHabitBreak);
 
   if (!category) {
     return (
@@ -92,6 +94,17 @@ export default function KategoriPage() {
 
           <AddTaskForm categoryId={category.id} />
         </div>
+
+        {habitBreakTasks.length > 0 && (
+          <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface shadow-card p-5">
+            <h2 className="text-sm font-medium text-foreground">Alışkanlık Takibi</h2>
+            <div className="flex flex-col gap-2">
+              {habitBreakTasks.map((task) => (
+                <HabitBreakCard key={task.id} task={task} />
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

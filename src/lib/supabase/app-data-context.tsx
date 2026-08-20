@@ -53,6 +53,7 @@ export interface Task {
   completedAt: string | null;
   subtaskTotal: number;
   subtaskCompleted: number;
+  isHabitBreak: boolean;
 }
 
 export interface Subtask {
@@ -75,7 +76,13 @@ interface AppDataContextValue {
   removeCategory: (categoryId: string) => Promise<void>;
   renameCategory: (categoryId: string, name: string) => Promise<void>;
   changeCategoryIcon: (categoryId: string, icon: IconKey) => Promise<void>;
-  addTask: (categoryId: string, title: string, weight: number, frequency: TaskFrequency) => Promise<void>;
+  addTask: (
+    categoryId: string,
+    title: string,
+    weight: number,
+    frequency: TaskFrequency,
+    isHabitBreak?: boolean
+  ) => Promise<void>;
   removeTask: (taskId: string) => Promise<void>;
   toggleTask: (taskId: string) => Promise<void>;
   changeTaskFrequency: (taskId: string, frequency: TaskFrequency) => Promise<void>;
@@ -158,6 +165,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         completedAt: log?.completed_at ?? null,
         subtaskTotal: taskSubtasks.length,
         subtaskCompleted,
+        isHabitBreak: t.is_habit_break,
       };
     });
 
@@ -267,7 +275,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setCategories((prev) => prev.map((c) => (c.id === categoryId ? { ...c, icon } : c)));
   }
 
-  async function addTask(categoryId: string, title: string, weight: number, frequency: TaskFrequency) {
+  async function addTask(
+    categoryId: string,
+    title: string,
+    weight: number,
+    frequency: TaskFrequency,
+    isHabitBreak = false
+  ) {
     if (!userId) return;
     const trimmed = title.trim();
     if (!trimmed) return;
@@ -279,7 +293,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       categoryId,
       trimmed,
       Math.min(10, Math.max(1, weight)),
-      frequency
+      frequency,
+      isHabitBreak
     );
     setTasks((prev) => [
       ...prev,
@@ -293,6 +308,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         completedAt: null,
         subtaskTotal: 0,
         subtaskCompleted: 0,
+        isHabitBreak: created.is_habit_break,
       },
     ]);
   }

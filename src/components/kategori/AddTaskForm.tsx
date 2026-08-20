@@ -10,43 +10,54 @@ export function AddTaskForm({ categoryId }: { categoryId: string }) {
   const [title, setTitle] = useState("");
   const [weight, setWeight] = useState(5);
   const [frequency, setFrequency] = useState<TaskFrequency>("daily");
+  const [isHabitBreak, setIsHabitBreak] = useState(false);
   const [saving, setSaving] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
     setSaving(true);
-    await addTask(categoryId, title, weight, frequency);
+    await addTask(categoryId, title, weight, frequency, isHabitBreak);
     setTitle("");
     setWeight(5);
     setFrequency("daily");
+    setIsHabitBreak(false);
     setSaving(false);
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-3 rounded-xl border-2 border-muted/30 p-3 sm:flex-row sm:items-center"
-    >
-      <input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Yeni görev ekle..."
-        className="h-10 flex-1 rounded-lg border-2 border-muted/30 bg-surface px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-accent/50"
-      />
-      <FrequencyDropdown value={frequency} onChange={setFrequency} />
-      <div className="flex h-10 items-center gap-2 overflow-hidden rounded-lg border-2 border-muted/30 bg-background-elevated pl-3 pr-1 text-sm text-muted">
-        <span>Ağırlık</span>
-        <span className="h-5 w-px bg-muted/30" aria-hidden />
-        <WeightStepper value={weight} onChange={setWeight} />
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-xl border-2 border-muted/30 p-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Yeni görev ekle..."
+          className="h-10 flex-1 rounded-lg border-2 border-muted/30 bg-surface px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-accent/50"
+        />
+        <FrequencyDropdown value={frequency} onChange={setFrequency} />
+        <div className="flex h-10 items-center gap-2 overflow-hidden rounded-lg border-2 border-muted/30 bg-background-elevated pl-3 pr-1 text-sm text-muted">
+          <span>Ağırlık</span>
+          <span className="h-5 w-px bg-muted/30" aria-hidden />
+          <WeightStepper value={weight} onChange={setWeight} />
+        </div>
+        <button
+          type="submit"
+          disabled={saving}
+          className="btn h-10 rounded-lg bg-accent-soft px-5 text-sm font-semibold text-accent hover:-translate-y-px hover:bg-accent/25 disabled:pointer-events-none disabled:opacity-50"
+        >
+          {saving ? "Ekleniyor..." : "Görev Ekle"}
+        </button>
       </div>
-      <button
-        type="submit"
-        disabled={saving}
-        className="btn h-10 rounded-lg bg-accent-soft px-5 text-sm font-semibold text-accent hover:-translate-y-px hover:bg-accent/25 disabled:pointer-events-none disabled:opacity-50"
-      >
-        {saving ? "Ekleniyor..." : "Görev Ekle"}
-      </button>
+
+      <label className="flex w-fit cursor-pointer items-center gap-2 px-1 text-xs text-muted">
+        <input
+          type="checkbox"
+          checked={isHabitBreak}
+          onChange={(e) => setIsHabitBreak(e.target.checked)}
+          className="h-4 w-4 rounded border-2 border-muted/40 accent-[var(--accent)]"
+        />
+        Bu, bırakmaya çalıştığım bir alışkanlık (seri ve nüksetme takibi açılır)
+      </label>
     </form>
   );
 }

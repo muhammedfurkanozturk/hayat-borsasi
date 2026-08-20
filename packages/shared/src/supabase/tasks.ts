@@ -8,12 +8,13 @@ export interface DbTask {
   title: string;
   weight: number;
   frequency: TaskFrequency;
+  is_habit_break: boolean;
 }
 
 export async function fetchTasks(supabase: SupabaseClient): Promise<DbTask[]> {
   const { data, error } = await supabase
     .from("tasks")
-    .select("id, category_id, title, weight, frequency")
+    .select("id, category_id, title, weight, frequency, is_habit_break")
     .eq("is_active", true)
     .order("created_at", { ascending: true });
   if (error) throw error;
@@ -26,12 +27,13 @@ export async function insertTask(
   categoryId: string,
   title: string,
   weight: number,
-  frequency: TaskFrequency
+  frequency: TaskFrequency,
+  isHabitBreak = false
 ): Promise<DbTask> {
   const { data, error } = await supabase
     .from("tasks")
-    .insert({ user_id: userId, category_id: categoryId, title, weight, frequency })
-    .select("id, category_id, title, weight, frequency")
+    .insert({ user_id: userId, category_id: categoryId, title, weight, frequency, is_habit_break: isHabitBreak })
+    .select("id, category_id, title, weight, frequency, is_habit_break")
     .single();
   if (error) throw error;
   return data;
