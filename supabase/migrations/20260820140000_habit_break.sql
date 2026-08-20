@@ -38,6 +38,7 @@ create policy "habit_relapses_delete_own" on public.habit_relapses
   for delete using (auth.uid() = user_id);
 
 grant select, insert, delete on public.habit_relapses to authenticated;
+grant select, insert, delete on public.habit_relapses to service_role;
 
 -- Serbest biçimli motivasyon notları — bir bırakma görevine bağlı, zaman
 -- damgalı mini günlük.
@@ -64,5 +65,6 @@ create policy "habit_notes_delete_own" on public.habit_notes
   for delete using (auth.uid() = user_id);
 
 grant select, insert, delete on public.habit_notes to authenticated;
+grant select, insert, delete on public.habit_notes to service_role;
 
 notify pgrst, 'reload schema';

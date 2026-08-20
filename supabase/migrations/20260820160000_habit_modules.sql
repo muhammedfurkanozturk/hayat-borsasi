@@ -51,6 +51,7 @@ create policy "focus_sessions_delete_own" on public.focus_sessions
   for delete using (auth.uid() = user_id);
 
 grant select, insert, delete on public.focus_sessions to authenticated;
+grant select, insert, delete on public.focus_sessions to service_role;
 
 -- ---------------------------------------------------------------------------
 -- portfolio_transactions — Finans & Portföy (manuel alım/satım kaydı;
@@ -95,6 +96,7 @@ create policy "portfolio_transactions_delete_own" on public.portfolio_transactio
   for delete using (auth.uid() = user_id);
 
 grant select, insert, delete on public.portfolio_transactions to authenticated;
+grant select, insert, delete on public.portfolio_transactions to service_role;
 
 -- ---------------------------------------------------------------------------
 -- meal_logs — Sağlıklı Beslenme (fotoğraf saklanmaz, sadece Claude vision
@@ -130,6 +132,7 @@ create policy "meal_logs_delete_own" on public.meal_logs
   for delete using (auth.uid() = user_id);
 
 grant select, insert, delete on public.meal_logs to authenticated;
+grant select, insert, delete on public.meal_logs to service_role;
 
 -- ---------------------------------------------------------------------------
 -- outfit_logs — Stil & Giyim (bu kategori istisna: galeri fikri fotoğrafın
@@ -161,6 +164,7 @@ create policy "outfit_logs_delete_own" on public.outfit_logs
   for delete using (auth.uid() = user_id);
 
 grant select, insert, delete on public.outfit_logs to authenticated;
+grant select, insert, delete on public.outfit_logs to service_role;
 
 insert into storage.buckets (id, name, public)
   values ('outfit-photos', 'outfit-photos', false)
@@ -207,6 +211,7 @@ create policy "digital_focus_logs_delete_own" on public.digital_focus_logs
   for delete using (auth.uid() = user_id);
 
 grant select, insert, delete on public.digital_focus_logs to authenticated;
+grant select, insert, delete on public.digital_focus_logs to service_role;
 
 -- ---------------------------------------------------------------------------
 -- workout_sets — Spor & Vücut (set/tekrar/ağırlık; kamera tabanlı vücut/
@@ -239,5 +244,6 @@ create policy "workout_sets_delete_own" on public.workout_sets
   for delete using (auth.uid() = user_id);
 
 grant select, insert, delete on public.workout_sets to authenticated;
+grant select, insert, delete on public.workout_sets to service_role;
 
 notify pgrst, 'reload schema';
