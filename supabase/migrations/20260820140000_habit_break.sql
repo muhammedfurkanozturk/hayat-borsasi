@@ -33,12 +33,18 @@ create policy "habit_relapses_select_own" on public.habit_relapses
 drop policy if exists "habit_relapses_insert_own" on public.habit_relapses;
 create policy "habit_relapses_insert_own" on public.habit_relapses
   for insert with check (auth.uid() = user_id);
+-- upsertRelapse aynı güne ikinci kez basılırsa ON CONFLICT DO UPDATE
+-- kullanıyor (packages/shared/src/supabase/habits.ts) — bu yüzden UPDATE
+-- policy + grant de gerekiyor, sadece INSERT yeterli değil.
+drop policy if exists "habit_relapses_update_own" on public.habit_relapses;
+create policy "habit_relapses_update_own" on public.habit_relapses
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "habit_relapses_delete_own" on public.habit_relapses;
 create policy "habit_relapses_delete_own" on public.habit_relapses
   for delete using (auth.uid() = user_id);
 
-grant select, insert, delete on public.habit_relapses to authenticated;
-grant select, insert, delete on public.habit_relapses to service_role;
+grant select, insert, update, delete on public.habit_relapses to authenticated;
+grant select, insert, update, delete on public.habit_relapses to service_role;
 
 -- Serbest biçimli motivasyon notları — bir bırakma görevine bağlı, zaman
 -- damgalı mini günlük.
