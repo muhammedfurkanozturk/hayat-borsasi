@@ -32,15 +32,16 @@ import {
   toggleSubtaskLog,
 } from "./subtasks";
 import { calculateScore } from "@/lib/scoring";
-import type { DailyScorePoint } from "@hayat-borsasi/shared";
+import type { CategoryModuleType, DailyScorePoint } from "@hayat-borsasi/shared";
 
 export type { TaskFrequency } from "./tasks";
-export type { DailyScorePoint } from "@hayat-borsasi/shared";
+export type { CategoryModuleType, DailyScorePoint } from "@hayat-borsasi/shared";
 
 export interface Category {
   id: string;
   name: string;
   icon: IconKey;
+  moduleType: CategoryModuleType;
 }
 
 export interface Task {
@@ -72,7 +73,9 @@ interface AppDataContextValue {
   previousDailyScore: number;
   dailyHistory: DailyScorePoint[];
   addCategory: (name: string, icon: IconKey) => Promise<void>;
-  addCategoriesFromTemplates: (templates: { name: string; icon: IconKey }[]) => Promise<void>;
+  addCategoriesFromTemplates: (
+    templates: { name: string; icon: IconKey; moduleType: CategoryModuleType }[]
+  ) => Promise<void>;
   removeCategory: (categoryId: string) => Promise<void>;
   renameCategory: (categoryId: string, name: string) => Promise<void>;
   changeCategoryIcon: (categoryId: string, icon: IconKey) => Promise<void>;
@@ -213,7 +216,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     });
 
     setUserId(user.id);
-    setCategories(dbCategories.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon) })));
+    setCategories(
+      dbCategories.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon), moduleType: c.module_type }))
+    );
     setTasks(nextTasks);
     setSubtasks(nextSubtasks);
     setPreviousDailyScore(calculateScore(yesterdayWeighted));
@@ -237,17 +242,22 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
     const supabase = createClient();
     const created = await insertCategory(supabase, userId, trimmed, icon, categories.length);
-    setCategories((prev) => [...prev, { id: created.id, name: created.name, icon: toIconKey(created.icon) }]);
+    setCategories((prev) => [
+      ...prev,
+      { id: created.id, name: created.name, icon: toIconKey(created.icon), moduleType: created.module_type },
+    ]);
   }
 
-  async function addCategoriesFromTemplates(templates: { name: string; icon: IconKey }[]) {
+  async function addCategoriesFromTemplates(
+    templates: { name: string; icon: IconKey; moduleType: CategoryModuleType }[]
+  ) {
     if (!userId || templates.length === 0) return;
 
     const supabase = createClient();
     const created = await insertCategoriesFromTemplates(supabase, userId, templates, categories.length);
     setCategories((prev) => [
       ...prev,
-      ...created.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon) })),
+      ...created.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon), moduleType: c.module_type })),
     ]);
   }
 

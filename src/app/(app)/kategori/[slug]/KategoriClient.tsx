@@ -8,7 +8,13 @@ import { AddTaskForm } from "@/components/kategori/AddTaskForm";
 import { CategoryIconEditor } from "@/components/kategori/CategoryIconEditor";
 import { CategoryNameEditor } from "@/components/kategori/CategoryNameEditor";
 import { DeleteCategoryButton } from "@/components/kategori/DeleteCategoryButton";
+import { DigitalFocusPanel } from "@/components/kategori/DigitalFocusPanel";
 import { HabitBreakCard } from "@/components/kategori/HabitBreakCard";
+import { MealLogPanel } from "@/components/kategori/MealLogPanel";
+import { OutfitGallery } from "@/components/kategori/OutfitGallery";
+import { PomodoroTimer } from "@/components/kategori/PomodoroTimer";
+import { PortfolioPanel } from "@/components/kategori/PortfolioPanel";
+import { WorkoutLogPanel } from "@/components/kategori/WorkoutLogPanel";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { calculateScore } from "@/lib/scoring";
 import { todayIso } from "@/lib/supabase/daily";
@@ -105,6 +111,13 @@ export default function KategoriPage() {
             </div>
           </div>
         )}
+
+        {category.moduleType === "focus" && <PomodoroTimer categoryId={category.id} />}
+        {category.moduleType === "finance" && <PortfolioPanel categoryId={category.id} />}
+        {category.moduleType === "nutrition" && <MealLogPanel categoryId={category.id} />}
+        {category.moduleType === "style" && <OutfitGallery categoryId={category.id} />}
+        {category.moduleType === "digital" && <DigitalFocusPanel categoryId={category.id} />}
+        {category.moduleType === "sport" && <WorkoutLogPanel categoryId={category.id} />}
       </main>
     </div>
   );

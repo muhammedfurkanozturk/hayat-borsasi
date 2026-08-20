@@ -4,7 +4,7 @@
 -- durumu onu sonsuza kadar onboarding'e geri gönderir, bu da "hiçbir şey
 -- zorunlu değil" prensibiyle çelişir (bkz. CLAUDE.md bölüm 1).
 alter table public.profiles
-  add column onboarding_completed_at timestamptz;
+  add column if not exists onboarding_completed_at timestamptz;
 
 -- Var olan kullanıcılar geriye dönük olarak onboarding ekranına
 -- yönlendirilmesin.

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { CategoryModuleType } from "../onboardingTemplates";
 import { ICON_KEYS, type IconKey } from "../types";
 
 export interface DbCategory {
@@ -6,6 +7,7 @@ export interface DbCategory {
   name: string;
   icon: string;
   sort_order: number;
+  module_type: CategoryModuleType;
 }
 
 export function toIconKey(value: string): IconKey {
@@ -15,7 +17,7 @@ export function toIconKey(value: string): IconKey {
 export async function fetchCategories(supabase: SupabaseClient): Promise<DbCategory[]> {
   const { data, error } = await supabase
     .from("categories")
-    .select("id, name, icon, sort_order")
+    .select("id, name, icon, sort_order, module_type")
     .order("sort_order", { ascending: true });
   if (error) throw error;
   return data ?? [];
@@ -31,7 +33,7 @@ export async function insertCategory(
   const { data, error } = await supabase
     .from("categories")
     .insert({ user_id: userId, name, icon, sort_order: sortOrder })
-    .select("id, name, icon, sort_order")
+    .select("id, name, icon, sort_order, module_type")
     .single();
   if (error) throw error;
   return data;
@@ -41,7 +43,7 @@ export async function insertCategory(
 export async function insertCategoriesFromTemplates(
   supabase: SupabaseClient,
   userId: string,
-  templates: { name: string; icon: IconKey }[],
+  templates: { name: string; icon: IconKey; moduleType: CategoryModuleType }[],
   startSortOrder: number
 ): Promise<DbCategory[]> {
   if (templates.length === 0) return [];
@@ -50,8 +52,12 @@ export async function insertCategoriesFromTemplates(
     name: t.name,
     icon: t.icon,
     sort_order: startSortOrder + index,
+    module_type: t.moduleType,
   }));
-  const { data, error } = await supabase.from("categories").insert(rows).select("id, name, icon, sort_order");
+  const { data, error } = await supabase
+    .from("categories")
+    .insert(rows)
+    .select("id, name, icon, sort_order, module_type");
   if (error) throw error;
   return data ?? [];
 }

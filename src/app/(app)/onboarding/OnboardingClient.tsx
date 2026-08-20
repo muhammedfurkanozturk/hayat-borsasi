@@ -29,6 +29,7 @@ export default function OnboardingClient() {
     const chosen = ONBOARDING_TEMPLATES.filter((t) => selected.has(t.key)).map((t) => ({
       name: t.name,
       icon: t.icon,
+      moduleType: t.moduleType,
     }));
     await addCategoriesFromTemplates(chosen);
     await completeOnboarding();
