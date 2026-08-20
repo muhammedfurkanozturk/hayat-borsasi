@@ -15,7 +15,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { useTheme } from "@/hooks/use-theme";
+import { useElevatedStyle, useTheme } from "@/hooks/use-theme";
 import { ICON_KEY_TO_MCI } from "@/lib/icon-map";
 import { useAppData, type Task } from "@/lib/app-data-context";
 import { useProfile } from "@/lib/profile-context";
@@ -31,6 +31,7 @@ const FREQUENCY_OPTIONS: { value: TaskFrequency; label: string }[] = [
 
 export default function KategorilerScreen() {
   const theme = useTheme();
+  const elevated = useElevatedStyle();
   const { loading, categories, tasks, addCategory, removeCategory } = useAppData();
   const { isPro } = useProfile();
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -81,7 +82,7 @@ export default function KategorilerScreen() {
             Kategoriler
           </ThemedText>
 
-          <View style={[styles.addCategoryRow, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}>
+          <View style={[styles.addCategoryRow, { borderColor: theme.border, backgroundColor: theme.backgroundSelected }, elevated]}>
             <TextInput
               value={newCategoryName}
               onChangeText={setNewCategoryName}
@@ -194,6 +195,7 @@ export default function KategorilerScreen() {
 
 function CategoryDetail({ categoryId, tasks }: { categoryId: string; tasks: Task[] }) {
   const theme = useTheme();
+  const elevated = useElevatedStyle();
   const { addTask, removeTask } = useAppData();
   const [title, setTitle] = useState("");
   const [weight, setWeight] = useState(5);
@@ -243,7 +245,7 @@ function CategoryDetail({ categoryId, tasks }: { categoryId: string; tasks: Task
           onChangeText={setTitle}
           placeholder="Yeni görev ekle..."
           placeholderTextColor={theme.textSecondary}
-          style={[styles.addTaskInput, { borderColor: theme.border, color: theme.text }]}
+          style={[styles.addTaskInput, { borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundSelected }, elevated]}
           onSubmitEditing={handleAddTask}
         />
 

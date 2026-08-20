@@ -15,7 +15,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { useTheme } from "@/hooks/use-theme";
+import { useElevatedStyle, useTheme } from "@/hooks/use-theme";
 import { useAppData } from "@/lib/app-data-context";
 import { useAuth } from "@/lib/auth-context";
 import { useProfile } from "@/lib/profile-context";
@@ -23,6 +23,7 @@ import { useThemeMode } from "@/lib/theme-context";
 
 export default function AyarlarScreen() {
   const theme = useTheme();
+  const elevated = useElevatedStyle();
   const { theme: themeMode, setTheme: setThemeMode } = useThemeMode();
   const { signOut } = useAuth();
   const { resetAllCategories } = useAppData();
@@ -126,7 +127,7 @@ export default function AyarlarScreen() {
                   value={draftName}
                   onChangeText={setDraftName}
                   editable={!loading}
-                  style={[styles.input, { flex: 1, borderColor: theme.border, color: theme.text }]}
+                  style={[styles.input, { flex: 1, borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundSelected }, elevated]}
                 />
                 <Pressable
                   onPress={handleSaveName}
@@ -154,7 +155,7 @@ export default function AyarlarScreen() {
                   onChangeText={setDraftEmail}
                   autoCapitalize="none"
                   keyboardType="email-address"
-                  style={[styles.input, { borderColor: theme.border, color: theme.text }]}
+                  style={[styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundSelected }, elevated]}
                 />
                 <Pressable
                   onPress={handleSaveEmail}
@@ -183,7 +184,7 @@ export default function AyarlarScreen() {
                   placeholder="05XX XXX XX XX"
                   placeholderTextColor={theme.textSecondary}
                   keyboardType="phone-pad"
-                  style={[styles.input, { borderColor: theme.border, color: theme.text }]}
+                  style={[styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundSelected }, elevated]}
                 />
               </Field>
 
@@ -193,7 +194,7 @@ export default function AyarlarScreen() {
                   onChangeText={setDraftOccupation}
                   placeholder="örn. Yazılım Mühendisi"
                   placeholderTextColor={theme.textSecondary}
-                  style={[styles.input, { borderColor: theme.border, color: theme.text }]}
+                  style={[styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundSelected }, elevated]}
                 />
               </Field>
 
@@ -203,7 +204,7 @@ export default function AyarlarScreen() {
                   onChangeText={setDraftAddress}
                   placeholder="örn. Kadıköy, İstanbul"
                   placeholderTextColor={theme.textSecondary}
-                  style={[styles.input, { borderColor: theme.border, color: theme.text }]}
+                  style={[styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundSelected }, elevated]}
                 />
               </Field>
 

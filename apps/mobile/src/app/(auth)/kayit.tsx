@@ -1,19 +1,22 @@
 import { useState } from "react";
 import { Link } from "expo-router";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { useTheme } from "@/hooks/use-theme";
+import { useElevatedStyle, useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/lib/auth-context";
 
 export default function KayitScreen() {
   const theme = useTheme();
-  const { signUp } = useAuth();
+  const elevated = useElevatedStyle();
+  const { signUp, signInWithGoogle } = useAuth();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   async function handleSubmit() {
@@ -26,6 +29,14 @@ export default function KayitScreen() {
       return;
     }
     setSuccess(true);
+  }
+
+  async function handleGoogle() {
+    setError(null);
+    setGoogleLoading(true);
+    const { error } = await signInWithGoogle();
+    setGoogleLoading(false);
+    if (error) setError(error);
   }
 
   if (success) {
@@ -54,13 +65,36 @@ export default function KayitScreen() {
           Kendi kategorilerini, kendi kurallarınla yarat
         </ThemedText>
 
+        <Pressable
+          onPress={handleGoogle}
+          disabled={googleLoading}
+          style={[styles.googleButton, { opacity: googleLoading ? 0.7 : 1 }]}
+        >
+          {googleLoading ? (
+            <ActivityIndicator color="#1f1f1f" />
+          ) : (
+            <>
+              <MaterialCommunityIcons name="google" size={20} color="#1f1f1f" />
+              <ThemedText style={styles.googleButtonText}>Google ile devam et</ThemedText>
+            </>
+          )}
+        </Pressable>
+
+        <View style={styles.dividerRow}>
+          <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+          <ThemedText themeColor="textSecondary" style={styles.dividerText}>
+            veya
+          </ThemedText>
+          <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+        </View>
+
         <TextInput
           placeholder="İsim"
           placeholderTextColor={theme.textSecondary}
           value={displayName}
           onChangeText={setDisplayName}
           autoComplete="name"
-          style={[styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundElement }]}
+          style={[styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundSelected }, elevated]}
         />
         <TextInput
           placeholder="E-posta"
@@ -70,7 +104,7 @@ export default function KayitScreen() {
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
-          style={[styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundElement }]}
+          style={[styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundSelected }, elevated]}
         />
         <TextInput
           placeholder="Şifre"
@@ -79,7 +113,7 @@ export default function KayitScreen() {
           onChangeText={setPassword}
           secureTextEntry
           autoComplete="password-new"
-          style={[styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundElement }]}
+          style={[styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundSelected }, elevated]}
         />
 
         {error && (
@@ -119,6 +153,39 @@ const styles = StyleSheet.create({
   subtitle: {
     textAlign: "center",
     marginBottom: 16,
+  },
+  googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#dadce0",
+    borderRadius: 12,
+    paddingVertical: 14,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  googleButtonText: {
+    color: "#1f1f1f",
+    fontWeight: "600",
+  },
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginVertical: 4,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  dividerText: {
+    fontSize: 13,
   },
   input: {
     borderWidth: 1,

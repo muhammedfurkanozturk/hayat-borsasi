@@ -16,5 +16,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
+    // Google OAuth (expo-web-browser üzerinden) redirect URL'inde token yerine
+    // bir "code" döndürür, signInWithGoogle bunu exchangeCodeForSession ile
+    // değiştirir. E-posta/şifre girişini etkilemez.
+    flowType: "pkce",
   },
 });

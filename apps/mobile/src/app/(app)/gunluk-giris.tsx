@@ -14,11 +14,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { useTheme } from "@/hooks/use-theme";
+import { useElevatedStyle, useTheme } from "@/hooks/use-theme";
 import { useAppData } from "@/lib/app-data-context";
 
 export default function GunlukGirisScreen() {
   const theme = useTheme();
+  const elevated = useElevatedStyle();
   const { loading, dailyNote, setDailyNote } = useAppData();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
@@ -84,7 +85,7 @@ export default function GunlukGirisScreen() {
                   multiline
                   autoFocus
                   numberOfLines={7}
-                  style={[styles.textarea, { borderColor: theme.border, color: theme.text }]}
+                  style={[styles.textarea, { borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundSelected }, elevated]}
                 />
                 <View style={styles.editorActions}>
                   <Pressable onPress={() => setEditing(false)} style={styles.cancelButton}>

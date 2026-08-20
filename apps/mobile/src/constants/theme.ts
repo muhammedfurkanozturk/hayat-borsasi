@@ -37,6 +37,26 @@ export const Colors = {
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 export type ThemeColors = Record<ThemeColor, string>;
 
+// Input/kart gibi yüzeylere "derinlik" hissi veren gölge — koyu temada web'in
+// --shadow-card'ına karşılık gelir. Koyu zeminde gölge daha belirgin olmalı,
+// açık zeminde daha yumuşak; bu yüzden temaya göre iki ayrı değer var.
+export const Elevation = {
+  dark: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  light: {
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+} as const;
+
 export const Fonts = Platform.select({
   ios: {
     /** iOS `UIFontDescriptorSystemDesignDefault` */
