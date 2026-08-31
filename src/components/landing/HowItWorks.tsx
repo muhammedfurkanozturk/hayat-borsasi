@@ -2,7 +2,6 @@
 
 import { motion } from "motion/react";
 import { GlassPanel } from "@/components/ui/GlassPanel";
-import { SectionGlow } from "@/components/ui/SectionGlow";
 
 const HOWITWORKS_GRADIENT =
   "linear-gradient(135deg, rgba(99,102,241,0.28) 0%, rgba(10,209,235,0.15) 55%, rgba(10,209,235,0.08) 100%)";
@@ -28,7 +27,6 @@ export function HowItWorks() {
       id="nasil-calisir"
       className="relative flex min-h-screen w-full scroll-mt-24 items-center justify-center overflow-hidden px-4 py-24 sm:px-6"
     >
-      <SectionGlow rgb="99,102,241" />
       <div className="relative z-10 mx-auto w-full max-w-[1400px]">
         <GlassPanel gradient={HOWITWORKS_GRADIENT} className="min-h-[60vh]">
           <div className="flex h-full flex-col justify-center gap-8 p-6 sm:gap-10 sm:p-10 lg:p-16">
@@ -61,7 +59,7 @@ export function HowItWorks() {
                     y: -4,
                     transition: { type: "spring", stiffness: 300, damping: 20 },
                   }}
-                  className="flex flex-col gap-3 rounded-2xl border border-border-soft bg-surface/60 p-6 hover:border-accent/50 hover:bg-surface hover:shadow-[var(--glass-shadow)]"
+                  className="flex flex-col gap-3 rounded-lg border border-border-soft bg-surface/60 p-6 hover:border-accent/50 hover:bg-surface hover:shadow-[var(--glass-shadow)]"
                   style={{ transitionProperty: "border-color, background-color, box-shadow", transitionDuration: "var(--dur-base)" }}
                 >
                   <span className="font-mono text-sm text-accent">0{i + 1}</span>

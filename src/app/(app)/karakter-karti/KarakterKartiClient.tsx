@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { CharacterCard } from "@/components/karakter/CharacterCard";
 import { CharacterRadarChart } from "@/components/karakter/CharacterRadarChart";
+import { LeaderboardCard } from "@/components/karakter/LeaderboardCard";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { buildCalendarMonthSeries, buildCalendarYearSeries, makeScoreForDate, nonNullScores } from "@/lib/chartSeries";
@@ -57,10 +58,13 @@ export default function KarakterKartiPage() {
 
       <main className="flex w-full flex-1 flex-col gap-6 px-6 py-8 sm:px-10">
         {data.length > 0 && (
-          <CharacterCard name={displayName} initial={initial} overallScore={overallScore} stats={cardStats} />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <CharacterCard name={displayName} initial={initial} overallScore={overallScore} stats={cardStats} />
+            <LeaderboardCard currentUser={{ name: displayName, initial, score: overallScore }} />
+          </div>
         )}
 
-        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface shadow-card p-5">
+        <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5">
           <SegmentedControl
             className="self-start"
             options={periods.map((p) => ({ value: p, label: p }))}

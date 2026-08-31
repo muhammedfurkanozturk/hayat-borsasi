@@ -22,6 +22,29 @@ export function nonNullScores(points: ChartPoint[]): number[] {
   return points.map((p) => p.score).filter((s): s is number => s !== null);
 }
 
+// Skor (0-100) dışındaki ham günlük toplamlar için (kalori, antrenman
+// hacmi vb.) — buildDailySeries ile aynı etiket biçimini kullanır, sadece
+// scoreForDate yerine tarihe göre gruplanmış toplamları alır. Kaydı olmayan
+// günler 0 (null değil) — bar/alan grafiğinde boşluk yerine düz çizgi olsun
+// diye.
+export function buildDailySumSeries<T extends { date: string }>(
+  rows: T[],
+  days: number,
+  valueOf: (row: T) => number
+): ChartPoint[] {
+  const sums = new Map<string, number>();
+  for (const row of rows) {
+    sums.set(row.date, (sums.get(row.date) ?? 0) + valueOf(row));
+  }
+  const points: ChartPoint[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    points.push({ label: `${d.getDate()} ${monthNamesShort[d.getMonth()]}`, score: sums.get(toIsoDate(d)) ?? 0 });
+  }
+  return points;
+}
+
 export const monthNamesShort = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
 
 function pad(n: number) {

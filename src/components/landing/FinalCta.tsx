@@ -3,7 +3,7 @@ import { MotionCtaLink } from "@/components/ui/MotionCtaLink";
 export function FinalCta() {
   return (
     <section className="relative mx-auto w-full max-w-6xl px-6 py-16 sm:px-10">
-      <div className="relative z-10 flex flex-col items-center gap-5 rounded-3xl border border-border-soft bg-surface/60 px-6 py-14 text-center backdrop-blur-sm">
+      <div className="relative z-10 flex flex-col items-center gap-5 rounded-lg border border-border-soft bg-surface/60 px-6 py-14 text-center backdrop-blur-sm">
         <h2 className="max-w-lg text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           Hayatının endeksi bugün başlıyor.
         </h2>

@@ -1,3 +1,5 @@
+import { CookieConsent } from "@/components/landing/CookieConsent";
+import { FeatureMarquee } from "@/components/landing/FeatureMarquee";
 import { FeatureSection } from "@/components/landing/FeatureSection";
 import { FinalCta } from "@/components/landing/FinalCta";
 import { Hero } from "@/components/landing/Hero";
@@ -28,7 +30,6 @@ export default function LandingPage() {
         image="/landing/kategori-gorev.webp"
         imageAlt="Kategori ve görev kartlarını gösteren uygulama arayüzü"
         gradient={KATEGORI_GRADIENT}
-        glow="139,92,246"
       />
 
       <FeatureSection
@@ -39,7 +40,6 @@ export default function LandingPage() {
         image="/landing/endeks.webp"
         imageAlt="Kendi gelişimini takip eden bir kullanıcı"
         gradient={ENDEKS_GRADIENT}
-        glow="245,180,0"
         reverse
       />
 
@@ -51,12 +51,13 @@ export default function LandingPage() {
         image="/landing/karakter-karti.webp"
         imageAlt="Kategorilere göre hesaplanan karakter kartı arayüzü"
         gradient={KARAKTER_GRADIENT}
-        glow="54,211,159"
       />
 
       <HowItWorks />
+      <FeatureMarquee />
       <FinalCta />
       <LandingFooter />
+      <CookieConsent />
     </div>
   );
 }

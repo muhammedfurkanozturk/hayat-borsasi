@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { CheckMark } from "@/components/CheckMark";
 import { FrequencyDropdown } from "@/components/FrequencyDropdown";
+import { WeightStepper } from "@/components/WeightStepper";
 import { ChevronDownIcon, PlusIcon, TrashIcon } from "@/components/icons";
 import { useAppData, type Task } from "@/lib/supabase/app-data-context";
 
@@ -58,15 +59,33 @@ export function TaskRow({
   categoryName,
   onDelete,
   allowManageSubtasks = false,
+  canMoveUp,
+  canMoveDown,
 }: {
   task: Task;
   categoryName?: string;
   onDelete?: () => void;
   allowManageSubtasks?: boolean;
+  // Kategori sayfasındaki "Görevler" listesinde yukarı/aşağı taşıma
+  // butonları — sadece ikisinden biri geçilirse gösterilir (Dashboard'daki
+  // kullanımda hiç geçilmiyor, orada bu kontroller yok). true/false, o
+  // yöndeki komşu görev olup olmadığını (kenarda mı) belirtir.
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
 }) {
-  const { subtasks, toggleTask, toggleSubtask, removeSubtask, changeTaskFrequency } = useAppData();
+  const {
+    subtasks,
+    toggleTask,
+    toggleSubtask,
+    removeSubtask,
+    changeTaskFrequency,
+    changeTaskWeight,
+    moveTaskUp,
+    moveTaskDown,
+  } = useAppData();
   const [expanded, setExpanded] = useState(false);
   const taskSubtasks = subtasks.filter((s) => s.taskId === task.id);
+  const showReorder = allowManageSubtasks && (canMoveUp !== undefined || canMoveDown !== undefined);
 
   return (
     <div
@@ -93,7 +112,7 @@ export function TaskRow({
           }}
           aria-pressed={task.completed}
           aria-label={`${task.title} görevini tamamla`}
-          className="btn rounded-md"
+          className="btn group rounded-md"
         >
           <CheckMark checked={task.completed} size={30} />
         </button>
@@ -121,9 +140,15 @@ export function TaskRow({
               onChange={(frequency) => changeTaskFrequency(task.id, frequency)}
             />
           )}
-          <span className="flex h-10 items-center rounded-lg border-2 border-muted/30 bg-background-elevated px-3 font-mono text-sm tabular-nums text-muted">
-            ×{task.weight}
-          </span>
+          {allowManageSubtasks ? (
+            <div className="flex h-10 items-center overflow-hidden rounded-lg border-2 border-muted/30 bg-background-elevated">
+              <WeightStepper value={task.weight} onChange={(weight) => changeTaskWeight(task.id, weight)} />
+            </div>
+          ) : (
+            <span className="flex h-10 items-center rounded-lg border-2 border-muted/30 bg-background-elevated px-3 font-mono text-sm tabular-nums text-muted">
+              ×{task.weight}
+            </span>
+          )}
           {onDelete && (
             <button
               type="button"
@@ -147,6 +172,28 @@ export function TaskRow({
               style={{ transitionDuration: "var(--dur-base)", transitionTimingFunction: "var(--ease-snap)" }}
             />
           </button>
+          {showReorder && (
+            <div className="flex h-10 w-8 shrink-0 flex-col overflow-hidden rounded-lg border-2 border-muted/30 bg-background-elevated">
+              <button
+                type="button"
+                onClick={() => moveTaskUp(task.id)}
+                disabled={!canMoveUp}
+                aria-label={`${task.title} görevini yukarı taşı`}
+                className="btn flex flex-1 items-center justify-center text-muted hover:bg-surface-hover hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+              >
+                <ChevronDownIcon width={12} height={12} className="rotate-180" />
+              </button>
+              <button
+                type="button"
+                onClick={() => moveTaskDown(task.id)}
+                disabled={!canMoveDown}
+                aria-label={`${task.title} görevini aşağı taşı`}
+                className="btn flex flex-1 items-center justify-center border-t border-border-soft text-muted hover:bg-surface-hover hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+              >
+                <ChevronDownIcon width={12} height={12} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -170,7 +217,7 @@ export function TaskRow({
 
               {taskSubtasks.map((sub) => (
                 <div key={sub.id} className="flex items-center gap-3 rounded-md px-1 py-2">
-                  <button type="button" onClick={() => toggleSubtask(sub.id)} aria-pressed={sub.completed} className="btn rounded-md">
+                  <button type="button" onClick={() => toggleSubtask(sub.id)} aria-pressed={sub.completed} className="btn group rounded-md">
                     <CheckMark checked={sub.completed} size={24} />
                   </button>
                   <span

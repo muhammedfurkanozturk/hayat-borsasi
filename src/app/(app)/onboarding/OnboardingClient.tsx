@@ -64,14 +64,14 @@ export default function OnboardingClient() {
                 type="button"
                 onClick={() => toggle(template.key)}
                 aria-pressed={isSelected}
-                className={`btn flex flex-col items-start gap-3 rounded-2xl border-2 p-5 text-left shadow-sm transition-colors ${
+                className={`btn flex flex-col items-start gap-3 rounded-lg border-2 p-5 text-left shadow-sm transition-colors ${
                   isSelected
                     ? "border-accent/60 bg-accent-soft"
                     : "border-border-soft bg-background-elevated hover:border-border"
                 }`}
               >
                 <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                  className={`flex h-10 w-10 items-center justify-center rounded-lg ${
                     isSelected ? "bg-accent/25 text-accent" : "bg-surface text-muted"
                   }`}
                 >
@@ -99,7 +99,7 @@ export default function OnboardingClient() {
             type="button"
             onClick={handleContinue}
             disabled={saving}
-            className="btn w-full rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-50 sm:w-auto"
+            className="btn w-full rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-50 sm:w-auto"
           >
             {saving
               ? "Kaydediliyor..."

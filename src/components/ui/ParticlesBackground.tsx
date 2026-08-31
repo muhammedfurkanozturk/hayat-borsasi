@@ -99,12 +99,14 @@ interface Particle {
 // aradaki karelerde hareketin sabit hızla sürdüğünü ayırt edemiyor.
 const NOISE_UPDATE_EVERY = 4;
 
-// Uygulamanın accent rengiyle eşleşen, temaya göre otomatik uyan, canlı bir
-// kayan parçacık dokusu. Landing sayfasında TEK bir kez, sayfanın en dışında
-// render edilir ve `position: fixed` ile ekrana sabitlenir — her bölümün
-// kendi ayrı canvas'ı OLMAZ, aksi halde bölüm sınırlarında parçacık akışı
-// kesilip görünmez bir "dikiş" oluşuyordu. Sabit tek katman sayesinde
-// bölümler üstünden kaydıkça parçacıklar kesintisiz, aynı akışta devam eder.
+// 2026-08-25: kullanıcı isteğiyle geri getirildi (Terminal Ledger turunda
+// "floating ambient decoration" gerekçesiyle kaldırılmıştı) — GlassPanel'in
+// yeniden eklenen backdrop-blur'uyla birlikte "camlı panel + arkada akan
+// parçacıklar" hissini tamamlıyor. Eski hali --accent'i HARDCODE ediyordu
+// (koyu temada eski camgöbeği #0ad1eb, artık geçersiz) — burada mevcut
+// --accent/--accent (açık tema) token değerleriyle güncellendi, tema
+// değişince her karede document.documentElement'ten okunuyor (ucuz, sadece
+// bir attribute kontrolü).
 export function ParticlesBackground({
   particleCount = 170,
   className = "",
@@ -117,6 +119,11 @@ export function ParticlesBackground({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    // Sürekli, hiç durmayan bir hareket — prefers-reduced-motion'da hiç
+    // başlatılmıyor (globals.css'teki genel CSS transition/animation
+    // sıfırlaması, canvas'a elle çizilen bu animasyonu etkilemiyor, burada
+    // ayrıca kontrol edilmesi gerekiyordu).
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
@@ -148,7 +155,9 @@ export function ParticlesBackground({
 
     function animate() {
       const isLight = document.documentElement.getAttribute("data-theme") === "light";
-      const [r, g, b] = isLight ? [0, 113, 227] : [10, 209, 235];
+      // DESIGN.md'deki güncel --accent token'ları (bakır/koyu, mavi/açık) —
+      // eski camgöbeği yerine.
+      const [r, g, b] = isLight ? [0, 113, 227] : [217, 113, 58];
       const t = frame * 0.0027;
 
       ctx!.clearRect(0, 0, canvas!.width, canvas!.height);

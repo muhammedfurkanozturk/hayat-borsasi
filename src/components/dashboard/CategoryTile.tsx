@@ -14,7 +14,7 @@ export function CategoryTile({ category }: { category: CategoryTileData }) {
   return (
     <Link
       href={`/kategori/${category.id}`}
-      className="card-lift flex min-w-0 flex-col items-stretch gap-2.5 rounded-xl border border-border-soft bg-surface/60 p-2.5 shadow-card hover:border-accent/30 hover:bg-surface sm:flex-row"
+      className="card-lift flex min-w-0 flex-col items-stretch gap-2.5 rounded-lg border-2 border-border bg-surface p-2.5 shadow-card hover:border-accent/70 hover:bg-surface-hover sm:flex-row"
     >
       <div className="flex min-w-0 items-stretch gap-2.5 sm:flex-1">
         <div className="flex w-14 shrink-0 items-center justify-center rounded-lg border border-border-soft bg-accent-soft text-accent sm:w-16">
@@ -29,13 +29,21 @@ export function CategoryTile({ category }: { category: CategoryTileData }) {
       </div>
 
       <div className="flex flex-col divide-y divide-border-soft rounded-lg border border-border-soft sm:flex-1">
-        <div className="flex flex-1 items-center justify-between gap-2 px-4 py-4">
-          <span className="text-xs font-medium uppercase tracking-wider text-muted">
-            Günlük Kazanılan Puan
-          </span>
-          <span className="font-mono text-2xl font-semibold tabular-nums text-foreground">
-            {Math.round(category.score)}
-          </span>
+        <div className="flex flex-1 flex-col justify-center gap-2 px-4 py-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-medium uppercase tracking-wider text-muted">
+              Günlük Kazanılan Puan
+            </span>
+            <span className="font-mono text-2xl font-semibold tabular-nums text-foreground">
+              {Math.round(category.score)}
+            </span>
+          </div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-border-soft">
+            <div
+              className="h-full rounded-full bg-accent"
+              style={{ width: `${Math.min(100, Math.max(0, category.score))}%` }}
+            />
+          </div>
         </div>
         <div className="flex flex-1 items-center justify-between gap-2 px-4 py-4">
           <span className="text-xs font-medium uppercase tracking-wider text-muted">

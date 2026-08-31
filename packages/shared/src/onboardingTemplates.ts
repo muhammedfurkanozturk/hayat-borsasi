@@ -3,10 +3,19 @@ import type { IconKey } from "./types";
 // Bir kategorinin hangi özel modülü açtığını belirler — sadece bu
 // şablonlardan oluşturulan kategorilere set edilir, kullanıcının kendi
 // oluşturduğu kategoriler her zaman "standard" kalır (bkz. bölüm 1:
-// dayatma yok). "aliskanlik" (habit-break) burada yok çünkü o modül
-// kategori değil GÖREV bazlı (`tasks.is_habit_break`) — herhangi bir
-// kategorideki herhangi bir göreve uygulanabilir.
-export type CategoryModuleType = "standard" | "focus" | "finance" | "nutrition" | "style" | "digital" | "sport";
+// dayatma yok). "habit" — Kötü Alışkanlıklar — kategori bazlı bir modül:
+// bu kategoriye eklenen her görev otomatik olarak bir "kötü alışkanlık"
+// (is_habit_break=true) sayılır, bkz. HabitTrackerPanel.
+export type CategoryModuleType =
+  | "standard"
+  | "focus"
+  | "finance"
+  | "nutrition"
+  | "style"
+  | "digital"
+  | "sport"
+  | "habit"
+  | "travel";
 
 export interface OnboardingTemplate {
   key: string;
@@ -57,16 +66,23 @@ export const ONBOARDING_TEMPLATES: OnboardingTemplate[] = [
   },
   {
     key: "dijital",
-    name: "Dijital Gelişim",
-    icon: "code",
-    description: "Üretken sitelerde geçirdiğin süreyi kendin gir ve takip et.",
+    name: "Yol Haritam",
+    icon: "compass",
+    description: "Bir alan seç (örn. Frontend), dallanan yol haritasında konuları tamamladıkça işaretle.",
     moduleType: "digital",
   },
   {
     key: "aliskanlik",
-    name: "Alışkanlık Bırakma",
+    name: "Kötü Alışkanlıklar",
     icon: "flame",
-    description: "Bir görev eklerken 'bırakmaya çalıştığım alışkanlık' işaretle — seri ve nüksetme takibi açılır.",
-    moduleType: "standard",
+    description: "Bırakmaya çalıştığın alışkanlıkları ekle, her gün kullandın mı kullanmadın mı işaretle — seri takibi açılır.",
+    moduleType: "habit",
+  },
+  {
+    key: "seyahat",
+    name: "Seyahat",
+    icon: "plane",
+    description: "Gezdiğin ülke/il/ilçeleri dünya haritasında işaretle, kendi 'Seyahat Pasaportu'nu oluştur.",
+    moduleType: "travel",
   },
 ];

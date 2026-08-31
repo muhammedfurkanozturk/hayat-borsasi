@@ -52,7 +52,7 @@ export function Hero() {
             </motion.div>
 
             <div
-              className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border-soft lg:w-[52%]"
+              className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border border-border-soft lg:w-[52%]"
               style={{ background: HERO_GRADIENT }}
             >
               <Image

@@ -1,3 +1,8 @@
+// group-hover kullanıyoruz (kendi hover'ı değil) çünkü bu her zaman bir
+// <button>'ın içine render ediliyor ve tıklama olayı o butona bağlı — bu
+// span'in kendi :hover'ı olsaydı, dokunmatik tarayıcılarda ilk dokunuş
+// sadece hover'ı tetikleyip click'i yutuyordu (iki dokunuş gerektiren
+// klasik WebKit tuzağı). Kullanan butonun `group` class'ı olmalı.
 export function CheckMark({ checked, size = 20 }: { checked: boolean; size?: number }) {
   return (
     <span
@@ -11,7 +16,7 @@ export function CheckMark({ checked, size = 20 }: { checked: boolean; size?: num
       className={`flex shrink-0 items-center justify-center rounded-md border-2 ${
         checked
           ? "check-pop border-positive bg-positive-soft text-positive"
-          : "border-muted bg-background-elevated text-transparent hover:scale-105 hover:border-foreground"
+          : "border-muted bg-background-elevated text-transparent group-hover:scale-105 group-hover:border-foreground"
       }`}
     >
       <svg

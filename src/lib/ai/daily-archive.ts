@@ -2,6 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { generateAiReport } from "@/lib/ai/claude";
 import { calculateScore, type WeightedTask } from "@/lib/scoring";
+import { parseStructuredReport } from "@hayat-borsasi/shared";
 
 interface TaskRow {
   id: string;
@@ -166,6 +167,10 @@ export async function archiveDailyReportsFor(admin: SupabaseClient, date: string
         totalWeight,
         dailyNote: (entry.note_text as string) ?? "",
       });
+
+      if (!parseStructuredReport(content)) {
+        console.warn(`AI Rapor (${userId}, ${date}) beklenen JSON şemasına uymuyor, düz metin olarak arşivlenecek.`);
+      }
 
       const { error: insertError } = await admin.from("ai_reports").insert({
         user_id: userId,

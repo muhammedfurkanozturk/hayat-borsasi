@@ -1,26 +1,39 @@
 @import "tailwindcss";
 
 :root {
-  --background: #040506;
-  --background-elevated: #0f1115;
-  --surface: #0a0c0f;
-  --surface-hover: #15191e;
-  --border: #303d50;
-  --border-soft: #1a212b;
-  --foreground: #e5e7eb;
-  --muted: #9ba0ab;
-  --muted-soft: #9ba0ab;
-  --accent: #0ad1eb;
-  --accent-soft: #0ad1eb1a;
-  /* Dolu (solid) accent zemin üstündeki yazı — parlak camgöbeği üstünde
-     koyu, sabit kontrast için arka plan tonunu kullanıyoruz. */
-  --accent-foreground: #04191d;
+  /* DESIGN.md — koyu zemin neredeyse aynı ruhta kalıyor (nötr neredeyse-
+     siyah, lacivert değil), asıl kimlik değişikliği vurgu renginde.
+     İlk revizyonda surface/border zemine göre çok yakındı, kutucuklar
+     seçilmiyordu — kullanıcı testinde bulunup burada belirgin şekilde
+     ayrıştırıldı (bkz. DESIGN.md "Kutucuk kontrastı" notu). */
+  --background: #08090b;
+  --background-elevated: #1e1f24;
+  --surface: #17181d;
+  --surface-hover: #232429;
+  --border: #4a4b52;
+  --border-soft: #28292e;
+  /* Soğuk mavi-gri yerine sıcak, ticker-kağıdı tonları. */
+  --foreground: #e9e6e0;
+  --muted: #948f86;
+  --muted-soft: #948f86;
+  /* Birincil vurgu: bakır/turuncu-kızıl — 1867'nin mekanik ticker-tape
+     makinelerinin pirinç/bakır mekanizmasından ilham (DESIGN.md). Eski
+     camgöbeği (#0ad1eb) hem "koyu zemin + tek neon vurgu" klişesinin
+     imzasıydı hem de --positive'in yeşiliyle aynı soğuk aileden geliyordu. */
+  --accent: #d9713a;
+  /* 2026-08-26: koyu temada ~10% opaklık (eski 1a), aynı yüzde açık temadaki
+     beyaz zemine göre çok daha soluk/donuk okunuyordu (aynı opaklık, koyu
+     zeminde göz tarafından çok daha az algılanıyor) — kategori ikon
+     kutucukları "kayboluyor" gibi duruyordu. ~20%'ye çıkarıldı, sadece koyu
+     temada (açık tema zaten iyi duruyordu, dokunulmadı). */
+  --accent-soft: #d9713a33;
+  --accent-foreground: #1a0d04;
   --positive: #36d39f;
-  --positive-soft: #36d39f1a;
+  --positive-soft: #36d39f33;
   --negative: #f43e5c;
-  --negative-soft: #f43e5c1a;
+  --negative-soft: #f43e5c33;
   --pro: #f5b400;
-  --pro-soft: #f5b40024;
+  --pro-soft: #f5b4002e;
   /* Sabit — hangi temada olursak olalım, altın Pro zemininin üstündeki yazı
      hep aynı koyu tonda kalsın (background değişkenine bağlı olursa açık
      temada neredeyse beyaz olup okunmaz hale gelirdi). */
@@ -28,12 +41,12 @@
   /* Koyu temada düz siyah gölge (Tailwind'in varsayılanı) neredeyse hiç
      görünmüyordu — üstte hafif bir ışık çizgisi + altta yumuşak bir gölgeyle
      kartın zeminden "kalktığı" hissini veriyoruz. */
-  --shadow-card: 0 1px 0 0 rgba(255, 255, 255, 0.07) inset, 0 10px 24px -8px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 1px 0 0 rgba(255, 255, 255, 0.13) inset, 0 10px 24px -8px rgba(0, 0, 0, 0.6);
   /* Kart/tile hover'ında zeminden biraz daha "kalkma" hissi için. */
   --shadow-card-hover: 0 1px 0 0 rgba(255, 255, 255, 0.09) inset, 0 18px 34px -10px rgba(0, 0, 0, 0.65);
   --focus-ring: 0 0 0 2px var(--background), 0 0 0 4px var(--accent);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
 
   /* Borsa terminali hissine uygun, "confident" bir varış eğrisi — tüm
      buton/kart/panel geçişleri bu tek eğriyi paylaşır. Süreler mesafe ve
@@ -96,8 +109,8 @@
   --color-pro: var(--pro);
   --color-pro-soft: var(--pro-soft);
   --color-pro-foreground: var(--pro-foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
 }
 
 html {
@@ -129,6 +142,7 @@ html {
 }
 
 .card-lift {
+  cursor: pointer;
   transition-property: transform, border-color, background-color, box-shadow;
   transition-duration: var(--dur-base);
   transition-timing-function: var(--ease-snap);
@@ -137,8 +151,11 @@ html {
   transform: translateY(-3px);
   box-shadow: var(--shadow-card-hover);
 }
+/* Kullanıcı testinde "tıklama hissi yok" geri bildirimi geldi — sadece
+   translateY yeterince belirgin değildi, .btn'deki gibi bir scale-down da
+   ekleyerek gerçek bir "bas" tepkisi veriyoruz. */
 .card-lift:active {
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(0.98);
   transition-duration: var(--dur-fast);
 }
 
@@ -210,13 +227,60 @@ html {
   transition: none !important;
 }
 
+/* Tarifler — KitchenAid'den ilham (piyasa araştırması) "Print" butonu.
+   Klasik yazdırma-izolasyonu tekniği: sayfadaki her şeyi gizle, sadece
+   .printable-recipe (ve içindekileri) görünür bırak, sonra onu sayfanın
+   tamamını kaplayacak şekilde konumla — DOM'da ne kadar derinde olursa
+   olsun (sidebar/header/modal fark etmez) çalışır. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .printable-recipe,
+  .printable-recipe * {
+    visibility: visible;
+  }
+  .printable-recipe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+}
+
+/* Animasyonlu tema geçişi (View Transitions API) — MagicUI'nin Animated
+   Theme Toggler'ından ilham, bkz. src/lib/animated-theme-transition.ts.
+   Tarayıcının varsayılan çapraz-solma animasyonu kapatılıyor, yerine JS'in
+   ::view-transition-new(root)'a uyguladığı clip-path dairesel açılma
+   animasyonu gösteriliyor. İkinci kural, geçiş başlar başlamaz (JS'in
+   .animate() çağrısı devreye girene kadarki kısa an) yeni temanın
+   kırpılmamış görünmesini (özellikle Firefox'ta fark edilen bir yarış
+   durumu) CSS ile "iğneleyerek" önlüyor. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+:root[data-theme-vt="active"]::view-transition-new(root) {
+  clip-path: var(--theme-vt-clip-from);
+}
+
+/* React Flow (Yol Haritam) — kütüphanenin kendi resmi CSS değişkenleriyle
+   koyu/açık temamıza uyarlanıyor, selector override değil. */
+.roadmap-flow {
+  --xy-background-color: transparent;
+  --xy-controls-button-background-color: var(--background-elevated);
+  --xy-controls-button-background-color-hover: var(--surface-hover);
+  --xy-controls-button-border-color: var(--border);
+  --xy-controls-button-color: var(--muted);
+  --xy-controls-button-color-hover: var(--foreground);
+  --xy-edge-stroke-default: var(--border);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
-  background-image:
-    radial-gradient(circle at 15% 0%, rgba(10, 209, 235, 0.08) 0%, transparent 45%),
-    radial-gradient(circle at 85% 8%, rgba(251, 189, 35, 0.05) 0%, transparent 40%);
 }
 
 [data-theme="light"] body {
@@ -251,6 +315,69 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Karakter Kartı — sadece Elmas tier'de kullanılan, yavaş ve nadir bir
+   parlama geçişi (FUT kartlarındaki "rare card" hissi, ama abartısız —
+   sitenin genelindeki ölçülü animasyon diline uygun). */
+@keyframes card-shine {
+  0%,
+  92% {
+    transform: translateX(-140%) rotate(20deg);
+  }
+  100% {
+    transform: translateX(140%) rotate(20deg);
+  }
+}
+
+/* ---- DESIGN.md — iki katmanlı köşe/yoğunluk sistemi ----------------------
+   Konteyner/navigasyon (sayfa kartları, modal'lar) yumuşak köşeyle kalıyor.
+   Veri listeleri (işlem geçmişi, görev satırları vb.) bu "defter" sınıfını
+   kullanıyor — keskin/minimal köşe, tam kart çerçevesi yerine ince ayırıcı
+   çizgiler, sık dikey boşluk. Jenerik "her şey aynı rounded-lg kart"
+   deseninin yerine geçiyor. */
+.ledger-row {
+  border-radius: 0.25rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+.ledger-row:last-child {
+  border-bottom: none;
+}
+
+/* İmza öğe: üstteki canlı ticker şeridi (bkz. DESIGN.md). Tek, sürekli
+   kayan bir şerit — track iki kopya içeriyor, %50 kayınca sorunsuz
+   döngüye giriyor. */
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.ticker-track {
+  animation: ticker-scroll 28s linear infinite;
+}
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+
+/* Landing sayfası — Delta.app'teki yatay kayan şeridin UX kalıbı (bkz.
+   FeatureMarquee.tsx). Ticker'la aynı "iki kopya + %50 kayınca döngü"
+   tekniği, sadece daha geniş kartlar için daha yavaş bir süre. */
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  animation: marquee-scroll 46s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
 }
 
 /* Klavyeyle gezinirken her odaklanabilir elemanda görünür, temayla uyumlu bir

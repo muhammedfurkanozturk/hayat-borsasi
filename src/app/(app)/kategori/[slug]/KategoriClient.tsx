@@ -1,19 +1,25 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { TaskRow } from "@/components/TaskRow";
 import { DeltaBadge } from "@/components/dashboard/DeltaBadge";
-import { AddTaskForm } from "@/components/kategori/AddTaskForm";
+import { CategoryChecklist } from "@/components/kategori/CategoryChecklist";
 import { CategoryIconEditor } from "@/components/kategori/CategoryIconEditor";
 import { CategoryNameEditor } from "@/components/kategori/CategoryNameEditor";
 import { DeleteCategoryButton } from "@/components/kategori/DeleteCategoryButton";
-import { DigitalFocusPanel } from "@/components/kategori/DigitalFocusPanel";
-import { HabitBreakCard } from "@/components/kategori/HabitBreakCard";
+import { FinanceCalculators } from "@/components/kategori/finance/FinanceCalculators";
+import { FinanceTabBar, type FinanceTab } from "@/components/kategori/finance/FinanceTabBar";
+import { StockScreenerPanel } from "@/components/kategori/finance/StockScreenerPanel";
+import { TaxReportPanel } from "@/components/kategori/finance/TaxReportPanel";
+import { HabitTrackerPanel } from "@/components/kategori/HabitTrackerPanel";
+import { MarketWatchPanel } from "@/components/kategori/MarketWatchPanel";
 import { MealLogPanel } from "@/components/kategori/MealLogPanel";
-import { OutfitGallery } from "@/components/kategori/OutfitGallery";
 import { PomodoroTimer } from "@/components/kategori/PomodoroTimer";
 import { PortfolioPanel } from "@/components/kategori/PortfolioPanel";
+import { RoadmapPanel } from "@/components/kategori/roadmap/RoadmapPanel";
+import { TravelPanel } from "@/components/kategori/travel/TravelPanel";
+import { WardrobePanel } from "@/components/kategori/WardrobePanel";
 import { WorkoutLogPanel } from "@/components/kategori/WorkoutLogPanel";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { calculateScore } from "@/lib/scoring";
@@ -24,14 +30,33 @@ const YEARLY_WINDOW_DAYS = 365;
 
 export default function KategoriPage() {
   const { slug } = useParams<{ slug: string }>();
+  const [financeTab, setFinanceTab] = useState<FinanceTab>("markets");
 
   const { categories, tasks: allTasks, dailyHistory, removeTask } = useAppData();
 
   const category = categories.find((c) => c.id === slug);
+  // Kullanıcı bulgusu (2026-08-28): bu liste (kategori sayfasındaki
+  // "Görevler"/Beslenme'nin Checklist sekmesi) ağırlığa göre OTOMATİK
+  // sıralanmamalı — kullanıcı hangi sırayla oluşturduysa o sırada kalmalı,
+  // sadece yukarı/aşağı butonlarıyla (bkz. TaskRow.tsx, moveTaskUp/
+  // moveTaskDown) elle değiştirilebilmeli. Bu yüzden `sortOrder`'a göre
+  // sıralıyoruz — `weight`'e göre DEĞİL. sortOrder değişmediği sürece
+  // (görev işaretlenince/ağırlığı değişince) liste hiç zıplamıyor, çünkü
+  // o alanlar sortOrder'ı etkilemiyor. Dashboard'daki (DailyChecklist.tsx)
+  // ağırlığa göre canlı sıralama BİLEREK dokunulmadı, orası ayrı kalıyor.
   const tasks = allTasks
     .filter((t) => t.categoryId === slug)
-    .sort((a, b) => b.weight - a.weight);
-  const habitBreakTasks = tasks.filter((t) => t.isHabitBreak);
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  // Spor, Kötü Alışkanlıklar, Yol Haritam ve Beslenme modüllerinin kendi
+  // özel checklist'i var (Beslenme'de "Checklist" artık kendi sekmesinin
+  // içinde, bkz. MealLogPanel) — bunlarda ayrıca genel "Görevler" listesi
+  // gösterilmiyor.
+  const showGenericTasks =
+    category?.moduleType !== "sport" &&
+    category?.moduleType !== "habit" &&
+    category?.moduleType !== "digital" &&
+    category?.moduleType !== "nutrition" &&
+    category?.moduleType !== "travel";
 
   if (!category) {
     return (
@@ -69,7 +94,7 @@ export default function KategoriPage() {
       </PageHeader>
 
       <main className="flex w-full flex-1 flex-col gap-6 px-6 py-8 sm:px-10">
-        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface shadow-card p-5 sm:flex-row sm:items-center sm:gap-5 sm:px-6 sm:py-6">
+        <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5 sm:flex-row sm:items-center sm:gap-5 sm:px-6 sm:py-6">
           <div className="flex min-w-0 items-center gap-3 sm:gap-5">
             <CategoryIconEditor categoryId={category.id} icon={category.icon} />
             <span className="truncate text-base uppercase tracking-wider text-muted sm:text-lg">
@@ -84,40 +109,33 @@ export default function KategoriPage() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface shadow-card p-5">
-          <h2 className="text-sm font-medium text-foreground">Görevler</h2>
-
-          <ul className="flex flex-col gap-1">
-            {tasks.length === 0 && (
-              <li className="px-2 py-3 text-sm text-muted">Bu kategoride henüz görev yok.</li>
-            )}
-            {tasks.map((task) => (
-              <li key={task.id}>
-                <TaskRow task={task} onDelete={() => removeTask(task.id)} allowManageSubtasks />
-              </li>
-            ))}
-          </ul>
-
-          <AddTaskForm categoryId={category.id} />
-        </div>
-
-        {habitBreakTasks.length > 0 && (
-          <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface shadow-card p-5">
-            <h2 className="text-sm font-medium text-foreground">Alışkanlık Takibi</h2>
-            <div className="flex flex-col gap-2">
-              {habitBreakTasks.map((task) => (
-                <HabitBreakCard key={task.id} task={task} />
-              ))}
-            </div>
-          </div>
+        {showGenericTasks && (
+          <CategoryChecklist categoryId={category.id} tasks={tasks} onDeleteTask={removeTask} />
         )}
 
         {category.moduleType === "focus" && <PomodoroTimer categoryId={category.id} />}
-        {category.moduleType === "finance" && <PortfolioPanel categoryId={category.id} />}
-        {category.moduleType === "nutrition" && <MealLogPanel categoryId={category.id} />}
-        {category.moduleType === "style" && <OutfitGallery categoryId={category.id} />}
-        {category.moduleType === "digital" && <DigitalFocusPanel categoryId={category.id} />}
+        {category.moduleType === "finance" && (
+          <div className="flex flex-col gap-4">
+            <FinanceTabBar value={financeTab} onChange={setFinanceTab} />
+            {financeTab === "markets" && <MarketWatchPanel />}
+            {financeTab === "portfolio" && <PortfolioPanel categoryId={category.id} />}
+            {financeTab === "screener" && <StockScreenerPanel />}
+            {financeTab === "tools" && (
+              <div className="flex flex-col gap-4">
+                <TaxReportPanel categoryId={category.id} />
+                <FinanceCalculators />
+              </div>
+            )}
+          </div>
+        )}
+        {category.moduleType === "nutrition" && (
+          <MealLogPanel categoryId={category.id} tasks={tasks} onDeleteTask={removeTask} />
+        )}
+        {category.moduleType === "style" && <WardrobePanel categoryId={category.id} />}
+        {category.moduleType === "digital" && <RoadmapPanel categoryId={category.id} />}
         {category.moduleType === "sport" && <WorkoutLogPanel categoryId={category.id} />}
+        {category.moduleType === "habit" && <HabitTrackerPanel categoryId={category.id} />}
+        {category.moduleType === "travel" && <TravelPanel categoryId={category.id} />}
       </main>
     </div>
   );

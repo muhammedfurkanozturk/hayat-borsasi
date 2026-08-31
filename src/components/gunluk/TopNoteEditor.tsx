@@ -136,7 +136,7 @@ export function TopNoteEditor({
       return (
         <div
           ref={containerRef}
-          className="flex min-h-[140px] w-full animate-pulse items-center justify-center rounded-2xl border border-dashed border-border-soft bg-surface shadow-card px-6 py-10"
+          className="flex min-h-[140px] w-full animate-pulse items-center justify-center rounded-lg border border-dashed border-border-soft bg-surface shadow-card px-6 py-10"
         >
           <span className="text-sm text-muted">Yükleniyor...</span>
         </div>
@@ -149,7 +149,7 @@ export function TopNoteEditor({
         <button
           type="button"
           onClick={startEditingToday}
-          className="btn flex min-h-[140px] w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-accent/40 bg-accent-soft px-6 py-10 text-accent hover:border-accent/60 hover:bg-accent/25"
+          className="btn flex min-h-[140px] w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-accent/40 bg-accent-soft px-6 py-10 text-accent hover:border-accent/60 hover:bg-accent/25"
         >
           <PencilIcon width={22} height={22} />
           <span className="text-base font-semibold">
@@ -161,7 +161,7 @@ export function TopNoteEditor({
   }
 
   return (
-    <div ref={containerRef} className="modal-in flex flex-col gap-3 rounded-2xl border border-border bg-surface shadow-card p-5">
+    <div ref={containerRef} className="modal-in flex flex-col gap-3 rounded-lg border border-border bg-surface shadow-card p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-medium text-foreground">

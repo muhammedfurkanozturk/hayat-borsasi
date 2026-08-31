@@ -1,12 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { useRef } from "react";
 import { MoonStarIcon, SunIcon, TrendUpIcon } from "@/components/icons";
 import { MotionCtaLink } from "@/components/ui/MotionCtaLink";
+import { runAnimatedThemeTransition } from "@/lib/animated-theme-transition";
 import { useTheme } from "@/lib/theme-context";
 
 export function LandingNav() {
   const { theme, setTheme } = useTheme();
+  const themeButtonRef = useRef<HTMLButtonElement>(null);
+
+  function handleThemeToggle() {
+    const next = theme === "dark" ? "light" : "dark";
+    const rect = themeButtonRef.current?.getBoundingClientRect();
+    const origin = rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : ("center" as const);
+    runAnimatedThemeTransition({ origin, nextTheme: next, setTheme });
+  }
 
   return (
     <header
@@ -28,8 +38,9 @@ export function LandingNav() {
 
         <nav className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <button
+            ref={themeButtonRef}
             type="button"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onClick={handleThemeToggle}
             aria-label="Temayı değiştir"
             className="btn flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-foreground hover:bg-surface-hover hover:text-accent sm:h-9 sm:w-9"
           >

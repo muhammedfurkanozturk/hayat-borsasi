@@ -13,7 +13,16 @@ import {
   updateCategoryIcon,
   updateCategoryName,
 } from "./categories";
-import { deleteTaskById, fetchTasks, insertTask, updateTaskFrequency, type TaskFrequency } from "./tasks";
+import {
+  deleteTaskById,
+  fetchTasks,
+  insertTask,
+  swapTaskSortOrder,
+  updateHabitCost,
+  updateTaskFrequency,
+  updateTaskWeight,
+  type TaskFrequency,
+} from "./tasks";
 import {
   daysAgoIso,
   fetchTaskLogs,
@@ -32,9 +41,10 @@ import {
   toggleSubtaskLog,
 } from "./subtasks";
 import { calculateScore } from "@/lib/scoring";
-import type { CategoryModuleType, DailyScorePoint } from "@hayat-borsasi/shared";
+import { ONBOARDING_TEMPLATES, type CategoryModuleType, type DailyScorePoint, type HabitCostPeriod } from "@hayat-borsasi/shared";
 
 export type { TaskFrequency } from "./tasks";
+export type { HabitCostPeriod } from "@hayat-borsasi/shared";
 export type { CategoryModuleType, DailyScorePoint } from "@hayat-borsasi/shared";
 
 export interface Category {
@@ -55,6 +65,12 @@ export interface Task {
   subtaskTotal: number;
   subtaskCompleted: number;
   isHabitBreak: boolean;
+  habitCostAmount: number | null;
+  habitCostPeriod: HabitCostPeriod | null;
+  createdAt: string;
+  // 2026-08-28: sort_order migration'ı henüz uygulanmamışsa null kalır —
+  // moveTaskUp/moveTaskDown bu durumda no-op olup konsola uyarı yazar.
+  sortOrder: number | null;
 }
 
 export interface Subtask {
@@ -79,16 +95,14 @@ interface AppDataContextValue {
   removeCategory: (categoryId: string) => Promise<void>;
   renameCategory: (categoryId: string, name: string) => Promise<void>;
   changeCategoryIcon: (categoryId: string, icon: IconKey) => Promise<void>;
-  addTask: (
-    categoryId: string,
-    title: string,
-    weight: number,
-    frequency: TaskFrequency,
-    isHabitBreak?: boolean
-  ) => Promise<void>;
+  addTask: (categoryId: string, title: string, weight: number, frequency: TaskFrequency, isHabitBreak?: boolean) => Promise<string>;
   removeTask: (taskId: string) => Promise<void>;
   toggleTask: (taskId: string) => Promise<void>;
   changeTaskFrequency: (taskId: string, frequency: TaskFrequency) => Promise<void>;
+  changeTaskWeight: (taskId: string, weight: number) => Promise<void>;
+  moveTaskUp: (taskId: string) => Promise<void>;
+  moveTaskDown: (taskId: string) => Promise<void>;
+  changeHabitCost: (taskId: string, costAmount: number | null, costPeriod: HabitCostPeriod | null) => Promise<void>;
   addSubtask: (taskId: string, title: string) => Promise<void>;
   removeSubtask: (subtaskId: string) => Promise<void>;
   toggleSubtask: (subtaskId: string) => Promise<void>;
@@ -111,121 +125,132 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [dailyHistory, setDailyHistory] = useState<DailyScorePoint[]>([]);
 
   const load = useCallback(async () => {
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+      if (!user) {
+        return;
+      }
 
-    const [dbCategories, dbTasks, dbSubtasks, entry] = await Promise.all([
-      fetchCategories(supabase),
-      fetchTasks(supabase),
-      fetchSubtasks(supabase),
-      getOrCreateTodayEntry(supabase, user.id),
-    ]);
+      const [dbCategories, dbTasks, dbSubtasks, entry] = await Promise.all([
+        fetchCategories(supabase),
+        fetchTasks(supabase),
+        fetchSubtasks(supabase),
+        getOrCreateTodayEntry(supabase, user.id),
+      ]);
 
-    const [logs, subtaskLogs, yesterdayLogs, yesterdaySubtaskLogs, historyEntries] = await Promise.all([
-      fetchTaskLogs(supabase, entry.id),
-      fetchSubtaskLogs(supabase, entry.id),
-      fetchYesterdayTaskLogs(supabase, user.id),
-      fetchYesterdaySubtaskLogs(supabase, user.id),
-      fetchDailyHistory(supabase, user.id, daysAgoIso(365)),
-    ]);
-    const logByTaskId = new Map(logs.map((log) => [log.task_id, log]));
-    const subtaskLogById = new Map(subtaskLogs.map((log) => [log.subtask_id, log]));
-    const yesterdayLogByTaskId = new Map(yesterdayLogs.map((log) => [log.task_id, log]));
-    const yesterdaySubtaskLogById = new Map(yesterdaySubtaskLogs.map((log) => [log.subtask_id, log]));
+      const [logs, subtaskLogs, yesterdayLogs, yesterdaySubtaskLogs, historyEntries] = await Promise.all([
+        fetchTaskLogs(supabase, entry.id),
+        fetchSubtaskLogs(supabase, entry.id),
+        fetchYesterdayTaskLogs(supabase, user.id),
+        fetchYesterdaySubtaskLogs(supabase, user.id),
+        fetchDailyHistory(supabase, user.id, daysAgoIso(365)),
+      ]);
+      const logByTaskId = new Map(logs.map((log) => [log.task_id, log]));
+      const subtaskLogById = new Map(subtaskLogs.map((log) => [log.subtask_id, log]));
+      const yesterdayLogByTaskId = new Map(yesterdayLogs.map((log) => [log.task_id, log]));
+      const yesterdaySubtaskLogById = new Map(yesterdaySubtaskLogs.map((log) => [log.subtask_id, log]));
 
-    const subtasksByTaskId = new Map<string, typeof dbSubtasks>();
-    for (const s of dbSubtasks) {
-      const arr = subtasksByTaskId.get(s.task_id) ?? [];
-      arr.push(s);
-      subtasksByTaskId.set(s.task_id, arr);
-    }
+      const subtasksByTaskId = new Map<string, typeof dbSubtasks>();
+      for (const s of dbSubtasks) {
+        const arr = subtasksByTaskId.get(s.task_id) ?? [];
+        arr.push(s);
+        subtasksByTaskId.set(s.task_id, arr);
+      }
 
-    const nextSubtasks: Subtask[] = dbSubtasks.map((s) => ({
-      id: s.id,
-      taskId: s.task_id,
-      title: s.title,
-      completed: subtaskLogById.get(s.id)?.completed ?? false,
-    }));
+      const nextSubtasks: Subtask[] = dbSubtasks.map((s) => ({
+        id: s.id,
+        taskId: s.task_id,
+        title: s.title,
+        completed: subtaskLogById.get(s.id)?.completed ?? false,
+      }));
 
-    const nextTasks = dbTasks.map((t) => {
-      const log = logByTaskId.get(t.id);
-      const taskSubtasks = subtasksByTaskId.get(t.id) ?? [];
-      const subtaskCompleted = taskSubtasks.filter((s) => subtaskLogById.get(s.id)?.completed).length;
-      return {
-        id: t.id,
-        categoryId: t.category_id,
-        title: t.title,
-        weight: t.weight,
-        frequency: t.frequency,
-        completed: log?.completed ?? false,
-        completedAt: log?.completed_at ?? null,
-        subtaskTotal: taskSubtasks.length,
-        subtaskCompleted,
-        isHabitBreak: t.is_habit_break,
-      };
-    });
-
-    // Aynı görev ağırlıklarını, dünkü işaretlenme durumuyla eşleştirip
-    // "önceki güne göre değişim" (delta) için bir kıyas noktası çıkarıyoruz.
-    const yesterdayWeighted = dbTasks.map((t) => {
-      const taskSubtasks = subtasksByTaskId.get(t.id) ?? [];
-      const subtaskCompleted = taskSubtasks.filter((s) => yesterdaySubtaskLogById.get(s.id)?.completed).length;
-      return {
-        weight: t.weight,
-        completed: yesterdayLogByTaskId.get(t.id)?.completed ?? false,
-        categoryId: t.category_id,
-        subtaskTotal: taskSubtasks.length,
-        subtaskCompleted,
-      };
-    });
-
-    // Geçmişteki her gün için, o günün işaretlenme kayıtlarını güncel görev/
-    // kategori tanımlarıyla eşleştirip o günün skorunu çıkarıyoruz (bugünkü
-    // satır da dahil, ama bugünkü canlı değeri kullanan bileşenler bunu
-    // kendi anlık hesaplamalarıyla ezip günceller — bkz. Dashboard/ScoreChart).
-    const nextDailyHistory: DailyScorePoint[] = historyEntries.map((day) => {
-      const dayTaskLogById = new Map(day.daily_task_logs.map((l) => [l.task_id, l.completed]));
-      const dayCompletedSubtaskIds = new Set(
-        day.daily_subtask_logs.filter((l) => l.completed).map((l) => l.subtask_id)
-      );
-
-      const dayWeighted = dbTasks.map((t) => {
+      const nextTasks = dbTasks.map((t) => {
+        const log = logByTaskId.get(t.id);
         const taskSubtasks = subtasksByTaskId.get(t.id) ?? [];
+        const subtaskCompleted = taskSubtasks.filter((s) => subtaskLogById.get(s.id)?.completed).length;
         return {
-          weight: t.weight,
-          completed: dayTaskLogById.get(t.id) ?? false,
+          id: t.id,
           categoryId: t.category_id,
+          title: t.title,
+          weight: t.weight,
+          frequency: t.frequency,
+          completed: log?.completed ?? false,
+          completedAt: log?.completed_at ?? null,
           subtaskTotal: taskSubtasks.length,
-          subtaskCompleted: taskSubtasks.filter((s) => dayCompletedSubtaskIds.has(s.id)).length,
+          subtaskCompleted,
+          isHabitBreak: t.is_habit_break,
+          habitCostAmount: t.habit_cost_amount,
+          habitCostPeriod: t.habit_cost_period,
+          createdAt: t.created_at,
+          sortOrder: t.sort_order ?? null,
         };
       });
 
-      const categoryScores: Record<string, number> = {};
-      for (const category of dbCategories) {
-        categoryScores[category.id] = calculateScore(dayWeighted.filter((t) => t.categoryId === category.id));
-      }
+      // Aynı görev ağırlıklarını, dünkü işaretlenme durumuyla eşleştirip
+      // "önceki güne göre değişim" (delta) için bir kıyas noktası çıkarıyoruz.
+      const yesterdayWeighted = dbTasks.map((t) => {
+        const taskSubtasks = subtasksByTaskId.get(t.id) ?? [];
+        const subtaskCompleted = taskSubtasks.filter((s) => yesterdaySubtaskLogById.get(s.id)?.completed).length;
+        return {
+          weight: t.weight,
+          completed: yesterdayLogByTaskId.get(t.id)?.completed ?? false,
+          categoryId: t.category_id,
+          subtaskTotal: taskSubtasks.length,
+          subtaskCompleted,
+        };
+      });
 
-      return { date: day.date, overallScore: calculateScore(dayWeighted), categoryScores };
-    });
+      // Geçmişteki her gün için, o günün işaretlenme kayıtlarını güncel görev/
+      // kategori tanımlarıyla eşleştirip o günün skorunu çıkarıyoruz (bugünkü
+      // satır da dahil, ama bugünkü canlı değeri kullanan bileşenler bunu
+      // kendi anlık hesaplamalarıyla ezip günceller — bkz. Dashboard/ScoreChart).
+      const nextDailyHistory: DailyScorePoint[] = historyEntries.map((day) => {
+        const dayTaskLogById = new Map(day.daily_task_logs.map((l) => [l.task_id, l.completed]));
+        const dayCompletedSubtaskIds = new Set(
+          day.daily_subtask_logs.filter((l) => l.completed).map((l) => l.subtask_id)
+        );
 
-    setUserId(user.id);
-    setCategories(
-      dbCategories.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon), moduleType: c.module_type }))
-    );
-    setTasks(nextTasks);
-    setSubtasks(nextSubtasks);
-    setPreviousDailyScore(calculateScore(yesterdayWeighted));
-    setDailyHistory(nextDailyHistory);
-    setDailyEntryId(entry.id);
-    setDailyNoteState(entry.note_text);
-    setLoading(false);
+        const dayWeighted = dbTasks.map((t) => {
+          const taskSubtasks = subtasksByTaskId.get(t.id) ?? [];
+          return {
+            weight: t.weight,
+            completed: dayTaskLogById.get(t.id) ?? false,
+            categoryId: t.category_id,
+            subtaskTotal: taskSubtasks.length,
+            subtaskCompleted: taskSubtasks.filter((s) => dayCompletedSubtaskIds.has(s.id)).length,
+          };
+        });
+
+        const categoryScores: Record<string, number> = {};
+        for (const category of dbCategories) {
+          categoryScores[category.id] = calculateScore(dayWeighted.filter((t) => t.categoryId === category.id));
+        }
+
+        return { date: day.date, overallScore: calculateScore(dayWeighted), categoryScores };
+      });
+
+      setUserId(user.id);
+      setCategories(
+        dbCategories.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon), moduleType: c.module_type }))
+      );
+      setTasks(nextTasks);
+      setSubtasks(nextSubtasks);
+      setPreviousDailyScore(calculateScore(yesterdayWeighted));
+      setDailyHistory(nextDailyHistory);
+      setDailyEntryId(entry.id);
+      setDailyNoteState(entry.note_text);
+    } catch (error) {
+      // Supabase oturum/ağ hataları (örn. saat kaymasından kaynaklanan
+      // "JWT issued at future") burada sessizce loglanıyor — yakalanmazsa
+      // unhandled rejection olarak Next.js dev overlay'ine düşüyordu.
+      console.error("AppDataProvider.load() başarısız:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -285,18 +310,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setCategories((prev) => prev.map((c) => (c.id === categoryId ? { ...c, icon } : c)));
   }
 
-  async function addTask(
-    categoryId: string,
-    title: string,
-    weight: number,
-    frequency: TaskFrequency,
-    isHabitBreak = false
-  ) {
-    if (!userId) return;
+  async function addTask(categoryId: string, title: string, weight: number, frequency: TaskFrequency, isHabitBreak = false) {
+    if (!userId) return "";
     const trimmed = title.trim();
-    if (!trimmed) return;
+    if (!trimmed) return "";
 
     const supabase = createClient();
+    // Yeni görev, o kategorideki mevcut görev sayısı kadar sort_order ile
+    // (yani her zaman en sona) ekleniyor — kullanıcının "hangi sırayla
+    // oluşturdum o sırada kalsın" beklentisiyle tutarlı.
+    const nextSortOrder = tasks.filter((t) => t.categoryId === categoryId).length;
     const created = await insertTask(
       supabase,
       userId,
@@ -304,7 +327,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       trimmed,
       Math.min(10, Math.max(1, weight)),
       frequency,
-      isHabitBreak
+      isHabitBreak,
+      nextSortOrder
     );
     setTasks((prev) => [
       ...prev,
@@ -319,8 +343,71 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         subtaskTotal: 0,
         subtaskCompleted: 0,
         isHabitBreak: created.is_habit_break,
+        habitCostAmount: created.habit_cost_amount,
+        habitCostPeriod: created.habit_cost_period,
+        createdAt: created.created_at,
+        sortOrder: created.sort_order ?? null,
       },
     ]);
+    return created.id;
+  }
+
+  // Kategori sayfasındaki "Görevler" listesinde yukarı/aşağı butonlarıyla
+  // elle sıralama (2026-08-28, kullanıcı bulgusu — ağırlığa göre otomatik
+  // sıralama istenmiyordu). Aynı kategorideki komşu görevle sort_order'ı
+  // takas eder — optimistic güncelleme, sunucu hatası durumunda geri alınır.
+  async function moveTask(taskId: string, direction: "up" | "down") {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    const siblings = tasks
+      .filter((t) => t.categoryId === task.categoryId)
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+    const index = siblings.findIndex((t) => t.id === taskId);
+    const neighborIndex = direction === "up" ? index - 1 : index + 1;
+    if (neighborIndex < 0 || neighborIndex >= siblings.length) return;
+    const neighbor = siblings[neighborIndex];
+    if (task.sortOrder == null || neighbor.sortOrder == null) {
+      console.error("Görev sırası değiştirilemedi (migration uygulanmamış olabilir).");
+      return;
+    }
+    const taskOrder = task.sortOrder;
+    const neighborOrder = neighbor.sortOrder;
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.id === task.id) return { ...t, sortOrder: neighborOrder };
+        if (t.id === neighbor.id) return { ...t, sortOrder: taskOrder };
+        return t;
+      })
+    );
+    const supabase = createClient();
+    try {
+      await swapTaskSortOrder(supabase, task.id, taskOrder, neighbor.id, neighborOrder);
+    } catch (err) {
+      console.error("Görev sırası kaydedilemedi:", err);
+      setTasks((prev) =>
+        prev.map((t) => {
+          if (t.id === task.id) return { ...t, sortOrder: taskOrder };
+          if (t.id === neighbor.id) return { ...t, sortOrder: neighborOrder };
+          return t;
+        })
+      );
+    }
+  }
+
+  async function moveTaskUp(taskId: string) {
+    await moveTask(taskId, "up");
+  }
+
+  async function moveTaskDown(taskId: string) {
+    await moveTask(taskId, "down");
+  }
+
+  async function changeHabitCost(taskId: string, costAmount: number | null, costPeriod: HabitCostPeriod | null) {
+    const supabase = createClient();
+    await updateHabitCost(supabase, taskId, costAmount, costPeriod);
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, habitCostAmount: costAmount, habitCostPeriod: costPeriod } : t))
+    );
   }
 
   async function removeTask(taskId: string) {
@@ -366,6 +453,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     const supabase = createClient();
     await updateTaskFrequency(supabase, taskId, frequency);
     setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, frequency } : t)));
+  }
+
+  async function changeTaskWeight(taskId: string, weight: number) {
+    const supabase = createClient();
+    await updateTaskWeight(supabase, taskId, weight);
+    setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, weight } : t)));
   }
 
   async function addSubtask(taskId: string, title: string) {
@@ -440,9 +533,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     if (!userId) return;
     const supabase = createClient();
     await deleteAllCategoriesForUser(supabase, userId);
-    setCategories([]);
     setTasks([]);
     setSubtasks([]);
+
+    const recreated = await insertCategoriesFromTemplates(supabase, userId, ONBOARDING_TEMPLATES, 0);
+    setCategories(
+      recreated.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon), moduleType: c.module_type }))
+    );
   }
 
   return (
@@ -464,6 +561,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         removeTask,
         toggleTask,
         changeTaskFrequency,
+        changeTaskWeight,
+        moveTaskUp,
+        moveTaskDown,
+        changeHabitCost,
         addSubtask,
         removeSubtask,
         toggleSubtask: toggleSubtaskFn,

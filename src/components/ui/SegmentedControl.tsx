@@ -17,20 +17,29 @@ export function SegmentedControl<T extends string>({
   onChange,
   size = "md",
   className = "",
+  layout = "fixed",
 }: {
-  options: { value: T; label: ReactNode; ariaLabel?: string }[];
+  options: readonly { value: T; label: ReactNode; ariaLabel?: string }[];
   value: T;
   onChange: (value: T) => void;
   size?: "sm" | "md";
   className?: string;
+  // "fixed": seçenekler eşit genişlikte sığdırılır (varsayılan, mevcut
+  // kullanımların hepsi bunu kullanıyor). "scroll": her seçenek kendi doğal
+  // genişliğinde kalır, konteyner taştığında yatay kaydırılır — çok sayıda/
+  // uzun etiketli seçenek (örn. kategori sekmeleri) için, dar ekranda
+  // sıkışıp kırpılmasınlar diye.
+  layout?: "fixed" | "scroll";
 }) {
   const instanceId = useId();
   const padding = size === "sm" ? "px-2 py-1 text-[11px]" : "px-2.5 py-1 text-xs";
 
   return (
     <div
-      className={`relative grid items-stretch gap-0 rounded-lg border border-border-soft bg-background-elevated p-1 ${className}`}
-      style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+      className={`relative ${
+        layout === "scroll" ? "inline-flex w-max items-stretch gap-0" : "grid items-stretch gap-0"
+      } rounded-lg border border-border-soft bg-background-elevated p-1 ${className}`}
+      style={layout === "fixed" ? { gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` } : undefined}
     >
       {options.map((option) => {
         const active = value === option.value;
@@ -41,7 +50,7 @@ export function SegmentedControl<T extends string>({
             onClick={() => onChange(option.value)}
             aria-label={option.ariaLabel}
             aria-pressed={active}
-            className={`btn relative flex items-center justify-center gap-1.5 rounded-md text-center font-medium whitespace-nowrap ${padding} ${
+            className={`btn relative flex shrink-0 items-center justify-center gap-1.5 rounded-md text-center font-medium whitespace-nowrap ${padding} ${
               active ? "text-accent" : "text-muted hover:text-foreground"
             }`}
           >

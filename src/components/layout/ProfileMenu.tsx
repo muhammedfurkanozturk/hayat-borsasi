@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { CrownIcon, GearIcon, SignOutIcon } from "@/components/icons";
-import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { CrownIcon, GearIcon, MoonStarIcon, SignOutIcon, SunIcon } from "@/components/icons";
+import { runAnimatedThemeTransition } from "@/lib/animated-theme-transition";
 import { useTheme } from "@/lib/theme-context";
 import { createClient } from "@/lib/supabase/client";
 import { useProfile } from "@/lib/supabase/profile-context";
@@ -16,6 +16,18 @@ export function ProfileMenu() {
   const { displayName, isPro } = useProfile();
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
+  const themeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // 2026-08-26: Koyu/Açık iki pillik segmented control yerine, tanıtım
+  // sayfasındaki (LandingNav.tsx) gibi TEK güneş/ay ikon butonuna çevrildi
+  // — kullanıcı isteği. Artık gerçek buton referansımız olduğu için geçiş
+  // "ekran ortası" yerine bu butonun gerçek konumundan açılıyor.
+  function handleThemeToggle() {
+    const next = theme === "dark" ? "light" : "dark";
+    const rect = themeButtonRef.current?.getBoundingClientRect();
+    const origin = rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : ("center" as const);
+    runAnimatedThemeTransition({ origin, nextTheme: next, setTheme });
+  }
   const [signingOut, setSigningOut] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -59,7 +71,7 @@ export function ProfileMenu() {
             exit={{ opacity: 0, scale: 0.96, y: -6 }}
             transition={{ type: "spring", stiffness: 500, damping: 32, mass: 0.8 }}
             style={{ transformOrigin: "top right" }}
-            className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-border bg-background-elevated p-1.5 shadow-lg"
+            className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-border bg-background-elevated p-1.5 shadow-lg"
           >
             <div className="flex items-center gap-3 px-2.5 py-2.5">
               <Avatar initial={initial} size="sm" isPro={isPro} />
@@ -78,15 +90,15 @@ export function ProfileMenu() {
 
             <div className="flex items-center justify-between gap-2 px-2.5 py-1.5">
               <span className="text-xs text-muted">Tema</span>
-              <SegmentedControl
-                size="sm"
-                options={[
-                  { value: "dark" as const, label: "Koyu" },
-                  { value: "light" as const, label: "Açık" },
-                ]}
-                value={theme}
-                onChange={setTheme}
-              />
+              <button
+                ref={themeButtonRef}
+                type="button"
+                onClick={handleThemeToggle}
+                aria-label="Temayı değiştir"
+                className="btn flex h-8 w-8 items-center justify-center rounded-lg text-foreground hover:bg-surface-hover hover:text-accent"
+              >
+                {theme === "dark" ? <SunIcon width={16} height={16} /> : <MoonStarIcon width={16} height={16} />}
+              </button>
             </div>
 
             <div className="my-1 border-t border-border-soft" />

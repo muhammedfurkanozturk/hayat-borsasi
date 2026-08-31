@@ -23,7 +23,7 @@ export function CategoryIconEditor({ categoryId, icon }: { categoryId: string; i
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="Sembolü değiştir"
-        className="btn flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-accent hover:bg-accent/25"
+        className="btn flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent hover:bg-accent/25"
       >
         <AppIcon name={icon} width={30} height={30} />
       </button>
@@ -31,7 +31,7 @@ export function CategoryIconEditor({ categoryId, icon }: { categoryId: string; i
       <PopoverPanel
         open={open}
         onClose={() => setOpen(false)}
-        className="mt-2 w-80 rounded-2xl border border-border bg-background-elevated p-3 shadow-xl"
+        className="mt-2 w-80 rounded-lg border border-border bg-background-elevated p-3 shadow-xl"
       >
         <span className="mb-2 block text-xs text-muted">Sembol seç</span>
         <div className="grid max-h-64 grid-cols-6 gap-2 overflow-y-auto pr-1">

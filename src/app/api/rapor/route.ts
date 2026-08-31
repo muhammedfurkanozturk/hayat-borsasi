@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { generateAiReport, type ReportInput } from "@/lib/ai/claude";
 import { createClient } from "@/lib/supabase/server";
+import { parseStructuredReport } from "@hayat-borsasi/shared";
 
 // Web istekleri tarayıcı çerezleriyle (createClient/server.ts) doğrulanır.
 // Mobil uygulamanın çerezi yok — bunun yerine Supabase oturum access
@@ -59,6 +60,12 @@ export async function POST(request: Request) {
 
   try {
     const content = await generateAiReport(body);
+    // Claude'un yapılandırılmış JSON kuralına uymadığı (nadir) durumlarda
+    // burada sadece logluyoruz — cevap yine de döndürülür, gösterim
+    // tarafındaki parseStructuredReport zaten düz metne fallback yapıyor.
+    if (!parseStructuredReport(content)) {
+      console.warn("AI Rapor beklenen JSON şemasına uymuyor, düz metin olarak gösterilecek.");
+    }
     return NextResponse.json({ content }, { headers: CORS_HEADERS });
   } catch (error) {
     console.error("Rapor oluşturma hatası:", error);

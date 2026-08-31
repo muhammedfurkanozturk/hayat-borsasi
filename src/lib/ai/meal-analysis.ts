@@ -9,12 +9,14 @@ export interface MealAnalysisResult {
   proteinG: number | null;
   carbsG: number | null;
   fatG: number | null;
+  portion: string | null;
   summary: string;
 }
 
-// Fotoğrafın kendisi hiçbir yerde saklanmıyor — sadece bu analizin sonucu
-// (metin/sayı) meal_logs'a yazılıyor. Aynı prensip sesli not için de
-// geçerli (bkz. CLAUDE.md bölüm 8).
+// Not: fotoğrafın kendisi artık meal-photos Storage bucket'ında saklanıyor
+// (kullanıcının bilinçli onayıyla — bkz. CLAUDE.md, küçük kart
+// thumbnail'i için gerekli istisna). Bu fonksiyon sadece analiz sonucunu
+// üretir, yükleme MealLogPanel'de ayrıca yapılıyor.
 export async function analyzeMealPhoto(
   base64Image: string,
   mediaType: "image/jpeg" | "image/png" | "image/gif" | "image/webp"
@@ -25,7 +27,7 @@ export async function analyzeMealPhoto(
     thinking: { type: "disabled" },
     output_config: { effort: "low" },
     system:
-      'Sen bir beslenme analiz asistanısın. Sana gösterilen yemek fotoğrafını inceleyip tahmini besin değerlerini SADECE şu JSON formatında döndür, başka hiçbir metin ekleme: {"description": "kısa Türkçe yemek tanımı", "calories": sayı_veya_null, "protein_g": sayı_veya_null, "carbs_g": sayı_veya_null, "fat_g": sayı_veya_null, "summary": "1 cümlelik Türkçe değerlendirme"}. Emin olamadığın değerler için null kullan, uydurma.',
+      'Sen bir beslenme analiz asistanısın. Sana gösterilen yemek fotoğrafını inceleyip tahmini besin değerlerini SADECE şu JSON formatında döndür, başka hiçbir metin ekleme: {"description": "kısa Türkçe yemek adı", "calories": sayı_veya_null, "protein_g": sayı_veya_null, "carbs_g": sayı_veya_null, "fat_g": sayı_veya_null, "portion": "kısa Türkçe porsiyon tahmini (örn. \'1 tabak\', \'250g\') veya null", "summary": "1 cümlelik Türkçe değerlendirme"}. Emin olamadığın değerler için null kullan, uydurma.',
     messages: [
       {
         role: "user",
@@ -56,6 +58,7 @@ export async function analyzeMealPhoto(
     proteinG: num(parsed.protein_g),
     carbsG: num(parsed.carbs_g),
     fatG: num(parsed.fat_g),
+    portion: typeof parsed.portion === "string" ? parsed.portion : null,
     summary: typeof parsed.summary === "string" ? parsed.summary : "",
   };
 }

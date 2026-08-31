@@ -3,9 +3,13 @@
 import { motion, type MotionStyle } from "motion/react";
 import type { ReactNode } from "react";
 
-// Landing sayfasındaki her tam-ekran bölümün paylaştığı camsı panel kabuğu —
-// kenarlık YOK (çerçeve hissi bilerek kaldırıldı), sadece blur + bölüme özel
-// renk geçişli bir dolgu + yumuşak gölge panelin "yüzdüğü" hissini veriyor.
+// Landing sayfasındaki her tam-ekran bölümün paylaştığı camsı panel kabuğu.
+// 2026-08-25: kullanıcı isteğiyle büyük köşe yuvarlaması + renkli gradient
+// dolgu (Terminal Ledger turunda kaldırılmıştı) TAM olarak geri getirildi —
+// bir önceki turda sadece blur/saydamlık geri getirilmişti, bu sefer eski
+// hâliyle birebir (kenarlık yok, çerçeve hissi bilerek yok — sadece blur +
+// bölüme özel renk geçişli dolgu + yumuşak gölge panelin "yüzdüğü" hissini
+// veriyor).
 export function GlassPanel({
   children,
   gradient,

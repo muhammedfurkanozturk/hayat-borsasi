@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { EditableField } from "@/components/ayarlar/EditableField";
-import { CrownIcon } from "@/components/icons";
+import { CrownIcon, MoonStarIcon, SunIcon } from "@/components/icons";
 import { Avatar } from "@/components/layout/Avatar";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { runAnimatedThemeTransition } from "@/lib/animated-theme-transition";
 import { useTheme } from "@/lib/theme-context";
 import { useProfile } from "@/lib/supabase/profile-context";
 import { useAppData } from "@/lib/supabase/app-data-context";
@@ -32,6 +32,17 @@ export default function AyarlarPage() {
     useProfile();
   const { resetAllCategories } = useAppData();
   const { theme, setTheme } = useTheme();
+  const themeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // 2026-08-26: iki pillik segmented control yerine ProfileMenu.tsx'teki
+  // gibi tek güneş/ay ikon butonuna çevrildi — geçiş bu butonun gerçek
+  // konumundan açılıyor.
+  function handleThemeToggle() {
+    const next = theme === "dark" ? "light" : "dark";
+    const rect = themeButtonRef.current?.getBoundingClientRect();
+    const origin = rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : ("center" as const);
+    runAnimatedThemeTransition({ origin, nextTheme: next, setTheme });
+  }
 
   const [draftName, setDraftName] = useState(displayName);
   const [syncedDisplayName, setSyncedDisplayName] = useState(displayName);
@@ -64,7 +75,7 @@ export default function AyarlarPage() {
       <PageHeader title="Ayarlar" subtitle="Profil ve uygulama tercihlerin" />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-6 py-8 sm:px-10">
-        <section className="flex flex-col gap-4 rounded-2xl border border-border bg-surface shadow-card p-5">
+        <section className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5">
           <h2 className="text-sm font-medium text-foreground">Profil</h2>
 
           <form onSubmit={handleSaveName} className="flex items-center gap-3">
@@ -121,7 +132,7 @@ export default function AyarlarPage() {
           </div>
         </section>
 
-        <section className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface shadow-card p-5">
+        <section className="flex items-center justify-between gap-4 rounded-lg border border-border bg-surface shadow-card p-5">
           <div className="flex flex-col gap-1">
             <h2 className="text-sm font-medium text-foreground">Plan</h2>
             <p className="text-xs text-muted">{isPro ? "Pro plandasın." : "Şu an ücretsiz plandasın."}</p>
@@ -148,26 +159,28 @@ export default function AyarlarPage() {
           </div>
         </section>
 
-        <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface shadow-card p-5">
+        <section className="flex flex-col gap-3 rounded-lg border border-border bg-surface shadow-card p-5">
           <h2 className="text-sm font-medium text-foreground">Görünüm</h2>
           <div className="flex items-center justify-between gap-4">
             <p className="text-xs text-muted">Tema tercihini seç.</p>
-            <SegmentedControl
-              options={[
-                { value: "dark" as const, label: "Koyu Tema" },
-                { value: "light" as const, label: "Açık Tema" },
-              ]}
-              value={theme}
-              onChange={setTheme}
-            />
+            <button
+              ref={themeButtonRef}
+              type="button"
+              onClick={handleThemeToggle}
+              aria-label="Temayı değiştir"
+              className="btn flex h-9 w-9 items-center justify-center rounded-lg border border-border-soft text-foreground hover:border-accent/40 hover:text-accent"
+            >
+              {theme === "dark" ? <SunIcon width={16} height={16} /> : <MoonStarIcon width={16} height={16} />}
+            </button>
           </div>
         </section>
 
-        <section className="flex flex-col gap-3 rounded-2xl border border-negative/25 bg-negative-soft/30 p-5 shadow-card">
+        <section className="flex flex-col gap-3 rounded-lg border border-negative/25 bg-negative-soft/30 p-5 shadow-card">
           <h2 className="text-sm font-medium text-foreground">Veriler</h2>
           <p className="text-xs text-muted">
             Bu işlem, hesabındaki tüm kategorileri ve altlarındaki görevleri kalıcı olarak siler
-            (günlük notların ve raporların kalır). Sıfırdan başlamak istersen kullan.
+            ve hesabını 7 hazır modül kategorisiyle (günlük notların ve raporların kalır) sıfırdan
+            başlatır.
           </p>
 
           {confirmingReset ? (

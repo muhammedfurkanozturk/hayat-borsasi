@@ -5,7 +5,6 @@ import { motion } from "motion/react";
 import type { IconKey } from "@/components/icons";
 import { AppIcon } from "@/components/icons";
 import { GlassPanel } from "@/components/ui/GlassPanel";
-import { SectionGlow } from "@/components/ui/SectionGlow";
 
 export function FeatureSection({
   icon,
@@ -15,7 +14,6 @@ export function FeatureSection({
   image,
   imageAlt,
   gradient,
-  glow,
   reverse = false,
 }: {
   icon: IconKey;
@@ -25,12 +23,10 @@ export function FeatureSection({
   image: string;
   imageAlt: string;
   gradient: string;
-  glow: string;
   reverse?: boolean;
 }) {
   return (
     <section className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-4 py-24 sm:px-6">
-      <SectionGlow rgb={glow} />
       <div className="relative z-10 mx-auto w-full max-w-[1400px]">
         <GlassPanel gradient={gradient} className="min-h-[65vh]">
           <div
@@ -45,7 +41,7 @@ export function FeatureSection({
               transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-col justify-center gap-5 lg:w-[45%]"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft text-accent">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-accent-soft text-accent">
                 <AppIcon name={icon} width={22} height={22} />
               </div>
               <span className="text-xs font-medium uppercase tracking-wider text-muted">{eyebrow}</span>
@@ -54,7 +50,7 @@ export function FeatureSection({
             </motion.div>
 
             <div
-              className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-border-soft lg:w-[55%]"
+              className="relative aspect-[16/10] w-full overflow-hidden rounded-lg border border-border-soft lg:w-[55%]"
               style={{ background: gradient }}
             >
               <Image

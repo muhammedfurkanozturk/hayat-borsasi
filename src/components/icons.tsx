@@ -3,7 +3,7 @@ import type { IconKey } from "@hayat-borsasi/shared";
 
 export type { IconKey };
 
-type IconProps = SVGProps<SVGSVGElement>;
+export type IconProps = SVGProps<SVGSVGElement>;
 
 function base(props: IconProps) {
   return {
@@ -197,6 +197,14 @@ export function CheckIcon(props: IconProps) {
   );
 }
 
+export function XIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M6 6l12 12M18 6 6 18" />
+    </svg>
+  );
+}
+
 export function StarIcon(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -361,6 +369,89 @@ export function UtensilsIcon(props: IconProps) {
   );
 }
 
+// 2026-08-27 — MealCard.tsx/MealDetailModal.tsx için: gerçek fotoğrafı
+// olmayan (elle eklenen/aranan) yaygın yiyecekler artık jenerik
+// UtensilsIcon yerine kendi ikonuyla gösteriliyor (kullanıcı bulgusu —
+// "basit bir muz görseli olsun"). Mevcut çizgi-ikon üslubunda (base(),
+// tek renk, yuvarlak uçlar), fotoğraf değil sade bir ikon — dış görsel
+// kaynak/telif riski yok.
+export function BananaIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M6 18c1.8 1.6 8 2 11-3.5 1.1-2 1.3-4.6.5-6.8" />
+      <path d="M6 18c-1.5-.5-2.3-2-2-3.6" />
+      <path d="M16.8 6.6c.7-.5 1.7-.5 2.4.1" />
+    </svg>
+  );
+}
+
+export function EggIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 21c-3.9 0-6.5-3.3-6.5-7.4C5.5 9 8.3 3.5 12 3.5S18.5 9 18.5 13.6c0 4.1-2.6 7.4-6.5 7.4Z" />
+    </svg>
+  );
+}
+
+export function ChickenLegIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M14 4c2.2 0 4 1.8 4 4 0 2.5-2.3 4.2-4.6 5.7L10 17" />
+      <circle cx="14" cy="8" r="3.3" />
+      <path d="M10 17c-1 1-3.5 1.7-4.9 3.1a1.7 1.7 0 0 0 2.4 2.4C8.9 21.1 9.6 18.6 10.6 17.6" />
+    </svg>
+  );
+}
+
+export function BreadIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 12c0-4.4 3.6-8 8-8s8 3.6 8 8v5.5A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5Z" />
+      <path d="M9 10.5v4M12 9.5v5M15 10.5v4" />
+    </svg>
+  );
+}
+
+export function RiceBowlIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 12h16c0 4.4-3.6 7.5-8 7.5s-8-3.1-8-7.5Z" />
+      <path d="M6.5 12c-.3-2.8 2-5 5.5-5s5.8 2.2 5.5 5" />
+      <path d="M12 4.2v1.6" />
+    </svg>
+  );
+}
+
+export function MilkIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M10 3h4v3.2l2.2 2.6c.5.6.8 1.4.8 2.2v9.5A1.5 1.5 0 0 1 15.5 22h-7A1.5 1.5 0 0 1 7 20.5V11c0-.8.3-1.6.8-2.2L10 6.2Z" />
+      <path d="M7.3 13.5h9.4" />
+    </svg>
+  );
+}
+
+export function CheeseIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M3 16.5 12 5l9 11.5a1 1 0 0 1-.8 1.6H3.8a1 1 0 0 1-.8-1.6Z" />
+      <circle cx="12.5" cy="13.2" r="0.9" />
+      <circle cx="9" cy="15.5" r="0.7" />
+      <circle cx="15.5" cy="15.8" r="0.7" />
+    </svg>
+  );
+}
+
+export function FishIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 12c2.5-3.5 6.2-5.5 10-5.5 2.7 0 5 2.4 6 5.5-1 3.1-3.3 5.5-6 5.5-3.8 0-7.5-2-10-5.5Z" />
+      <path d="M20 12 22.5 9v6L20 12Z" />
+      <circle cx="8.3" cy="10.8" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export function ClockIcon(props: IconProps) {
   return (
     <svg {...base(props)}>
@@ -505,6 +596,215 @@ export function EyeOffIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function DropletIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 3.5s6.5 7.1 6.5 11.4a6.5 6.5 0 0 1-13 0C5.5 10.6 12 3.5 12 3.5Z" />
+    </svg>
+  );
+}
+
+export function CupIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M6 4h12l-1.4 13.8A2 2 0 0 1 14.6 20H9.4a2 2 0 0 1-2-1.8L6 4Z" />
+    </svg>
+  );
+}
+
+export function TrophyIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M8 4h8v5a4 4 0 0 1-8 0V4Z" />
+      <path d="M8 5H5a3 3 0 0 0 3 5" />
+      <path d="M16 5h3a3 3 0 0 1-3 5" />
+      <path d="M12 13v3" />
+      <path d="M9 20h6" />
+      <path d="M10 16.5h4l.5 3.5h-5l.5-3.5Z" />
+    </svg>
+  );
+}
+
+export function ScaleIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="3" />
+      <path d="M8 13.5a4 4 0 0 0 8 0" />
+      <path d="M8 9h.01M16 9h.01" />
+    </svg>
+  );
+}
+
+export function BarcodeIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 5v14" />
+      <path d="M8 5v14" />
+      <path d="M11 5v14" />
+      <path d="M15 5v14" />
+      <path d="M18 5v14" />
+      <path d="M20.5 5v14" />
+    </svg>
+  );
+}
+
+export function PrinterIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M6 9V3h12v6" />
+      <rect x="2.5" y="9" width="19" height="10" rx="2" />
+      <path d="M6 15h12v6H6z" />
+    </svg>
+  );
+}
+
+export function ShareIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="18" cy="5" r="2.5" />
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="19" r="2.5" />
+      <path d="M8.2 10.7 15.8 6.3M8.2 13.3l7.6 4.4" />
+    </svg>
+  );
+}
+
+export function KeyboardIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <rect x="2.5" y="6" width="19" height="12" rx="2" />
+      <path d="M6 10h.01M9 10h.01M12 10h.01M15 10h.01M18 10h.01M6 14h12" />
+    </svg>
+  );
+}
+
+export function AlertTriangleIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 3.5 22 20H2L12 3.5Z" />
+      <path d="M12 10v4" />
+      <path d="M12 17.5h.01" />
+    </svg>
+  );
+}
+
+export function BellIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M18 8a6 6 0 0 0-12 0c0 5-2 6-2 7h16c0-1-2-2-2-7Z" />
+      <path d="M10.5 21a1.5 1.5 0 0 0 3 0" />
+    </svg>
+  );
+}
+
+export function SearchIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </svg>
+  );
+}
+
+export function BookmarkIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4-7 4V4.5a1 1 0 0 1 1-1Z" />
+    </svg>
+  );
+}
+
+export function SparkleIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
+      <path d="M12 8l1.2 3.8L17 13l-3.8 1.2L12 18l-1.2-3.8L7 13l3.8-1.2Z" />
+    </svg>
+  );
+}
+
+// Seyahat kategorisi — "mekan" (Level 4) oluştururken kullanıcının seçtiği
+// yer tipi ikonları. ICON_KEYS/iconPalette'in (kategori ikonları) dışında,
+// food-icon-match.ts'teki desenle aynı: bağımsız, dar kapsamlı bir ikon seti.
+export function LandmarkIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 21h16" />
+      <path d="M6 21V10M10 21V10M14 21V10M18 21V10" />
+      <path d="M3 10 12 4l9 6" />
+    </svg>
+  );
+}
+
+export function MountainIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="m3 20 6.5-11L14 16l2.5-3.5L21 20Z" />
+      <path d="M9.5 9 8 6.5 5 12" />
+    </svg>
+  );
+}
+
+export function WavesIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M2 8c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0" />
+      <path d="M2 14c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0" />
+      <path d="M2 20c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0" />
+    </svg>
+  );
+}
+
+export function BuildingIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <rect x="5" y="3" width="14" height="18" rx="1" />
+      <path d="M9 8h1M14 8h1M9 12h1M14 12h1M9 16h1M14 16h1" />
+      <path d="M10 21v-4h4v4" />
+    </svg>
+  );
+}
+
+export function TentIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 20 12 4l8 16" />
+      <path d="M8.5 20 12 12l3.5 8" />
+      <path d="M2 20h20" />
+    </svg>
+  );
+}
+
+export function GlobeIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18" />
+      <path d="M12 3c2.5 2.5 4 5.7 4 9s-1.5 6.5-4 9c-2.5-2.5-4-5.7-4-9s1.5-6.5 4-9Z" />
+    </svg>
+  );
+}
+
+export const TRAVEL_PLACE_ICONS = {
+  landmark: LandmarkIcon,
+  mountain: MountainIcon,
+  waves: WavesIcon,
+  building: BuildingIcon,
+  tent: TentIcon,
+  utensils: UtensilsIcon,
+} satisfies Record<string, (props: IconProps) => JSX.Element>;
+
+export type TravelPlaceIconKey = keyof typeof TRAVEL_PLACE_ICONS;
+
+export const TRAVEL_PLACE_ICON_LABELS: Record<TravelPlaceIconKey, string> = {
+  landmark: "Anıt / Tarihi Yer",
+  mountain: "Doğa / Milli Park",
+  waves: "Sahil / Plaj",
+  building: "Şehir Merkezi",
+  tent: "Kamp / Açık Hava",
+  utensils: "Yeme-İçme",
+};
 
 export const iconPalette = {
   rocket: RocketIcon,

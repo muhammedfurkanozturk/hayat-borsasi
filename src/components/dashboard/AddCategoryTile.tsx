@@ -50,7 +50,7 @@ export function AddCategoryTile({ emptyState = false }: { emptyState?: boolean }
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="btn flex w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-accent/40 bg-accent-soft px-6 py-10 text-accent hover:border-accent/60 hover:bg-accent/25"
+          className="btn flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-accent/40 bg-accent-soft px-6 py-10 text-accent hover:border-accent/60 hover:bg-accent/25"
         >
           <PlusIcon width={22} height={22} />
           <span className="text-base font-semibold">Kategori Eklemeye Başla</span>
@@ -59,26 +59,33 @@ export function AddCategoryTile({ emptyState = false }: { emptyState?: boolean }
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="btn flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-pro/50 bg-pro-soft text-pro hover:border-pro/70"
+          // CategoryTile.tsx'teki gerçek kategori kartlarıyla aynı satırı
+          // paylaştığı için sabit bir piksel yüksekliği tahmin etmek yerine
+          // (2026-08-26'da denendi, dar ekranlarda CategoryTile'ın içeriği
+          // daha uzun olduğunda hâlâ küçük kalıyordu) grid'in doğal
+          // items-stretch davranışına bırakıldı: h-full, satırdaki en uzun
+          // kart neyse ona eşitler; min-h sadece tek başına kaldığı satırlarda
+          // bir taban değer.
+          className="btn flex h-full min-h-[140px] w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-pro/50 bg-pro-soft text-pro hover:border-pro/70"
         >
-          <LockIcon width={18} height={18} />
-          <span className="text-xs font-medium">Pro&apos;ya Geç</span>
+          <LockIcon width={22} height={22} />
+          <span className="text-sm font-semibold">Pro&apos;ya Geç</span>
         </button>
       ) : (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="btn flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border text-muted shadow-sm hover:border-accent/40 hover:text-accent"
+          className="btn flex h-full min-h-[140px] w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border text-muted shadow-sm hover:border-accent/40 hover:text-accent"
         >
-          <PlusIcon width={18} height={18} />
-          <span className="text-xs">Kategori Ekle</span>
+          <PlusIcon width={22} height={22} />
+          <span className="text-sm font-medium">Kategori Ekle</span>
         </button>
       )}
 
       <Modal
         open={open && limitReached}
         onClose={close}
-        panelClassName="flex w-full max-w-sm flex-col items-center gap-4 rounded-2xl border border-border bg-background-elevated p-6 text-center"
+        panelClassName="flex w-full max-w-sm flex-col items-center gap-4 rounded-lg border border-border bg-background-elevated p-6 text-center"
       >
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-pro-soft text-pro">
           <LockIcon width={26} height={26} />
@@ -111,7 +118,7 @@ export function AddCategoryTile({ emptyState = false }: { emptyState?: boolean }
       <Modal
         open={open && !limitReached}
         onClose={close}
-        panelClassName="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl border border-border bg-background-elevated p-4 sm:p-6"
+        panelClassName="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-lg border border-border bg-background-elevated p-4 sm:p-6"
       >
         <h2 className="mb-5 text-base font-semibold text-foreground">Yeni Kategori</h2>
 
@@ -142,7 +149,7 @@ export function AddCategoryTile({ emptyState = false }: { emptyState?: boolean }
                   type="button"
                   onClick={() => pickIcon(key)}
                   title={iconLabels[key]}
-                  className={`btn flex h-12 w-12 items-center justify-center rounded-xl border-2 sm:h-14 sm:w-14 ${
+                  className={`btn flex h-12 w-12 items-center justify-center rounded-lg border-2 sm:h-14 sm:w-14 ${
                     icon === key
                       ? "border-accent/60 bg-accent-soft text-accent"
                       : "border-border-soft text-muted hover:border-border hover:text-foreground"

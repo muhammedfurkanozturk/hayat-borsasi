@@ -15,8 +15,11 @@ export function DeltaBadge({
   const isFlat = delta === 0;
   const isPositive = delta > 0;
 
+  // 2026-08-26: nötr (delta=0) rozet renksiz bg-white/5 kullanıyordu — sitenin
+  // geri kalanı sıcak bakır tonlarındayken bu tek başına "gri" ve kopuk
+  // duruyordu (kullanıcı bulgusu). accent-soft'a çevrildi, aynı ailede kalıyor.
   const tone = isFlat
-    ? "text-muted bg-white/5"
+    ? "text-muted bg-accent-soft"
     : isPositive
       ? "text-positive bg-positive-soft"
       : "text-negative bg-negative-soft";

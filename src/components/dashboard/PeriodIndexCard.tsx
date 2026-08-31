@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
+import { animate, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react";
 import {
   buildCalendarMonthSeries,
   buildCalendarYearSeries,
@@ -20,6 +21,30 @@ const periods = ["Günlük", "Haftalık", "Aylık", "Yıllık"] as const;
 type Period = (typeof periods)[number];
 
 const YEARLY_WINDOW_DAYS = 365;
+
+// Dashboard'un tek koreografili yükleme animasyonunun ikinci adımı — hero
+// sayı ilk yüklemede 0'dan sayarak belirir (bkz. MarketTicker.tsx). Periyot
+// değiştiğinde de aynı eğriyle yeni değere geçer, bu ayrı bir "floating"
+// mikro-etkileşim değil, veriye bağlı tek bir geçiş dili.
+function AnimatedScore({ value }: { value: number }) {
+  const prefersReducedMotion = useReducedMotion();
+  const motionValue = useMotionValue(0);
+  const display = useTransform(motionValue, (v) => v.toFixed(1));
+
+  useLayoutEffect(() => {
+    if (prefersReducedMotion) {
+      motionValue.set(value);
+      return;
+    }
+    const controls = animate(motionValue, value, { duration: 1.0, ease: [0.16, 1, 0.3, 1] });
+    return () => controls.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, prefersReducedMotion]);
+
+  return (
+    <motion.span className="font-mono text-3xl font-semibold tabular-nums text-foreground">{display}</motion.span>
+  );
+}
 
 export function PeriodIndexCard() {
   const [period, setPeriod] = useState<Period>("Günlük");
@@ -69,7 +94,7 @@ export function PeriodIndexCard() {
   }, [period, tasks, dailyHistory]);
 
   return (
-    <div className="flex flex-col gap-5 rounded-2xl border border-border bg-surface shadow-card p-5 ring-1 ring-accent/25 sm:flex-row sm:items-center sm:gap-6">
+    <div className="flex flex-col gap-5 rounded-lg border border-border bg-surface shadow-card p-5 ring-1 ring-accent/25 sm:flex-row sm:items-center sm:gap-6">
       <div className="flex flex-col gap-4 sm:w-[35%] sm:shrink-0">
         <SegmentedControl
           className="self-start"
@@ -83,9 +108,7 @@ export function PeriodIndexCard() {
             {period} Endeks
           </span>
           <div className="flex items-baseline gap-2">
-            <span className="font-mono text-3xl font-semibold tabular-nums text-foreground">
-              {value.toFixed(1)}
-            </span>
+            <AnimatedScore value={value} />
             <DeltaBadge delta={delta} />
           </div>
         </div>

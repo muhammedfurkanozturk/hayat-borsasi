@@ -13,6 +13,7 @@ import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { StructuredReportView } from "@/components/structured-report-view";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { useTheme } from "@/hooks/use-theme";
@@ -157,7 +158,7 @@ export default function RaporScreen() {
                   <Feather name="x" size={16} color={theme.negative} />
                 </Pressable>
               </View>
-              <ThemedText style={styles.previewText}>{preview}</ThemedText>
+              <StructuredReportView content={preview} />
             </View>
           )}
         </ScrollView>
@@ -215,5 +216,4 @@ const styles = StyleSheet.create({
   previewCard: { borderWidth: 1, borderRadius: 16, padding: 16, gap: 8 },
   previewHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   previewLabel: { fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 },
-  previewText: { fontSize: 13, lineHeight: 20 },
 });

@@ -1,9 +1,13 @@
 "use client";
 
+import { motion, useReducedMotion } from "motion/react";
+import { ActivityRingsCard } from "@/components/dashboard/ActivityRingsCard";
 import { AddCategoryTile } from "@/components/dashboard/AddCategoryTile";
 import { CategoryTile } from "@/components/dashboard/CategoryTile";
 import { DailyChecklist } from "@/components/dashboard/DailyChecklist";
+import { MarketTicker } from "@/components/dashboard/MarketTicker";
 import { PeriodIndexCard } from "@/components/dashboard/PeriodIndexCard";
+import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { ScoreChart } from "@/components/dashboard/ScoreChart";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { calculateScore } from "@/lib/scoring";
@@ -12,14 +16,31 @@ import { useAppData } from "@/lib/supabase/app-data-context";
 
 const YEARLY_WINDOW_DAYS = 365;
 
+// Dashboard'un tek koreografili yükleme animasyonunun son adımı — kategori
+// kutucukları ticker/hero sayının ardından sırayla beliriyor (bkz.
+// MarketTicker.tsx, PeriodIndexCard.tsx). prefers-reduced-motion'da
+// staggerChildren süresi sıfırlanıyor, kutucuklar anında görünür.
+const gridVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.06 } },
+};
+const tileVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const } },
+};
+
 export default function Home() {
   const { categories, tasks, dailyHistory } = useAppData();
+  const prefersReducedMotion = useReducedMotion();
 
   // Kategori kutucuklarındaki rozet, dünle kıyaslanan oynak bir yüzde değil
   // — "yılın kaç gününe karşılık geldiğin" mantığında yavaşça büyüyen bir
   // katkı oranı (1 tam gün tamamlama = 365'te 1). Geçmiş günler dailyHistory'den
   // gelir, bugünün payı ise canlı (optimistic) tasks state'inden hesaplanır.
   const today = todayIso();
+  const todayScorePercent = calculateScore(tasks);
+  const taskCompletionPercent = tasks.length > 0 ? (tasks.filter((t) => t.completed).length / tasks.length) * 100 : 0;
+
   const categoryTiles = categories.map((category) => {
     const categoryTasks = tasks.filter((task) => task.categoryId === category.id);
     const score = calculateScore(categoryTasks);
@@ -38,32 +59,64 @@ export default function Home() {
     };
   });
 
+  const completedTaskCount = tasks.filter((t) => t.completed).length;
+  const activeCategoryCount = categoryTiles.filter((c) => c.score > 0).length;
+  const activeCategoryPercent =
+    categoryTiles.length > 0 ? (activeCategoryCount / categoryTiles.length) * 100 : 0;
+
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex min-w-0 flex-1 flex-col">
       <PageHeader title="Dashboard" subtitle="Bugünkü genel görünüm" />
+      <MarketTicker items={categoryTiles.map((c) => ({ id: c.id, label: c.name, delta: c.delta }))} />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-6 py-8 sm:px-10">
         <PeriodIndexCard />
 
         {categories.length === 0 ? (
-          <div className="flex flex-col gap-4 rounded-2xl border border-border-soft p-8 text-center">
+          <div className="flex flex-col gap-4 rounded-lg border border-border-soft p-8 text-center">
             <p className="text-base font-medium text-foreground">
               Henüz hiç kategorin yok. İlk kategorini oluştur.
             </p>
             <AddCategoryTile emptyState />
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <motion.div
+            initial={prefersReducedMotion ? undefined : "hidden"}
+            animate={prefersReducedMotion ? undefined : "visible"}
+            variants={gridVariants}
+            className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+          >
             {categoryTiles.map((category) => (
-              <CategoryTile key={category.id} category={category} />
+              <motion.div key={category.id} variants={tileVariants}>
+                <CategoryTile category={category} />
+              </motion.div>
             ))}
-            <AddCategoryTile />
-          </div>
+            <motion.div variants={tileVariants}>
+              <AddCategoryTile />
+            </motion.div>
+          </motion.div>
         )}
 
         <ScoreChart />
 
-        <DailyChecklist />
+        {categories.length > 0 && <RecentActivityCard />}
+
+        {categories.length > 0 ? (
+          <div className="flex flex-col">
+            <ActivityRingsCard
+              scorePercent={todayScorePercent}
+              taskCompletionPercent={taskCompletionPercent}
+              completedTaskCount={completedTaskCount}
+              totalTaskCount={tasks.length}
+              activeCategoryPercent={activeCategoryPercent}
+              activeCategoryCount={activeCategoryCount}
+              totalCategoryCount={categoryTiles.length}
+            />
+            <DailyChecklist attached />
+          </div>
+        ) : (
+          <DailyChecklist />
+        )}
       </main>
     </div>
   );

@@ -47,7 +47,7 @@ export default function ProPage() {
 
       <main className="flex w-full flex-1 flex-col items-center gap-8 px-6 py-10 sm:px-10">
         {isPro ? (
-          <div className="flex max-w-md flex-col items-center gap-3 rounded-2xl border border-pro/30 bg-pro-soft px-8 py-10 text-center shadow-card">
+          <div className="flex max-w-md flex-col items-center gap-3 rounded-lg border border-pro/30 bg-pro-soft px-8 py-10 text-center shadow-card">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-pro text-pro-foreground">
               <CrownIcon width={26} height={26} strokeWidth={2.5} />
             </div>
@@ -55,7 +55,7 @@ export default function ProPage() {
             <p className="text-sm text-muted">Tüm Pro özellikler hesabında aktif.</p>
           </div>
         ) : (
-          <div className="flex w-full max-w-2xl flex-col gap-6 rounded-2xl border-2 border-pro/40 bg-surface p-7 shadow-card">
+          <div className="flex w-full max-w-2xl flex-col gap-6 rounded-lg border-2 border-pro/40 bg-surface p-7 shadow-card">
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-pro-soft text-pro">
                 <CrownIcon width={18} height={18} strokeWidth={2.5} />
@@ -67,7 +67,7 @@ export default function ProPage() {
               {plans.map((plan) => (
                 <div
                   key={plan.id}
-                  className={`card-lift flex flex-col gap-3 rounded-xl border-2 p-5 ${
+                  className={`card-lift flex flex-col gap-3 rounded-lg border-2 p-5 ${
                     plan.highlighted ? "border-pro/60 bg-pro-soft/30" : "border-border-soft bg-background-elevated"
                   }`}
                 >

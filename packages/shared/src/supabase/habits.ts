@@ -5,6 +5,7 @@ export interface DbHabitRelapse {
   id: string;
   date: string;
   note_text: string;
+  created_at: string;
 }
 
 export interface DbHabitNote {
@@ -39,7 +40,7 @@ export async function fetchTaskCompletionDates(
 export async function fetchRelapses(supabase: SupabaseClient, taskId: string): Promise<DbHabitRelapse[]> {
   const { data, error } = await supabase
     .from("habit_relapses")
-    .select("id, date, note_text")
+    .select("id, date, note_text, created_at")
     .eq("task_id", taskId)
     .order("date", { ascending: false });
   if (error) throw error;
@@ -62,7 +63,7 @@ export async function upsertRelapse(
       { user_id: userId, task_id: taskId, date, note_text: noteText },
       { onConflict: "task_id,date" }
     )
-    .select("id, date, note_text")
+    .select("id, date, note_text, created_at")
     .single();
   if (error) throw error;
   return data;
@@ -100,5 +101,45 @@ export async function insertHabitNote(
 
 export async function deleteHabitNote(supabase: SupabaseClient, noteId: string) {
   const { error } = await supabase.from("habit_notes").delete().eq("id", noteId);
+  if (error) throw error;
+}
+
+export interface DbHabitReward {
+  id: string;
+  title: string;
+  target_amount: number;
+}
+
+// Quitzilla'daki (piyasa araştırması) tasarrufa bağlı özel ödül fikri —
+// "ulaşıldı mı" durumu burada saklanmıyor, canlı hesaplanan tasarruf
+// tutarıyla karşılaştırılarak istemci tarafında türetiliyor.
+export async function fetchHabitRewards(supabase: SupabaseClient, taskId: string): Promise<DbHabitReward[]> {
+  const { data, error } = await supabase
+    .from("habit_rewards")
+    .select("id, title, target_amount")
+    .eq("task_id", taskId)
+    .order("target_amount", { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function insertHabitReward(
+  supabase: SupabaseClient,
+  userId: string,
+  taskId: string,
+  title: string,
+  targetAmount: number
+): Promise<DbHabitReward> {
+  const { data, error } = await supabase
+    .from("habit_rewards")
+    .insert({ user_id: userId, task_id: taskId, title, target_amount: targetAmount })
+    .select("id, title, target_amount")
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteHabitReward(supabase: SupabaseClient, rewardId: string) {
+  const { error } = await supabase.from("habit_rewards").delete().eq("id", rewardId);
   if (error) throw error;
 }

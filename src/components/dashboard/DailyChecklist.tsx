@@ -13,7 +13,7 @@ const periodOptions: { value: TaskFrequency; label: string }[] = [
   { value: "monthly", label: "Aylık" },
 ];
 
-export function DailyChecklist() {
+export function DailyChecklist({ attached = false }: { attached?: boolean }) {
   const { tasks, categories } = useAppData();
   const [period, setPeriod] = useState<TaskFrequency>("daily");
 
@@ -36,7 +36,16 @@ export function DailyChecklist() {
     .filter((group) => group.tasks.length > 0);
 
   return (
-    <div className="flex flex-1 flex-col rounded-2xl border border-border bg-surface shadow-card p-5">
+    <div
+      // ActivityRingsCard'ın altına doğrudan bitişik render edildiğinde
+      // (bkz. DashboardClient.tsx) üst kenar/köşe/gölgeyi kaldırıp tek bir
+      // kartın alt yarısıymış gibi görünmesini sağlıyor (2026-08-26).
+      className={`flex flex-1 flex-col border-border bg-surface p-5 ${
+        attached
+          ? "rounded-b-lg border-x border-b border-t border-t-border-soft shadow-card"
+          : "rounded-lg border shadow-card"
+      }`}
+    >
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-sm font-medium text-foreground">Görevler</h2>
@@ -62,16 +71,20 @@ export function DailyChecklist() {
           Bu periyotta henüz görevin yok. Bir kategoriye girip görev ekleyerek başla.
         </p>
       ) : (
-        <div className="flex flex-col gap-4">
-          {groups.map(({ category, tasks: groupTasks }) => (
-            <div key={category.id} className="rounded-xl border-2 border-muted/30 bg-background-elevated p-3">
-              <div className="mb-2 flex items-center gap-2 px-1">
-                <AppIcon name={category.icon} width={16} height={16} className="text-accent" />
-                <span className="text-xs font-medium uppercase tracking-wider text-muted">{category.name}</span>
+        // DESIGN.md — "defter" deseni: her kategori artık kendi kutusuna
+        // hapsedilmiyor, tek akan bir listede ince ayırıcı çizgilerle
+        // (.ledger-row) bölünüyor. Kategori kutu-içinde-kutu tekrarının
+        // yerine geçiyor.
+        <div className="flex flex-col">
+          {groups.map(({ category, tasks: groupTasks }, i) => (
+            <div key={category.id} className={i > 0 ? "mt-3 border-t border-border-soft pt-3" : ""}>
+              <div className="mb-1 flex items-center gap-2 px-1">
+                <AppIcon name={category.icon} width={14} height={14} className="text-accent" />
+                <span className="text-[11px] font-medium uppercase tracking-wider text-muted">{category.name}</span>
               </div>
-              <ul className="flex flex-col gap-1">
+              <ul className="flex flex-col">
                 {groupTasks.map((task) => (
-                  <li key={task.id}>
+                  <li key={task.id} className="ledger-row">
                     <TaskRow task={task} />
                   </li>
                 ))}

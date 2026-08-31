@@ -94,7 +94,7 @@ export function ReportArchive() {
     const todayDay = Number(todayIso().slice(8, 10));
 
     return (
-      <div className="modal-in flex flex-col gap-4 rounded-2xl border border-border bg-surface shadow-card p-5">
+      <div className="modal-in flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5">
         <button
           type="button"
           onClick={() => setView("months")}
@@ -137,7 +137,7 @@ export function ReportArchive() {
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface shadow-card p-5">
+    <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5">
       <h2 className="text-sm font-medium text-foreground">AI Raporları Arşivi</h2>
       <div className="flex items-center gap-2">
         <button

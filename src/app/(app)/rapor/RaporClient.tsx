@@ -5,6 +5,7 @@ import { useState } from "react";
 import { LockIcon } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ReportArchive } from "@/components/rapor/ReportArchive";
+import { StructuredReportView } from "@/components/rapor/StructuredReportView";
 import { buildCalendarMonthSeries, buildCalendarYearSeries, makeScoreForDate, nonNullScores } from "@/lib/chartSeries";
 import type { ReportPeriod } from "@/lib/report";
 import { average, calculateScore } from "@/lib/scoring";
@@ -143,7 +144,7 @@ export default function RaporPage() {
         )}
 
         <div
-          className={`flex flex-col gap-4 rounded-2xl border border-border bg-surface shadow-card p-5 ${locked ? "pointer-events-none blur-sm select-none" : ""}`}
+          className={`flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5 ${locked ? "pointer-events-none blur-sm select-none" : ""}`}
         >
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             {periods.map((p) => (
@@ -152,7 +153,7 @@ export default function RaporPage() {
                 type="button"
                 onClick={() => handleGenerate(p)}
                 disabled={loadingPeriod !== null}
-                className="btn card-lift flex items-center justify-center gap-2 rounded-xl border-2 border-border-soft bg-background-elevated px-4 py-4 text-sm font-semibold text-foreground hover:border-accent/50 hover:text-accent disabled:pointer-events-none disabled:opacity-50"
+                className="btn card-lift flex items-center justify-center gap-2 rounded-lg border-2 border-border-soft bg-background-elevated px-4 py-4 text-sm font-semibold text-foreground hover:border-accent/50 hover:text-accent disabled:pointer-events-none disabled:opacity-50"
               >
                 {loadingPeriod === p ? (
                   <>
@@ -176,7 +177,7 @@ export default function RaporPage() {
         </div>
 
         {livePreview && activePeriod && (
-          <div className="modal-in rounded-2xl border border-accent/30 bg-accent-soft/10 p-5">
+          <div className="modal-in rounded-lg border border-accent/30 bg-accent-soft/10 p-5">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-xs font-medium uppercase tracking-wider text-accent">
                 Anlık {activePeriod} Özeti
@@ -189,7 +190,7 @@ export default function RaporPage() {
                 Kapat
               </button>
             </div>
-            <p className="text-sm leading-relaxed text-foreground">{livePreview}</p>
+            <StructuredReportView content={livePreview} />
           </div>
         )}
 

@@ -67,7 +67,7 @@ export function ScoreChart() {
   const barGap = range === "Aylık" ? "6%" : "20%";
 
   return (
-    <div className="flex flex-1 flex-col rounded-2xl border border-border bg-surface shadow-card p-5">
+    <div className="flex flex-1 flex-col rounded-lg border border-border bg-surface shadow-card p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-medium text-foreground">Skor Trendi</h2>
