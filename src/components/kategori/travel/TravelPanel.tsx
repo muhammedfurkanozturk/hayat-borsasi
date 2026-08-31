@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   fetchTravelVisits,
   toggleTravelVisit,
@@ -44,6 +44,16 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
   const [selected, setSelected] = useState<SelectedVisit | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
   const [savingNote, setSavingNote] = useState(false);
+  const detailPanelRef = useRef<HTMLDivElement>(null);
+
+  // Dünya haritası (800x600 viewBox) uzun bir kart olduğu için, seçim
+  // panelinin altta kalıp fark edilmemesi kullanıcı testinde bulunan gerçek
+  // bir sorundu (Türkiye'ye tıklayınca sadece rengin değiştiği görülüyor,
+  // "Türkiye İllerini Gör" butonu sayfanın çok aşağısında kaldığı için hiç
+  // görülmüyordu) — bir ülke/il seçilince panel otomatik ekrana kayıyor.
+  useEffect(() => {
+    if (selected) detailPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [selected]);
 
   async function load() {
     setLoadError(null);
@@ -79,13 +89,22 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
   const levelVisits = selected?.level === "province" ? provinceVisits : countryVisits;
   const selectedVisit = selected ? levelVisits.find((v) => v.ref_code === selected.refCode) ?? null : null;
 
+  // GERÇEK HATA (2026-09-02, kullanıcı bulgusu — "notu kaydetmiyor"): Bu
+  // fonksiyonlar önceden HER tıklamada koşulsuz toggle yapıyordu — zaten
+  // ziyaret edilmiş bir ülkeye/ile notunu görmek/düzenlemek için tekrar
+  // tıklamak, ziyareti (ve notunu) sessizce SİLİYORDU. Artık sadece HENÜZ
+  // ziyaret edilmemiş bir yere tıklamak "ziyaret edildi" olarak işaretliyor
+  // (been.app tarzı scratch-map dolgusu bu ilk tıklamada hâlâ aynı); zaten
+  // işaretli bir yere tıklamak SADECE panelini açıyor, siliyor değil —
+  // kaldırmak için artık SADECE panel içindeki "Ziyareti Kaldır" butonu var.
   async function handleToggleCountry(refCode: string, name: string) {
     const existing = countryVisits.find((v) => v.ref_code === refCode) ?? null;
     setSelected({ level: "country", refCode, name });
     setNoteDraft(existing?.note ?? "");
+    if (existing) return;
     const supabase = createClient();
     try {
-      await toggleTravelVisit(supabase, categoryId, "country", refCode, existing?.id ?? null);
+      await toggleTravelVisit(supabase, categoryId, "country", refCode, null);
       await load();
     } catch (err) {
       console.error("Ziyaret güncellenemedi:", err);
@@ -97,9 +116,10 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
     const existing = provinceVisits.find((v) => v.ref_code === refCode) ?? null;
     setSelected({ level: "province", refCode, name });
     setNoteDraft(existing?.note ?? "");
+    if (existing) return;
     const supabase = createClient();
     try {
-      await toggleTravelVisit(supabase, categoryId, "province", refCode, existing?.id ?? null);
+      await toggleTravelVisit(supabase, categoryId, "province", refCode, null);
       await load();
     } catch (err) {
       console.error("Ziyaret güncellenemedi:", err);
@@ -194,13 +214,29 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
       )}
 
       {selected && (
-        <div className="flex flex-col gap-3 rounded-lg border-2 border-accent/25 bg-accent-soft/20 p-4">
+        <div ref={detailPanelRef} className="flex flex-col gap-3 rounded-lg border-2 border-accent/25 bg-accent-soft/20 p-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium text-foreground">{selected.name}</h3>
             <button type="button" onClick={() => setSelected(null)} className="btn text-xs text-muted hover:text-foreground">
               Kapat
             </button>
           </div>
+
+          {/* Türkiye'nin il haritasına geçiş — kullanıcı testinde bulundu:
+              bu buton eskiden not kutusunun ALTINDAYDI, uzun dünya haritası
+              kartının altında kalınca fark edilmiyordu ("sadece turunu
+              oluyor, ileri gidemiyorum" geri bildirimi). Şimdi panelin en
+              üstünde, tek başına belirgin bir birincil buton. */}
+          {isTurkeySelected && (
+            <button
+              type="button"
+              onClick={handleOpenTurkeyProvinces}
+              className="btn flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground hover:opacity-90"
+            >
+              Türkiye İllerini Gör →
+            </button>
+          )}
+
           {selectedVisit ? (
             <>
               <p className="text-xs text-muted">
@@ -230,30 +266,10 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
                   <TrashIcon width={12} height={12} />
                   Ziyareti Kaldır
                 </button>
-                {isTurkeySelected && (
-                  <button
-                    type="button"
-                    onClick={handleOpenTurkeyProvinces}
-                    className="btn ml-auto rounded-md border border-accent/40 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent-soft"
-                  >
-                    Türkiye İllerini Gör →
-                  </button>
-                )}
               </div>
             </>
           ) : (
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs text-muted">İşaretlemek için tekrar tıkla.</p>
-              {isTurkeySelected && (
-                <button
-                  type="button"
-                  onClick={handleOpenTurkeyProvinces}
-                  className="btn rounded-md border border-accent/40 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent-soft"
-                >
-                  Türkiye İllerini Gör →
-                </button>
-              )}
-            </div>
+            <p className="text-xs text-muted">İşaretlemek için tekrar tıkla.</p>
           )}
         </div>
       )}

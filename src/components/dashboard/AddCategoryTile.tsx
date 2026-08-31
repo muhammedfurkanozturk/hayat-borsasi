@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { AppIcon, LockIcon, PlusIcon, iconLabels, iconPalette, type IconKey } from "@/components/icons";
+import { ONBOARDING_TEMPLATES, type OnboardingTemplate } from "@hayat-borsasi/shared";
+import { AppIcon, ArrowLeftIcon, LockIcon, PlusIcon, iconLabels, iconPalette, type IconKey } from "@/components/icons";
 import { Modal } from "@/components/ui/Modal";
 import { useAppData } from "@/lib/supabase/app-data-context";
 import { useProfile } from "@/lib/supabase/profile-context";
@@ -11,21 +12,36 @@ const iconOptions = Object.keys(iconPalette) as IconKey[];
 export const FREE_CATEGORY_LIMIT = 6;
 
 export function AddCategoryTile({ emptyState = false }: { emptyState?: boolean }) {
-  const { addCategory, categories } = useAppData();
+  const { addCategory, addCategoriesFromTemplates, categories } = useAppData();
   const { isPro } = useProfile();
   const [open, setOpen] = useState(false);
+  // "templates" — hazır özelleştirilmiş kategori kartları (Beslenme, Spor,
+  // Seyahat vb.) + "kendi kategorimi oluştur" seçeneği burada. Kullanıcı
+  // "otomatik olmalı, kategori eklerken hazır kategoriler de çıkmalı" dedi
+  // (2026-09-02) — önceden bu şablonlar SADECE hesap açılışındaki /onboarding
+  // ekranında vardı, normal "Kategori Ekle" akışında hiç görünmüyordu.
+  const [step, setStep] = useState<"templates" | "custom">("templates");
   const [name, setName] = useState("");
   const [nameTouched, setNameTouched] = useState(false);
   const [icon, setIcon] = useState<IconKey>("star");
   const [saving, setSaving] = useState(false);
+  const [addingTemplateKey, setAddingTemplateKey] = useState<string | null>(null);
 
   const limitReached = !isPro && categories.length >= FREE_CATEGORY_LIMIT;
+  // Zaten o modüle sahipse (örn. bir "Seyahat" kategorisi varsa) aynı
+  // şablonu tekrar önermiyoruz — RoadmapTemplatePicker'daki "var olanı
+  // filtrele" deseniyle aynı mantık.
+  const availableTemplates = ONBOARDING_TEMPLATES.filter(
+    (t) => !categories.some((c) => c.moduleType === t.moduleType)
+  );
 
   function close() {
     setOpen(false);
+    setStep("templates");
     setName("");
     setNameTouched(false);
     setIcon("star");
+    setAddingTemplateKey(null);
   }
 
   function pickIcon(key: IconKey) {
@@ -41,6 +57,13 @@ export function AddCategoryTile({ emptyState = false }: { emptyState?: boolean }
     setSaving(true);
     await addCategory(name, icon);
     setSaving(false);
+    close();
+  }
+
+  async function handleAddTemplate(template: OnboardingTemplate) {
+    setAddingTemplateKey(template.key);
+    await addCategoriesFromTemplates([{ name: template.name, icon: template.icon, moduleType: template.moduleType }]);
+    setAddingTemplateKey(null);
     close();
   }
 
@@ -120,64 +143,137 @@ export function AddCategoryTile({ emptyState = false }: { emptyState?: boolean }
         onClose={close}
         panelClassName="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-lg border border-border bg-background-elevated p-4 sm:p-6"
       >
-        <h2 className="mb-5 text-base font-semibold text-foreground">Yeni Kategori</h2>
+        {step === "templates" ? (
+          <div className="flex min-h-0 flex-1 flex-col gap-5">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-base font-semibold text-foreground">Yeni Kategori</h2>
+              <p className="text-xs text-muted">
+                Hazır, özelleştirilmiş bir kategoriyle başla ya da kendi kategorini elle oluştur.
+              </p>
+            </div>
 
-        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col gap-5">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="category-name" className="text-xs text-muted">
-              Kategori adı
-            </label>
-            <input
-              id="category-name"
-              autoFocus
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                setNameTouched(true);
-              }}
-              placeholder="örn. Finans"
-              className="rounded-lg border border-border-soft bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent/50"
-            />
-          </div>
+            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+              {availableTemplates.length > 0 && (
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                  {availableTemplates.map((template) => {
+                    const isAdding = addingTemplateKey === template.key;
+                    return (
+                      <button
+                        key={template.key}
+                        type="button"
+                        onClick={() => handleAddTemplate(template)}
+                        disabled={addingTemplateKey !== null}
+                        className="btn flex items-start gap-3 rounded-lg border-2 border-border-soft bg-surface p-4 text-left shadow-sm transition-colors hover:border-accent/50 hover:bg-accent-soft disabled:pointer-events-none disabled:opacity-60"
+                      >
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent">
+                          <AppIcon name={template.icon} width={18} height={18} />
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-sm font-semibold text-foreground">
+                            {isAdding ? "Ekleniyor..." : template.name}
+                          </span>
+                          <span className="text-xs leading-relaxed text-muted">{template.description}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
-          <div className="flex min-h-0 flex-1 flex-col gap-2">
-            <span className="text-xs text-muted">İkon seç</span>
-            <div className="grid min-h-0 flex-1 grid-cols-4 gap-2.5 overflow-y-auto pr-1 sm:grid-cols-6 sm:gap-3 md:grid-cols-8">
-              {iconOptions.map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => pickIcon(key)}
-                  title={iconLabels[key]}
-                  className={`btn flex h-12 w-12 items-center justify-center rounded-lg border-2 sm:h-14 sm:w-14 ${
-                    icon === key
-                      ? "border-accent/60 bg-accent-soft text-accent"
-                      : "border-border-soft text-muted hover:border-border hover:text-foreground"
-                  }`}
-                >
-                  <AppIcon name={key} width={22} height={22} />
-                </button>
-              ))}
+              <button
+                type="button"
+                onClick={() => setStep("custom")}
+                className="btn mt-2.5 flex w-full items-center gap-3 rounded-lg border-2 border-dashed border-border p-4 text-left text-muted hover:border-accent/40 hover:text-accent"
+              >
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface">
+                  <PlusIcon width={18} height={18} />
+                </div>
+                <span className="text-sm font-medium">Kendi Kategorimi Oluştur</span>
+              </button>
+            </div>
+
+            <div className="flex justify-end pt-1">
+              <button
+                type="button"
+                onClick={close}
+                className="btn rounded-lg px-3 py-2 text-sm text-muted hover:text-foreground"
+              >
+                Vazgeç
+              </button>
             </div>
           </div>
+        ) : (
+          <>
+            <div className="mb-5 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setStep("templates")}
+                className="btn rounded-lg p-1.5 text-muted hover:text-foreground"
+                aria-label="Şablonlara dön"
+              >
+                <ArrowLeftIcon width={16} height={16} />
+              </button>
+              <h2 className="text-base font-semibold text-foreground">Kendi Kategorimi Oluştur</h2>
+            </div>
 
-          <div className="flex justify-end gap-2 pt-1">
-            <button
-              type="button"
-              onClick={close}
-              className="btn rounded-lg px-3 py-2 text-sm text-muted hover:text-foreground"
-            >
-              Vazgeç
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="btn rounded-lg bg-accent-soft px-3 py-2 text-sm font-medium text-accent hover:bg-accent/25 disabled:pointer-events-none disabled:opacity-50"
-            >
-              {saving ? "Ekleniyor..." : "Ekle"}
-            </button>
-          </div>
-        </form>
+            <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col gap-5">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="category-name" className="text-xs text-muted">
+                  Kategori adı
+                </label>
+                <input
+                  id="category-name"
+                  autoFocus
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setNameTouched(true);
+                  }}
+                  placeholder="örn. Finans"
+                  className="rounded-lg border border-border-soft bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent/50"
+                />
+              </div>
+
+              <div className="flex min-h-0 flex-1 flex-col gap-2">
+                <span className="text-xs text-muted">İkon seç</span>
+                <div className="grid min-h-0 flex-1 grid-cols-4 gap-2.5 overflow-y-auto pr-1 sm:grid-cols-6 sm:gap-3 md:grid-cols-8">
+                  {iconOptions.map((key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => pickIcon(key)}
+                      title={iconLabels[key]}
+                      className={`btn flex h-12 w-12 items-center justify-center rounded-lg border-2 sm:h-14 sm:w-14 ${
+                        icon === key
+                          ? "border-accent/60 bg-accent-soft text-accent"
+                          : "border-border-soft text-muted hover:border-border hover:text-foreground"
+                      }`}
+                    >
+                      <AppIcon name={key} width={22} height={22} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={close}
+                  className="btn rounded-lg px-3 py-2 text-sm text-muted hover:text-foreground"
+                >
+                  Vazgeç
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="btn rounded-lg bg-accent-soft px-3 py-2 text-sm font-medium text-accent hover:bg-accent/25 disabled:pointer-events-none disabled:opacity-50"
+                >
+                  {saving ? "Ekleniyor..." : "Ekle"}
+                </button>
+              </div>
+            </form>
+          </>
+        )}
       </Modal>
     </>
   );
