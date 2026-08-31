@@ -64,7 +64,15 @@
   --glass-shadow: 0 24px 70px -12px rgba(0, 0, 0, 0.55);
 }
 
-/* Açık tema — apple.com/tr/airpods paletinden türetildi. */
+/* Açık tema — background/surface/border/foreground/muted apple.com/tr/airpods
+   paletinden türetildi. --accent* GENE KOYU TEMAYLA AYNI bakır (#d9713a) —
+   2026-08-31 tasarım revizyonu "tek vurgu rengi" kuralını koydu ama bu blok
+   o turda unutulmuş, eski Apple mavisinde (#0071e3) kalmıştı (2026-09-02'de
+   canlı tarayıcı testinde bulundu — dünya haritasında seçili ülke maviye
+   boyanıyordu, DESIGN.md'nin bakır kuralını ihlal ediyordu). --accent-foreground
+   de koyu temadaki gibi koyu kahve (#1a0d04) olmalı — beyaz metin #d9713a
+   zemininde WCAG AA kontrastını (4.5:1) geçmiyor, eski mavi zeminde geçtiği
+   için beyazdı, artık geçmiyor. */
 :root[data-theme="light"] {
   --background: #f5f5f7;
   --background-elevated: #ffffff;
@@ -75,9 +83,9 @@
   --foreground: #1d1d1f;
   --muted: #48484c;
   --muted-soft: #48484c;
-  --accent: #0071e3;
-  --accent-soft: #0071e31a;
-  --accent-foreground: #ffffff;
+  --accent: #d9713a;
+  --accent-soft: #d9713a1a;
+  --accent-foreground: #1a0d04;
   --positive: #16a34a;
   --positive-soft: #16a34a1a;
   --negative: #dc2626;
