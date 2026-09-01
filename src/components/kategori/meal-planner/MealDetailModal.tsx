@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PencilIcon, TrashIcon, UtensilsIcon } from "@/components/icons";
+import { PencilIcon, SparkleIcon, TrashIcon, UtensilsIcon } from "@/components/icons";
 import { Modal } from "@/components/ui/Modal";
 import type { DbMealLog, DbSavedFood, NutritionValuesPatch } from "@hayat-borsasi/shared";
 import { matchFoodIcon } from "./food-icon-match";
@@ -89,7 +89,7 @@ export function MealDetailModal({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={photoUrl} alt={food.description} className="h-48 w-full object-cover" />
           ) : (
-            <div className="flex h-32 w-full items-center justify-center bg-accent-soft text-accent">
+            <div className="flex h-32 w-full items-center justify-center bg-[color:var(--nutrition-accent)]/15 text-[color:var(--nutrition-accent)]">
               {(() => {
                 const MatchedIcon = matchFoodIcon(food.description || "");
                 return MatchedIcon ? <MatchedIcon width={36} height={36} /> : <UtensilsIcon width={32} height={32} />;
@@ -122,7 +122,18 @@ export function MealDetailModal({
               </div>
             </div>
 
-            {food.ai_summary && <p className="text-sm italic text-muted">{food.ai_summary}</p>}
+            {food.ai_summary && (
+              <div className="flex items-start gap-2">
+                <span
+                  className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                  style={{ background: "#b39ddb26", color: "#8b6fc7" }}
+                >
+                  <SparkleIcon width={10} height={10} />
+                  AI
+                </span>
+                <p className="text-sm italic text-muted">{food.ai_summary}</p>
+              </div>
+            )}
 
             {editing ? (
               <div className="flex flex-col gap-3">
@@ -137,7 +148,7 @@ export function MealDetailModal({
                     type="button"
                     onClick={handleSave}
                     disabled={saving}
-                    className="btn h-9 rounded-lg bg-accent px-4 text-xs font-semibold text-accent-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+                    className="btn h-9 rounded-lg bg-[color:var(--nutrition-accent)] px-4 text-xs font-semibold text-[color:var(--nutrition-accent-fg)] hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
                   >
                     {saving ? "Kaydediliyor..." : "Kaydet"}
                   </button>

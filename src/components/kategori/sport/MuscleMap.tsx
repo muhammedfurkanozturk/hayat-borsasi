@@ -73,9 +73,9 @@ export function MuscleMap({
       const partState = bodyState[id];
       const active = !!partState && (partState.intensity > 0 || partState.selected);
       const isSelected = group != null && selectedMuscle === group;
-      path.style.fill = active ? "var(--accent)" : "var(--muted)";
+      path.style.fill = active ? "var(--sport-accent)" : "var(--sport-muted)";
       path.style.fillOpacity = active ? String(0.25 + (partState?.intensity ?? 0) * 0.065) : "0.18";
-      path.style.stroke = isSelected ? "var(--accent)" : "transparent";
+      path.style.stroke = isSelected ? "var(--sport-accent)" : "transparent";
       path.style.strokeWidth = isSelected ? "0.6" : "0";
       path.style.filter = "none";
     });

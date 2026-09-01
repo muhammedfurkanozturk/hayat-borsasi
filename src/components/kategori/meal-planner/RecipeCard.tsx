@@ -146,7 +146,7 @@ export function RecipeCard({ recipe, onCourseClick }: { recipe: Recipe; onCourse
             </span>
           )}
           {totalMinutes != null && (
-            <span className="flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent">
+            <span className="flex items-center gap-1.5 rounded-full border border-[color:var(--nutrition-accent)]/30 bg-[color:var(--nutrition-accent)]/15 px-2.5 py-1 text-xs font-medium text-[color:var(--nutrition-accent)]">
               Toplam: ~{totalMinutes} dk
             </span>
           )}
@@ -168,12 +168,12 @@ export function RecipeCard({ recipe, onCourseClick }: { recipe: Recipe; onCourse
                 <button
                   type="button"
                   onClick={() => onCourseClick(recipe.ogun_turu!)}
-                  className="btn rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-medium text-accent hover:bg-accent/25"
+                  className="btn rounded-full bg-[color:var(--nutrition-accent)]/15 px-2 py-0.5 text-[11px] font-medium text-[color:var(--nutrition-accent)] hover:bg-[color:var(--nutrition-accent)]/25"
                 >
                   {RECIPE_COURSE_LABELS[recipe.ogun_turu]}
                 </button>
               ) : (
-                <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-medium text-accent">
+                <span className="rounded-full bg-[color:var(--nutrition-accent)]/15 px-2 py-0.5 text-[11px] font-medium text-[color:var(--nutrition-accent)]">
                   {RECIPE_COURSE_LABELS[recipe.ogun_turu]}
                 </span>
               ))}
@@ -188,7 +188,7 @@ export function RecipeCard({ recipe, onCourseClick }: { recipe: Recipe; onCourse
       </div>
 
       {isLong && (
-        <div className="flex gap-3 text-xs text-accent print:hidden">
+        <div className="flex gap-3 text-xs text-[color:var(--nutrition-accent)] print:hidden">
           <button type="button" onClick={() => ingredientsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })} className="btn hover:underline">
             ↓ Malzemeler
           </button>
@@ -202,7 +202,7 @@ export function RecipeCard({ recipe, onCourseClick }: { recipe: Recipe; onCourse
         <div ref={ingredientsRef} className="flex flex-col gap-3 rounded-lg border-2 border-muted/20 bg-background-elevated p-3.5">
           {ingredientGroups.map((group, gi) => (
             <div key={gi} className="flex flex-col gap-1.5">
-              {group.grup && <span className="text-xs font-semibold text-accent">{group.grup}</span>}
+              {group.grup && <span className="text-xs font-semibold text-[color:var(--nutrition-accent)]">{group.grup}</span>}
               {!group.grup && ingredientGroups.length === 1 && (
                 <span className="text-xs font-medium uppercase tracking-wider text-muted">Malzemeler</span>
               )}

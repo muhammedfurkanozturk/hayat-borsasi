@@ -26,11 +26,28 @@ function RestTimer({ startedAt }: { startedAt: number }) {
 
   if (remaining === 0) return null;
 
+  // Freeletics'in aktif egzersiz ekranındaki segmentli/bloklu ilerleme
+  // çubuğu — bu projede tam-ekran bir "aktif egzersiz" seansı yok (hareket
+  // kaydı sürükle-bırak + form tabanlı), o yüzden aynı görsel dil dinlenme
+  // sayacına uygulandı: mavi dolu blok = geçen süre, gri blok = kalan.
+  const SEGMENTS = 10;
+  const filledSegments = Math.round(((REST_SECONDS - remaining) / REST_SECONDS) * SEGMENTS);
+
   return (
-    <span className="flex w-fit items-center gap-1.5 rounded-lg border-2 border-accent/40 bg-accent-soft/30 px-2 py-1 font-mono text-xs tabular-nums text-accent">
-      <ClockIcon width={12} height={12} />
-      Dinlen: {remaining}sn
-    </span>
+    <div className="flex w-fit flex-col gap-1 rounded-lg border-2 border-[color:var(--sport-accent)]/40 bg-[color:var(--sport-accent)]/20 px-2 py-1.5">
+      <span className="flex items-center gap-1.5 font-mono text-xs tabular-nums text-[color:var(--sport-accent)]">
+        <ClockIcon width={12} height={12} />
+        Dinlen: {remaining}sn
+      </span>
+      <div className="flex gap-0.5">
+        {Array.from({ length: SEGMENTS }).map((_, i) => (
+          <span
+            key={i}
+            className={`h-1.5 flex-1 rounded-full ${i < filledSegments ? "bg-[color:var(--sport-accent)]" : "bg-[color:var(--sport-muted)]/25"}`}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -66,10 +83,10 @@ function PendingEntryForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-1.5 rounded-lg border-2 border-accent/40 bg-accent-soft/30 p-2">
-      <span className="text-xs font-medium text-foreground">{exerciseName}</span>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-1.5 rounded-lg border-2 border-[color:var(--sport-accent)]/40 bg-[color:var(--sport-accent)]/20 p-2">
+      <span className="text-xs font-black italic uppercase tracking-tight text-[color:var(--sport-text)]">{exerciseName}</span>
       {defaults && (
-        <span className="text-[10px] text-muted">
+        <span className="text-[10px] text-[color:var(--sport-muted)]">
           Önceki seans: {defaults.reps} tekrar × {defaults.weightKg != null ? `${defaults.weightKg}kg` : "-"} (otomatik dolduruldu,
           değiştirebilirsin)
         </span>
@@ -81,31 +98,31 @@ function PendingEntryForm({
           onChange={(e) => setSetsCount(e.target.value)}
           placeholder="Set"
           inputMode="numeric"
-          className="h-8 w-14 rounded-md border-2 border-muted/30 bg-surface px-2 text-xs text-foreground outline-none focus:border-accent/50"
+          className="h-8 w-14 rounded-md border-2 border-[color:var(--sport-muted)]/30 bg-[color:var(--sport-surface)] px-2 text-xs text-[color:var(--sport-text)] outline-none focus:border-[color:var(--sport-accent)]/50"
         />
         <input
           value={reps}
           onChange={(e) => setReps(e.target.value)}
           placeholder="Tekrar"
           inputMode="numeric"
-          className="h-8 w-16 rounded-md border-2 border-muted/30 bg-surface px-2 text-xs text-foreground outline-none focus:border-accent/50"
+          className="h-8 w-16 rounded-md border-2 border-[color:var(--sport-muted)]/30 bg-[color:var(--sport-surface)] px-2 text-xs text-[color:var(--sport-text)] outline-none focus:border-[color:var(--sport-accent)]/50"
         />
         <input
           value={weightKg}
           onChange={(e) => setWeightKg(e.target.value)}
           placeholder="kg"
           inputMode="decimal"
-          className="h-8 w-16 rounded-md border-2 border-muted/30 bg-surface px-2 text-xs text-foreground outline-none focus:border-accent/50"
+          className="h-8 w-16 rounded-md border-2 border-[color:var(--sport-muted)]/30 bg-[color:var(--sport-surface)] px-2 text-xs text-[color:var(--sport-text)] outline-none focus:border-[color:var(--sport-accent)]/50"
         />
       </div>
       <div className="flex gap-1.5">
-        <button type="submit" className="btn h-7 flex-1 rounded-md bg-accent px-2 text-xs font-semibold text-accent-foreground hover:opacity-90">
+        <button type="submit" className="btn h-7 flex-1 rounded-md bg-[color:var(--sport-accent)] px-2 text-xs font-semibold text-white hover:opacity-90">
           Kaydet
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="btn h-7 rounded-md border-2 border-muted/30 px-2 text-xs text-muted hover:text-foreground"
+          className="btn h-7 rounded-md border-2 border-[color:var(--sport-muted)]/30 px-2 text-xs text-[color:var(--sport-muted)] hover:text-[color:var(--sport-text)]"
         >
           Vazgeç
         </button>
@@ -154,19 +171,19 @@ export function DayColumn({
     <div
       ref={setNodeRef}
       className={`flex flex-col gap-2 rounded-lg border-2 p-3 transition-colors ${
-        isOver ? "border-accent/60 bg-accent-soft/40" : isToday ? "border-accent/30" : "border-muted/25"
+        isOver ? "border-[color:var(--sport-accent)]/60 bg-[color:var(--sport-accent)]/25" : isToday ? "border-[color:var(--sport-accent)]/30" : "border-[color:var(--sport-muted)]/25"
       }`}
     >
       <div className="flex items-baseline justify-between">
-        <span className="text-sm font-medium text-foreground">{dayLabel}</span>
-        <span className="font-mono text-[11px] text-muted">{date}</span>
+        <span className="text-sm font-black italic uppercase tracking-tight text-[color:var(--sport-text)]">{dayLabel}</span>
+        <span className="font-mono text-[11px] text-[color:var(--sport-muted)]">{date}</span>
       </div>
 
       {/* Antrenman özeti — MuscleWiki'deki (piyasa araştırması) egzersiz
           sayısı/set sayısı/tahmini süre kartı fikri, kendi mevcut
           günlük-sütun yapımıza tek satırlık bir özet olarak eklendi. */}
       {byExercise.size > 0 && (
-        <p className="font-mono text-[11px] tabular-nums text-muted">
+        <p className="font-mono text-[11px] tabular-nums text-[color:var(--sport-muted)]">
           {byExercise.size} egzersiz · {totalSets} set · ~{estimatedMinutes} dk
         </p>
       )}
@@ -174,26 +191,26 @@ export function DayColumn({
       {restStartedAt != null && <RestTimer startedAt={restStartedAt} />}
 
       {byExercise.size === 0 && !pendingExerciseName && (
-        <p className="py-1 text-xs text-muted">Buraya bir hareket kartı sürükle.</p>
+        <p className="py-1 text-xs text-[color:var(--sport-muted)]">Buraya bir hareket kartı sürükle.</p>
       )}
 
       {Array.from(byExercise.entries()).map(([exerciseName, exerciseSets]) => (
         <div key={exerciseName} className="flex flex-col gap-1">
-          <span className="text-xs font-medium uppercase tracking-wider text-muted">{exerciseName}</span>
+          <span className="text-xs font-black italic uppercase tracking-wider text-[color:var(--sport-muted)]">{exerciseName}</span>
           <div className="flex flex-wrap gap-1.5">
             {exerciseSets
               .sort((a, b) => a.set_number - b.set_number)
               .map((s) => (
                 <span
                   key={s.id}
-                  className="group flex items-center gap-1.5 rounded-lg border-2 border-muted/20 bg-background-elevated px-2 py-1 font-mono text-[11px] tabular-nums text-foreground"
+                  className="group flex items-center gap-1.5 rounded-lg border-2 border-[color:var(--sport-muted)]/20 bg-[color:var(--sport-elevated)] px-2 py-1 font-mono text-[11px] tabular-nums text-[color:var(--sport-text)]"
                 >
                   #{s.set_number} — {s.reps}×{s.weight_kg != null ? `${s.weight_kg}kg` : "-"}
                   <button
                     type="button"
                     onClick={() => onDeleteSet(s.id)}
                     aria-label="Seti sil"
-                    className="btn text-muted hover:text-negative"
+                    className="btn text-[color:var(--sport-muted)] hover:text-negative"
                   >
                     <TrashIcon width={10} height={10} />
                   </button>

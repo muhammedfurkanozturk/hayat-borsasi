@@ -87,9 +87,9 @@ export function RecipeSuggestion({
   }
 
   return (
-    <div className="flex flex-col gap-5 rounded-lg border-2 border-accent/25 bg-surface shadow-card p-6">
+    <div className="flex flex-col gap-5 rounded-lg border-2 border-[color:var(--nutrition-accent)]/25 bg-surface shadow-card p-6">
       <div className="text-center">
-        <h2 className="text-sm font-medium text-foreground">Tarif Önerisi</h2>
+        <h2 className="text-lg font-extrabold tracking-tight text-foreground">Tarif Önerisi</h2>
         <p className="text-xs text-muted">Nasıl bir tarif istersin?</p>
       </div>
 
@@ -106,8 +106,8 @@ export function RecipeSuggestion({
                   onClick={() => setMode(tile.value)}
                   className={`btn flex flex-col items-center gap-2 rounded-lg border-2 p-4 text-center ${
                     active
-                      ? "border-accent/60 bg-accent-soft text-accent"
-                      : "border-muted/25 text-muted hover:border-accent/30 hover:text-foreground"
+                      ? "border-[color:var(--nutrition-accent)]/60 bg-[color:var(--nutrition-accent)]/15 text-[color:var(--nutrition-accent)]"
+                      : "border-muted/25 text-muted hover:border-[color:var(--nutrition-accent)]/30 hover:text-foreground"
                   }`}
                 >
                   <Icon width={22} height={22} />
@@ -126,7 +126,7 @@ export function RecipeSuggestion({
                   kendi token/köşe sistemine çevrildi (rounded-full burada
                   bilinçli bir istisna — genel rounded-lg tavanı yerine bu
                   spesifik "sohbet kutusu" hissi için). */}
-              <div className="flex w-full items-center gap-1.5 rounded-full border-2 border-accent/30 bg-background-elevated py-1.5 pl-5 pr-1.5 shadow-md focus-within:border-accent/60">
+              <div className="flex w-full items-center gap-1.5 rounded-full border-2 border-[color:var(--nutrition-accent)]/30 bg-background-elevated py-1.5 pl-5 pr-1.5 shadow-md focus-within:border-[color:var(--nutrition-accent)]/60">
                 <input
                   value={ingredients}
                   onChange={(e) => setIngredients(e.target.value)}
@@ -144,7 +144,7 @@ export function RecipeSuggestion({
                   onClick={handleSuggest}
                   disabled={loading || !ingredients.trim()}
                   aria-label="Tarif Öner"
-                  className="btn flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+                  className="btn flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[color:var(--nutrition-accent)] text-[color:var(--nutrition-accent-fg)] hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
                 >
                   <LightbulbIcon width={15} height={15} />
                 </button>
@@ -156,7 +156,7 @@ export function RecipeSuggestion({
               type="button"
               onClick={handleSuggest}
               disabled={loading}
-              className="btn flex h-11 w-fit shrink-0 items-center gap-2 rounded-lg bg-accent px-6 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+              className="btn flex h-11 w-fit shrink-0 items-center gap-2 rounded-lg bg-[color:var(--nutrition-accent)] px-6 text-sm font-semibold text-[color:var(--nutrition-accent-fg)] hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
             >
               <LightbulbIcon width={15} height={15} />
               {loading ? "Düşünüyor..." : "Tarif Öner"}
@@ -168,16 +168,16 @@ export function RecipeSuggestion({
       {error && <p className="text-center text-xs text-negative">{error}</p>}
 
       {result && (
-        <div className="flex flex-col gap-4 rounded-lg border-2 border-accent/40 bg-accent-soft/30 p-4">
+        <div className="flex flex-col gap-4 rounded-lg border-2 border-[color:var(--nutrition-accent)]/40 bg-[color:var(--nutrition-accent)]/20 p-4">
           <RecipeCard recipe={result} />
 
-          <div className="flex flex-wrap items-center gap-2 border-t border-accent/20 pt-3">
+          <div className="flex flex-wrap items-center gap-2 border-t border-[color:var(--nutrition-accent)]/20 pt-3">
             <p className="w-full text-sm text-foreground">Bu tarifi kaydetmek ister misin?</p>
             <button
               type="button"
               onClick={handleSaveYes}
               disabled={saveState === "saving"}
-              className="btn h-9 rounded-lg bg-accent px-4 text-xs font-semibold text-accent-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+              className="btn h-9 rounded-lg bg-[color:var(--nutrition-accent)] px-4 text-xs font-semibold text-[color:var(--nutrition-accent-fg)] hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
             >
               {saveState === "saving" ? "Kaydediliyor..." : "Evet, kaydet"}
             </button>

@@ -226,7 +226,29 @@ export function PomodoroTimer({ categoryId }: { categoryId: string }) {
   const inCameraSeconds = Math.max(0, elapsedSeconds - distractedSecondsDisplay);
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5">
+    // Kategori Bazlı Tasarım Farklılaştırma — Bölüm 5 (Duolingo dili,
+    // 2026-09-02): beyaz zemin + mavi vurgu (Checklist'in turuncusundan
+    // BİLİNÇLİ OLARAK farklı — Duolingo'da alt-özelliğe göre renk değişiyor).
+    // Aynı kök-token-ezme yöntemi (bkz. Finans/Robinhood bölümü) kullanıldı.
+    <div
+      className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5"
+      style={
+        {
+          "--background": "#ffffff",
+          "--background-elevated": "#f7f7f7",
+          "--surface": "#ffffff",
+          "--surface-hover": "#f0f0f0",
+          "--border": "#e5e5e5",
+          "--border-soft": "#eeeeee",
+          "--foreground": "#3c3c3c",
+          "--muted": "#777777",
+          "--muted-soft": "#afafaf",
+          "--accent": "#1cb0f6",
+          "--accent-soft": "#1cb0f626",
+          "--accent-foreground": "#ffffff",
+        } as React.CSSProperties
+      }
+    >
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-medium text-foreground">Odaklanma</h2>
         <SegmentedControl
@@ -432,7 +454,20 @@ export function PomodoroTimer({ categoryId }: { categoryId: string }) {
         )}
       </div>
 
-      {!loading && sessions.length > 0 && <FocusProgressPanel sessions={sessions} />}
+      {!loading && sessions.length > 0 && (
+        <div
+          style={
+            {
+              "--accent": "#8549ff",
+              "--accent-soft": "#8549ff26",
+              "--accent-foreground": "#ffffff",
+              "--positive": "#8549ff",
+            } as React.CSSProperties
+          }
+        >
+          <FocusProgressPanel sessions={sessions} />
+        </div>
+      )}
 
       {!loading && <FocusQA sessions={sessions} subjects={subjects} />}
     </div>

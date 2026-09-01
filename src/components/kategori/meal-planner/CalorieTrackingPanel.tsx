@@ -68,7 +68,7 @@ export function CalorieTrackingPanel({
       {complete && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface shadow-card p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-accent">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--nutrition-accent)]/15 text-[color:var(--nutrition-accent)]">
               <TargetIcon width={18} height={18} />
             </div>
             <div>

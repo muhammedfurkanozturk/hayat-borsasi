@@ -78,14 +78,19 @@ export function StyleAdvicePanel({
   return (
     <div
       className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5"
-      style={{ "--stil-accent": "#9c4a3d" } as React.CSSProperties}
+      style={{
+          "--stil-accent": "#d4ff00",
+          "--accent": "#d4ff00",
+          "--accent-soft": "#d4ff0026",
+          "--accent-foreground": "#141400",
+        } as React.CSSProperties}
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-baseline gap-2.5">
           <span className="font-mono text-xs font-semibold" style={{ color: "var(--stil-accent)" }}>
             04
           </span>
-          <h2 className="text-sm font-medium uppercase tracking-wider text-foreground">AI Stilist</h2>
+          <h2 className="font-serif text-lg font-medium italic tracking-tight text-foreground">AI Stilist</h2>
         </div>
         <button
           type="button"
@@ -147,7 +152,7 @@ export function StyleAdvicePanel({
         type="button"
         onClick={handleAdvise}
         disabled={loading || items.length < 2}
-        className="btn flex h-11 w-fit items-center gap-2 rounded-lg px-5 text-sm font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
+        className="btn flex h-11 w-fit items-center gap-2 rounded-lg px-5 text-sm font-semibold text-[#141400] disabled:pointer-events-none disabled:opacity-50"
         style={{ backgroundColor: "var(--stil-accent)" }}
       >
         <CompassIcon width={16} height={16} />
@@ -186,7 +191,7 @@ export function StyleAdvicePanel({
                 setSaving(false);
                 setResult(null);
               }}
-              className="btn h-9 rounded-lg px-4 text-xs font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
+              className="btn h-9 rounded-lg px-4 text-xs font-semibold text-[#141400] disabled:pointer-events-none disabled:opacity-50"
               style={{ backgroundColor: "var(--stil-accent)" }}
             >
               {saving ? "Kaydediliyor..." : "Bu Kombini Kaydet"}

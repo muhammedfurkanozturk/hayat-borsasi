@@ -57,7 +57,7 @@ export function MealCard({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={photoUrl} alt={food.description} className="h-14 w-full object-cover" draggable={false} />
         ) : (
-          <div className="flex h-14 w-full items-center justify-center bg-accent-soft text-accent">
+          <div className="flex h-14 w-full items-center justify-center bg-[color:var(--nutrition-accent)]/15 text-[color:var(--nutrition-accent)]">
             {/* matchFoodIcon her zaman food-icon-match.ts'teki sabit, modül
                 seviyesinde tanımlı ikonlardan birine referans döndürüyor —
                 render sırasında yeni bir component OLUŞTURMUYOR. */}

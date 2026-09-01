@@ -57,7 +57,7 @@ export function NutritionTrendChart({ logs, goalKcal = null }: { logs: DbMealLog
     <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface shadow-card p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-medium text-foreground">Kalori Trendi</h2>
+          <h2 className="text-lg font-extrabold tracking-tight text-foreground">Kalori Trendi</h2>
           <p className="text-xs text-muted">Günlük toplam alım</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -91,7 +91,7 @@ export function NutritionTrendChart({ logs, goalKcal = null }: { logs: DbMealLog
                 {data.map((entry, i) => (
                   <Cell
                     key={i}
-                    fill={goalKcal != null && (entry.score ?? 0) > goalKcal ? "var(--negative)" : "var(--accent)"}
+                    fill={goalKcal != null && (entry.score ?? 0) > goalKcal ? "var(--negative)" : "var(--nutrition-accent)"}
                   />
                 ))}
               </Bar>
@@ -100,8 +100,8 @@ export function NutritionTrendChart({ logs, goalKcal = null }: { logs: DbMealLog
             <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: isMonthly ? 16 : 0 }}>
               <defs>
                 <linearGradient id="calorieFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
+                  <stop offset="0%" stopColor="var(--nutrition-accent)" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="var(--nutrition-accent)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis
@@ -114,7 +114,7 @@ export function NutritionTrendChart({ logs, goalKcal = null }: { logs: DbMealLog
               <YAxis hide domain={["dataMin - 50", "dataMax + 50"]} />
               {goalKcal != null && <ReferenceLine y={goalKcal} stroke="var(--muted)" strokeDasharray="4 4" />}
               <Tooltip content={ChartTooltip} cursor={{ stroke: "var(--border)" }} />
-              <Area type="monotone" dataKey="score" stroke="var(--accent)" strokeWidth={2} fill="url(#calorieFill)" />
+              <Area type="monotone" dataKey="score" stroke="var(--nutrition-accent)" strokeWidth={2} fill="url(#calorieFill)" />
             </AreaChart>
           )}
         </ResponsiveContainer>

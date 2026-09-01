@@ -14,9 +14,9 @@ const rangeDays: Record<Range, number> = { "2 Hafta": 14, "1 Ay": 30 };
 function ChartTooltip({ active, payload, label }: TooltipProps<ValueType, NameType>) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg border border-border bg-background-elevated px-3 py-2 shadow-lg">
-      <div className="text-xs text-muted">{label}</div>
-      <div className="font-mono text-sm font-semibold tabular-nums text-foreground">
+    <div className="rounded-lg border border-[color:var(--sport-border)] bg-[color:var(--sport-elevated)] px-3 py-2 shadow-lg">
+      <div className="text-xs text-[color:var(--sport-muted)]">{label}</div>
+      <div className="font-mono text-sm font-semibold tabular-nums text-[color:var(--sport-text)]">
         {Number(payload[0].value).toLocaleString("tr-TR")} kg
       </div>
     </div>
@@ -32,11 +32,11 @@ export function WorkoutVolumeChart({ sets }: { sets: DbWorkoutSet[] }) {
   const data = useMemo(() => buildDailySumSeries(sets, rangeDays[range], setVolume), [sets, range]);
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface shadow-card p-5">
+    <div className="flex flex-col gap-3 rounded-lg border border-[color:var(--sport-border)] bg-[color:var(--sport-surface)] shadow-card p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-medium text-foreground">Antrenman Hacmi</h2>
-          <p className="text-xs text-muted">Günlük toplam kaldırılan kg (tekrar × ağırlık)</p>
+          <h2 className="text-sm font-medium text-[color:var(--sport-text)]">Antrenman Hacmi</h2>
+          <p className="text-xs text-[color:var(--sport-muted)]">Günlük toplam kaldırılan kg (tekrar × ağırlık)</p>
         </div>
         <SegmentedControl options={ranges.map((r) => ({ value: r, label: r }))} value={range} onChange={setRange} />
       </div>

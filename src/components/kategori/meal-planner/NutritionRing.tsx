@@ -58,7 +58,7 @@ export function NutritionRing({
     <div className="flex items-center gap-4">
       <div className="relative shrink-0" style={{ width: RING_SIZE, height: RING_SIZE }}>
         <svg width={RING_SIZE} height={RING_SIZE}>
-          <Ring index={0} fraction={fractions[0]} color="var(--accent)" />
+          <Ring index={0} fraction={fractions[0]} color="var(--nutrition-accent)" />
           <Ring index={1} fraction={fractions[1]} color="var(--positive)" />
           <Ring index={2} fraction={fractions[2]} color="var(--pro)" />
         </svg>
@@ -71,7 +71,7 @@ export function NutritionRing({
       </div>
       <div className="flex flex-col gap-1.5 text-xs">
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full" style={{ background: "var(--accent)" }} />
+          <span className="h-2 w-2 rounded-full" style={{ background: "var(--nutrition-accent)" }} />
           <span className="text-muted">Protein</span>
           <span className="font-mono tabular-nums text-foreground">{proteinG.toFixed(0)}g</span>
         </span>

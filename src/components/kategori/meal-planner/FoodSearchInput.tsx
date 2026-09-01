@@ -122,7 +122,7 @@ export function FoodSearchInput({
       <button
         type="submit"
         disabled={saving || !query.trim()}
-        className="btn h-10 shrink-0 rounded-lg bg-accent-soft px-4 text-sm font-semibold text-accent hover:bg-accent/25 disabled:pointer-events-none disabled:opacity-50"
+        className="btn h-10 shrink-0 rounded-lg bg-[color:var(--nutrition-accent)]/15 px-4 text-sm font-semibold text-[color:var(--nutrition-accent)] hover:bg-[color:var(--nutrition-accent)]/25 disabled:pointer-events-none disabled:opacity-50"
       >
         {saving ? "Ekleniyor..." : "Serbest Ekle"}
       </button>

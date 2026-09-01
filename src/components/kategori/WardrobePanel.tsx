@@ -381,20 +381,30 @@ export function WardrobePanel({ categoryId }: { categoryId: string }) {
   // galeri/atelier" tonundan ilham alarak sitenin geri kalanından bilinçli
   // farklılaşıyor (genel kural: "her kategori ayrı bir tarz olabilir",
   // Delta/Habitify/TickTick vb. gibi kod/marka kopyalanmadı — sadece renk
-  // paleti/kompozisyon ruhu). Tek yerelleştirilmiş vurgu rengi (--stil-accent,
-  // sıcak bordo) sadece bu panel içinde kullanılıyor, site geneline sızmıyor.
-  // Numaralı bölüm başlıkları (01/02/03) SelionAI'nin "chapter" motifinden.
+  // paleti/kompozisyon ruhu). 2026-09-02: Kategori Bazlı Tasarım
+  // Farklılaştırma turuyla SelionAI'nin sıcak bordosu Whering'in neon
+  // lime'ına (--stil-accent: #d4ff00) çevrildi, editoryal serif başlıklar
+  // eklendi — --accent/--accent-soft/--accent-foreground de burada yerel
+  // olarak eziliyor ki SegmentedControl gibi paylaşılan bileşenler de
+  // lime'ı alsın (bkz. Spor & Vücut/Freeletics bölümündeki aynı desen).
+  // Numaralı bölüm başlıkları (01/02/03) hâlâ duruyor, sadece başlık
+  // tipografisi editoryal serife çevrildi.
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div
         className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5"
-        style={{ "--stil-accent": "#9c4a3d" } as React.CSSProperties}
+        style={{
+          "--stil-accent": "#d4ff00",
+          "--accent": "#d4ff00",
+          "--accent-soft": "#d4ff0026",
+          "--accent-foreground": "#141400",
+        } as React.CSSProperties}
       >
         <div className="flex items-baseline gap-2.5">
           <span className="font-mono text-xs font-semibold" style={{ color: "var(--stil-accent)" }}>
             01
           </span>
-          <h2 className="text-sm font-medium uppercase tracking-wider text-foreground">Gardırobum</h2>
+          <h2 className="font-serif text-lg font-medium italic tracking-tight text-foreground">Gardırobum</h2>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -479,13 +489,18 @@ export function WardrobePanel({ categoryId }: { categoryId: string }) {
       {!loading && (
         <div
           className="mt-4 flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5"
-          style={{ "--stil-accent": "#9c4a3d" } as React.CSSProperties}
+          style={{
+          "--stil-accent": "#d4ff00",
+          "--accent": "#d4ff00",
+          "--accent-soft": "#d4ff0026",
+          "--accent-foreground": "#141400",
+        } as React.CSSProperties}
         >
           <div className="flex items-baseline gap-2.5">
             <span className="font-mono text-xs font-semibold" style={{ color: "var(--stil-accent)" }}>
               02
             </span>
-            <h2 className="text-sm font-medium uppercase tracking-wider text-foreground">Kombin Oluştur</h2>
+            <h2 className="font-serif text-lg font-medium italic tracking-tight text-foreground">Kombin Oluştur</h2>
           </div>
           <OutfitBuilder
             id={BUILDER_ID}
@@ -506,13 +521,18 @@ export function WardrobePanel({ categoryId }: { categoryId: string }) {
       {!loading && outfits.length > 0 && (
         <div
           className="mt-4 flex flex-col gap-3 rounded-lg border border-border bg-surface shadow-card p-5"
-          style={{ "--stil-accent": "#9c4a3d" } as React.CSSProperties}
+          style={{
+          "--stil-accent": "#d4ff00",
+          "--accent": "#d4ff00",
+          "--accent-soft": "#d4ff0026",
+          "--accent-foreground": "#141400",
+        } as React.CSSProperties}
         >
           <div className="flex items-baseline gap-2.5">
             <span className="font-mono text-xs font-semibold" style={{ color: "var(--stil-accent)" }}>
               03
             </span>
-            <h2 className="text-sm font-medium uppercase tracking-wider text-foreground">Kombinlerim</h2>
+            <h2 className="font-serif text-lg font-medium italic tracking-tight text-foreground">Kombinlerim</h2>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {outfits.map((outfit) => (

@@ -109,13 +109,77 @@ export default function KategoriPage() {
           </div>
         </div>
 
-        {showGenericTasks && (
+        {showGenericTasks && category.moduleType === "focus" && (
+          // Kategori Bazlı Tasarım Farklılaştırma — Bölüm 5 (Duolingo dili,
+          // 2026-09-02). Duolingo'nun sabit TEK vurgu yerine alt-özelliğe
+          // göre değişen doygun renk fikri — Checklist turuncu, Pomodoro
+          // (PomodoroTimer.tsx'in kendi scope'u) mavi, İlerleme raporu mor.
+          // Zemin BEYAZ'a zorlanıyor (site temasından bağımsız — Freeletics/
+          // Robinhood'un koyuya zorlanmasının tersi yönü, aynı "kategori
+          // kendi kimliğini taşır" ilkesi).
+          <div
+            className="rounded-lg bg-[color:var(--background)] p-4 sm:p-5"
+            style={
+              {
+                "--background": "#ffffff",
+                "--background-elevated": "#f7f7f7",
+                "--surface": "#ffffff",
+                "--surface-hover": "#f0f0f0",
+                "--border": "#e5e5e5",
+                "--border-soft": "#eeeeee",
+                "--foreground": "#3c3c3c",
+                "--muted": "#777777",
+                "--muted-soft": "#afafaf",
+                "--accent": "#ff9600",
+                "--accent-soft": "#ff960026",
+                "--accent-foreground": "#ffffff",
+              } as React.CSSProperties
+            }
+          >
+            <CategoryChecklist categoryId={category.id} tasks={tasks} onDeleteTask={removeTask} />
+          </div>
+        )}
+        {showGenericTasks && category.moduleType !== "focus" && (
           <CategoryChecklist categoryId={category.id} tasks={tasks} onDeleteTask={removeTask} />
         )}
 
         {category.moduleType === "focus" && <PomodoroTimer categoryId={category.id} />}
         {category.moduleType === "finance" && (
-          <div className="flex flex-col gap-4">
+          // Kategori Bazlı Tasarım Farklılaştırma — Bölüm 4 (Robinhood dili,
+          // 2026-09-02). Site'nin HER rengi (`--background`, `--surface`,
+          // `--accent`, `--positive`, `--negative` vb.) globals.css'te
+          // `--color-X: var(--X)` zinciriyle Tailwind'e bağlı — bu zincir
+          // CSS custom property'lerin iç içe `var()` referanslarını KULLANIM
+          // noktasında yeniden çözmesi sayesinde, burada sadece kök `--X`
+          // değişkenlerini yerel olarak ezmek YETİYOR: PortfolioPanel/
+          // MarketWatchPanel/finance/* içindeki TÜM `bg-surface`/
+          // `text-foreground`/`bg-accent`/`text-positive` vb. class'lar tek
+          // dosya değiştirmeden otomatik olarak Robinhood'un saf siyah +
+          // neon yeşil paletine dönüşüyor (Spor/Stil bölümlerindeki
+          // dosya-dosya script taşımaya göre çok daha az kod dokunuşu).
+          <div
+            className="flex flex-col gap-4 rounded-lg bg-[color:var(--background)] p-4 sm:p-5"
+            style={
+              {
+                "--background": "#000000",
+                "--background-elevated": "#0a0a0a",
+                "--surface": "#0a0a0a",
+                "--surface-hover": "#141414",
+                "--border": "rgba(255,255,255,0.12)",
+                "--border-soft": "rgba(255,255,255,0.08)",
+                "--foreground": "#ffffff",
+                "--muted": "#8e8e93",
+                "--muted-soft": "#636366",
+                "--accent": "#00e676",
+                "--accent-soft": "#00e67626",
+                "--accent-foreground": "#000000",
+                "--positive": "#00e676",
+                "--positive-soft": "#00e67626",
+                "--negative": "#ff3b30",
+                "--negative-soft": "#ff3b3026",
+              } as React.CSSProperties
+            }
+          >
             <FinanceTabBar value={financeTab} onChange={setFinanceTab} />
             {financeTab === "markets" && <MarketWatchPanel />}
             {financeTab === "portfolio" && <PortfolioPanel categoryId={category.id} />}

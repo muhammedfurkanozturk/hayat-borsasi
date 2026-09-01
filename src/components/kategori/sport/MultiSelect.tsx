@@ -27,7 +27,7 @@ export function MultiSelect<T extends string>({
             type="button"
             onClick={() => onToggle(value)}
             className={`btn rounded-full border-2 px-3 py-1 text-xs font-medium ${
-              active ? "border-accent/50 bg-accent-soft text-accent" : "border-muted/25 text-muted hover:border-accent/30"
+              active ? "border-[color:var(--sport-accent)]/50 bg-[color:var(--sport-accent)]/15 text-[color:var(--sport-accent)]" : "border-[color:var(--sport-muted)]/25 text-[color:var(--sport-muted)] hover:border-[color:var(--sport-accent)]/30"
             }`}
           >
             {label}

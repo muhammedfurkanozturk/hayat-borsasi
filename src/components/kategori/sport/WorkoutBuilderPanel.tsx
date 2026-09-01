@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-  DIFFICULTY_LABELS,
   EQUIPMENT_LABELS,
   EXERCISE_LIBRARY,
   MUSCLE_GROUP_LABELS,
@@ -13,6 +12,7 @@ import {
   type WeeklyWorkoutPlan,
 } from "@hayat-borsasi/shared";
 import { CalendarIcon, CompassIcon, LightbulbIcon } from "@/components/icons";
+import { DifficultyDots } from "./DifficultyDots";
 import { EQUIPMENT_ENTRIES, MUSCLE_ENTRIES, MultiSelect } from "./MultiSelect";
 
 type BuilderMode = "quick" | "weekly" | "manual";
@@ -101,10 +101,10 @@ export function WorkoutBuilderPanel({
     : [];
 
   return (
-    <div className="flex flex-col gap-5 rounded-lg border border-border bg-surface shadow-card p-5">
+    <div className="flex flex-col gap-5 rounded-lg border border-[color:var(--sport-border)] bg-[color:var(--sport-surface)] shadow-card p-5">
       <div>
-        <h2 className="text-sm font-medium text-foreground">Antrenman Oluştur</h2>
-        <p className="text-xs text-muted">Nasıl bir antrenman istersin?</p>
+        <h2 className="text-sm font-medium text-[color:var(--sport-text)]">Antrenman Oluştur</h2>
+        <p className="text-xs text-[color:var(--sport-muted)]">Nasıl bir antrenman istersin?</p>
       </div>
 
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -121,11 +121,11 @@ export function WorkoutBuilderPanel({
                 setWeeklyPlan(null);
               }}
               className={`btn flex flex-col items-start gap-1 rounded-lg border-2 p-3 text-left ${
-                active ? "border-accent/50 bg-accent-soft" : "border-muted/25 hover:border-accent/30"
+                active ? "border-[color:var(--sport-accent)]/50 bg-[color:var(--sport-accent)]/15" : "border-[color:var(--sport-muted)]/25 hover:border-[color:var(--sport-accent)]/30"
               }`}
             >
-              <span className={`text-xs font-semibold ${active ? "text-accent" : "text-foreground"}`}>{tile.label}</span>
-              <span className="text-[11px] text-muted">{tile.description}</span>
+              <span className={`text-xs font-semibold ${active ? "text-[color:var(--sport-accent)]" : "text-[color:var(--sport-text)]"}`}>{tile.label}</span>
+              <span className="text-[11px] text-[color:var(--sport-muted)]">{tile.description}</span>
             </button>
           );
         })}
@@ -134,15 +134,15 @@ export function WorkoutBuilderPanel({
       {mode !== "manual" && (
         <div className="flex flex-col gap-4">
           <div>
-            <p className="mb-1.5 text-xs font-medium text-muted">Hedef Kas Grubu</p>
+            <p className="mb-1.5 text-xs font-medium text-[color:var(--sport-muted)]">Hedef Kas Grubu</p>
             <MultiSelect options={MUSCLE_ENTRIES} selected={muscleGroups} onToggle={toggleMuscle} />
           </div>
           <div>
-            <p className="mb-1.5 text-xs font-medium text-muted">Ekipman (boş = fark etmez)</p>
+            <p className="mb-1.5 text-xs font-medium text-[color:var(--sport-muted)]">Ekipman (boş = fark etmez)</p>
             <MultiSelect options={EQUIPMENT_ENTRIES} selected={equipment} onToggle={toggleEquipment} />
           </div>
           <div>
-            <p className="mb-1.5 text-xs font-medium text-muted">Hedef</p>
+            <p className="mb-1.5 text-xs font-medium text-[color:var(--sport-muted)]">Hedef</p>
             <div className="flex gap-1.5">
               {GOAL_OPTIONS.map((g) => (
                 <button
@@ -150,7 +150,7 @@ export function WorkoutBuilderPanel({
                   type="button"
                   onClick={() => setGoal(g.value)}
                   className={`btn rounded-lg border-2 px-3 py-1.5 text-xs font-medium ${
-                    goal === g.value ? "border-accent/50 bg-accent-soft text-accent" : "border-muted/25 text-muted hover:border-accent/30"
+                    goal === g.value ? "border-[color:var(--sport-accent)]/50 bg-[color:var(--sport-accent)]/15 text-[color:var(--sport-accent)]" : "border-[color:var(--sport-muted)]/25 text-[color:var(--sport-muted)] hover:border-[color:var(--sport-accent)]/30"
                   }`}
                 >
                   {g.label}
@@ -161,7 +161,7 @@ export function WorkoutBuilderPanel({
 
           {mode === "weekly" && (
             <div>
-              <p className="mb-1.5 text-xs font-medium text-muted">Haftada Kaç Gün</p>
+              <p className="mb-1.5 text-xs font-medium text-[color:var(--sport-muted)]">Haftada Kaç Gün</p>
               <div className="flex gap-1.5">
                 {[3, 4, 5, 6].map((d) => (
                   <button
@@ -169,7 +169,7 @@ export function WorkoutBuilderPanel({
                     type="button"
                     onClick={() => setDaysPerWeek(d)}
                     className={`btn h-9 w-9 rounded-lg border-2 text-sm font-medium ${
-                      daysPerWeek === d ? "border-accent/50 bg-accent-soft text-accent" : "border-muted/25 text-muted hover:border-accent/30"
+                      daysPerWeek === d ? "border-[color:var(--sport-accent)]/50 bg-[color:var(--sport-accent)]/15 text-[color:var(--sport-accent)]" : "border-[color:var(--sport-muted)]/25 text-[color:var(--sport-muted)] hover:border-[color:var(--sport-accent)]/30"
                     }`}
                   >
                     {d}
@@ -183,7 +183,7 @@ export function WorkoutBuilderPanel({
             type="button"
             onClick={handleGenerate}
             disabled={loading}
-            className="btn flex h-11 w-fit items-center gap-2 rounded-lg bg-accent px-5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+            className="btn flex h-11 w-fit items-center gap-2 rounded-lg bg-[color:var(--sport-accent)] px-5 text-sm font-semibold text-white hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
           >
             <LightbulbIcon width={16} height={16} />
             {loading ? "Oluşturuluyor..." : "Antrenman Oluştur"}
@@ -192,12 +192,12 @@ export function WorkoutBuilderPanel({
           {error && <p className="text-xs text-negative">{error}</p>}
 
           {quickPlan && (
-            <div className="flex flex-col gap-3 rounded-lg border-2 border-accent/25 bg-accent-soft/20 p-4">
+            <div className="flex flex-col gap-3 rounded-lg border-2 border-[color:var(--sport-accent)]/25 bg-[color:var(--sport-accent)]/15 p-4">
               <div className="flex flex-col gap-1.5">
                 {quickPlan.exercises.map((ex, i) => (
-                  <div key={i} className="flex items-center justify-between rounded-lg bg-background-elevated px-3 py-2">
-                    <span className="text-sm text-foreground">{ex.name}</span>
-                    <span className="font-mono text-xs text-muted">
+                  <div key={i} className="flex items-center justify-between rounded-lg bg-[color:var(--sport-elevated)] px-3 py-2">
+                    <span className="text-sm font-black italic uppercase tracking-tight text-[color:var(--sport-text)]">{ex.name}</span>
+                    <span className="font-mono text-xs text-[color:var(--sport-muted)]">
                       {ex.sets} × {ex.reps}
                     </span>
                   </div>
@@ -212,7 +212,7 @@ export function WorkoutBuilderPanel({
                   setApplying(false);
                   setQuickPlan(null);
                 }}
-                className="btn h-10 w-fit rounded-lg bg-accent px-4 text-xs font-semibold text-accent-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+                className="btn h-10 w-fit rounded-lg bg-[color:var(--sport-accent)] px-4 text-xs font-semibold text-white hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
               >
                 {applying ? "Uygulanıyor..." : "Bugüne Uygula"}
               </button>
@@ -220,32 +220,59 @@ export function WorkoutBuilderPanel({
           )}
 
           {weeklyPlan && (
-            <div className="flex flex-col gap-3 rounded-lg border-2 border-accent/25 bg-accent-soft/20 p-4">
+            <div className="flex flex-col gap-3 rounded-lg border-2 border-[color:var(--sport-accent)]/25 bg-[color:var(--sport-accent)]/15 p-4">
               {weeklyPlan.progressionNote && (
                 <div className="flex items-start gap-2 rounded-lg bg-pro-soft px-3 py-2 text-xs text-pro">
                   <LightbulbIcon width={13} height={13} className="mt-0.5 shrink-0" />
                   <span>{weeklyPlan.progressionNote}</span>
                 </div>
               )}
-              {weeklyPlan.days.map((day, i) => (
-                <div key={i} className="flex flex-col gap-1.5 rounded-lg bg-background-elevated p-3">
-                  <div className="flex items-center gap-2">
-                    <CalendarIcon width={13} height={13} className="text-accent" />
-                    <span className="text-sm font-medium text-foreground">{day.label}</span>
-                    <span className="text-[10px] text-muted">
-                      {day.muscleGroups.map((m) => MUSCLE_GROUP_LABELS[m as MuscleGroup] ?? m).join(", ")}
-                    </span>
-                  </div>
-                  {day.exercises.map((ex, j) => (
-                    <div key={j} className="flex items-center justify-between pl-5 text-xs text-muted">
-                      <span>{ex.name}</span>
-                      <span className="font-mono">
-                        {ex.sets} × {ex.reps}
-                      </span>
+              {/* Freeletics'in dikey zaman çizelgesi — numaralı, birbirine
+                  bağlantı çizgisiyle bağlı daireler. Bu plan henüz
+                  uygulanmadığı/tamamlanmadığı için "tamamlandı" durumu yok —
+                  ilk gün "aktif" (dolu mavi), kalanı "henüz gelmemiş" (gri
+                  kontur) olarak gösteriliyor. */}
+              <div className="flex flex-col">
+                {weeklyPlan.days.map((day, i) => {
+                  const isFirst = i === 0;
+                  const isLast = i === weeklyPlan.days.length - 1;
+                  return (
+                    <div key={i} className="flex gap-3">
+                      <div className="flex flex-col items-center">
+                        <span
+                          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 font-mono text-xs font-bold ${
+                            isFirst
+                              ? "border-[color:var(--sport-accent)] bg-[color:var(--sport-accent)] text-white"
+                              : "border-[color:var(--sport-muted)]/40 text-[color:var(--sport-muted)]"
+                          }`}
+                        >
+                          {i + 1}
+                        </span>
+                        {!isLast && <span className="w-0.5 flex-1 bg-[color:var(--sport-muted)]/25" />}
+                      </div>
+                      <div className="flex flex-1 flex-col gap-1.5 rounded-lg bg-[color:var(--sport-elevated)] p-3 pb-4">
+                        <div className="flex items-center gap-2">
+                          <CalendarIcon width={13} height={13} className="text-[color:var(--sport-accent)]" />
+                          <span className="text-sm font-black italic uppercase tracking-tight text-[color:var(--sport-text)]">
+                            {day.label}
+                          </span>
+                          <span className="text-[10px] text-[color:var(--sport-muted)]">
+                            {day.muscleGroups.map((m) => MUSCLE_GROUP_LABELS[m as MuscleGroup] ?? m).join(", ")}
+                          </span>
+                        </div>
+                        {day.exercises.map((ex, j) => (
+                          <div key={j} className="flex items-center justify-between pl-5 text-xs text-[color:var(--sport-muted)]">
+                            <span>{ex.name}</span>
+                            <span className="font-mono">
+                              {ex.sets} × {ex.reps}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              ))}
+                  );
+                })}
+              </div>
               <button
                 type="button"
                 disabled={applying}
@@ -255,11 +282,11 @@ export function WorkoutBuilderPanel({
                   setApplying(false);
                   setWeeklyPlan(null);
                 }}
-                className="btn h-10 w-fit rounded-lg bg-accent px-4 text-xs font-semibold text-accent-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+                className="btn h-10 w-fit rounded-lg bg-[color:var(--sport-accent)] px-4 text-xs font-semibold text-white hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
               >
                 {applying ? "Kaydediliyor..." : "Şablonlarıma Kaydet"}
               </button>
-              <p className="text-[11px] text-muted">
+              <p className="text-[11px] text-[color:var(--sport-muted)]">
                 Her gün ayrı bir şablon olarak &quot;Hareketlerim&quot; sekmesine kaydedilir, oradan istediğin güne uygulayabilirsin.
               </p>
             </div>
@@ -278,25 +305,26 @@ export function WorkoutBuilderPanel({
               artık input'un KENDİ üzerinde, ikon input'un içine mutlak
               konumlandırılmış. */}
           <div className="relative">
-            <CompassIcon width={14} height={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+            <CompassIcon width={14} height={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--sport-muted)]" />
             <input
               value={manualQuery}
               onChange={(e) => setManualQuery(e.target.value)}
               placeholder="Egzersiz veya kas grubu ara..."
-              className="h-10 w-full rounded-lg border-2 border-muted/25 bg-background-elevated pl-9 pr-3 text-sm text-foreground outline-none placeholder:text-muted focus:border-accent/50"
+              className="h-10 w-full rounded-lg border-2 border-[color:var(--sport-muted)]/25 bg-[color:var(--sport-elevated)] pl-9 pr-3 text-sm text-[color:var(--sport-text)] outline-none placeholder:text-[color:var(--sport-muted)] focus:border-[color:var(--sport-accent)]/50"
             />
           </div>
           {manualQuery.trim() && (
             <div className="flex flex-col gap-1.5">
-              {manualResults.length === 0 && <p className="text-xs text-muted">Sonuç bulunamadı.</p>}
+              {manualResults.length === 0 && <p className="text-xs text-[color:var(--sport-muted)]">Sonuç bulunamadı.</p>}
               {manualResults.map((ex) => {
                 const alreadyAdded = existingNames.has(ex.name.toLowerCase());
                 return (
-                  <div key={ex.id} className="flex items-center justify-between gap-2 rounded-lg border-2 border-muted/20 px-3 py-2">
+                  <div key={ex.id} className="flex items-center justify-between gap-2 rounded-lg border-2 border-[color:var(--sport-muted)]/20 px-3 py-2">
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-sm text-foreground">{ex.name}</span>
-                      <span className="text-[10px] text-muted">
-                        {MUSCLE_GROUP_LABELS[ex.muscleGroup]} · {EQUIPMENT_LABELS[ex.equipment]} · {DIFFICULTY_LABELS[ex.difficulty]}
+                      <span className="text-sm font-black italic uppercase tracking-tight text-[color:var(--sport-text)]">{ex.name}</span>
+                      <span className="flex items-center gap-1.5 text-[10px] text-[color:var(--sport-muted)]">
+                        {MUSCLE_GROUP_LABELS[ex.muscleGroup]} · {EQUIPMENT_LABELS[ex.equipment]}
+                        <DifficultyDots difficulty={ex.difficulty} />
                       </span>
                     </div>
                     <button
@@ -307,7 +335,7 @@ export function WorkoutBuilderPanel({
                         await onAddLibraryExercise(ex.name, ex.muscleGroup);
                         setAddingLibraryId(null);
                       }}
-                      className="btn h-8 shrink-0 rounded-lg bg-accent-soft px-3 text-xs font-medium text-accent hover:bg-accent/25 disabled:pointer-events-none disabled:opacity-50"
+                      className="btn h-8 shrink-0 rounded-lg bg-[color:var(--sport-accent)]/15 px-3 text-xs font-medium text-[color:var(--sport-accent)] hover:bg-[color:var(--sport-accent)]/25 disabled:pointer-events-none disabled:opacity-50"
                     >
                       {alreadyAdded ? "Eklendi" : addingLibraryId === ex.id ? "Ekleniyor..." : "Hareketlerime Ekle"}
                     </button>
@@ -316,7 +344,7 @@ export function WorkoutBuilderPanel({
               })}
             </div>
           )}
-          <p className="text-xs text-muted">
+          <p className="text-xs text-[color:var(--sport-muted)]">
             Eklediğin hareket &quot;Hareketlerim&quot; sekmesinde görünür — oradan haftanın bir gününe sürükleyip set/tekrar/ağırlığını
             gireceksin.
           </p>

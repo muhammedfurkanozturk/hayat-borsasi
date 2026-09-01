@@ -34,7 +34,7 @@ export function WaterTrendChart({ history, goalMl }: { history: DbWaterLog[]; go
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface shadow-card p-5">
       <div>
-        <h2 className="text-sm font-medium text-foreground">Su Trendi</h2>
+        <h2 className="text-lg font-extrabold tracking-tight text-foreground">Su Trendi</h2>
         <p className="text-xs text-muted">Son {TREND_DAYS} gün, günlük toplam</p>
       </div>
       <div className="h-64 w-full">
@@ -60,9 +60,9 @@ export function WaterTrendChart({ history, goalMl }: { history: DbWaterLog[]; go
             <Line
               type="monotone"
               dataKey="score"
-              stroke="var(--accent)"
+              stroke="var(--nutrition-accent)"
               strokeWidth={2}
-              dot={{ r: 2.5, fill: "var(--accent)", strokeWidth: 0 }}
+              dot={{ r: 2.5, fill: "var(--nutrition-accent)", strokeWidth: 0 }}
               activeDot={{ r: 4 }}
             />
           </LineChart>

@@ -51,7 +51,7 @@ export function WaterTracker({
     return (
       <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface shadow-card p-5">
         <div>
-          <h2 className="text-sm font-medium text-foreground">Su Takibi</h2>
+          <h2 className="text-lg font-extrabold tracking-tight text-foreground">Su Takibi</h2>
           <p className="text-xs text-muted">Günlük kaç ml su içmeyi hedefliyorsun?</p>
         </div>
         <div className="flex items-center gap-2">
@@ -73,7 +73,7 @@ export function WaterTracker({
                 setEditingGoal(false);
               }
             }}
-            className="btn h-10 rounded-lg bg-accent-soft px-4 text-xs font-medium text-accent hover:bg-accent/25"
+            className="btn h-10 rounded-lg bg-[color:var(--nutrition-accent)]/15 px-4 text-xs font-medium text-[color:var(--nutrition-accent)] hover:bg-[color:var(--nutrition-accent)]/25"
           >
             Kaydet
           </button>
@@ -98,7 +98,7 @@ export function WaterTracker({
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-5 rounded-lg border border-border bg-surface shadow-card p-6">
         <div className="flex items-start justify-between gap-3">
-          <h2 className="text-sm font-medium text-foreground">Su Takibi</h2>
+          <h2 className="text-lg font-extrabold tracking-tight text-foreground">Su Takibi</h2>
           <div className="flex items-center gap-2">
             {logs.length > 0 && (
               <button
@@ -142,11 +142,11 @@ export function WaterTracker({
                   type="button"
                   onClick={() => onAdd(cup.ml)}
                   disabled={adding}
-                  className="btn flex flex-col items-center gap-1.5 rounded-lg bg-accent-soft px-4 py-3 text-accent hover:bg-accent/25 disabled:pointer-events-none disabled:opacity-50"
+                  className="btn flex flex-col items-center gap-1.5 rounded-lg bg-[color:var(--nutrition-accent)]/15 px-4 py-3 text-[color:var(--nutrition-accent)] hover:bg-[color:var(--nutrition-accent)]/25 disabled:pointer-events-none disabled:opacity-50"
                 >
                   <CupIcon width={cup.iconSize} height={cup.iconSize} />
                   <span className="text-xs font-medium">{cup.label}</span>
-                  <span className="font-mono text-[11px] tabular-nums text-accent/80">{cup.ml} ml</span>
+                  <span className="font-mono text-[11px] tabular-nums text-[color:var(--nutrition-accent)]/80">{cup.ml} ml</span>
                 </button>
               ))}
               <button
@@ -181,7 +181,7 @@ export function WaterTracker({
                     }
                   }}
                   disabled={adding}
-                  className="btn h-9 rounded-lg bg-accent-soft px-3 text-xs font-medium text-accent hover:bg-accent/25 disabled:pointer-events-none disabled:opacity-50"
+                  className="btn h-9 rounded-lg bg-[color:var(--nutrition-accent)]/15 px-3 text-xs font-medium text-[color:var(--nutrition-accent)] hover:bg-[color:var(--nutrition-accent)]/25 disabled:pointer-events-none disabled:opacity-50"
                 >
                   Ekle
                 </button>

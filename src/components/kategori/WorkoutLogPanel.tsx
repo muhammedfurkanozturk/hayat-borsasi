@@ -405,15 +405,35 @@ export function WorkoutLogPanel({ categoryId }: { categoryId: string }) {
   const lastPerformance = calculateLastPerformance(sets);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div
+      className="flex flex-col gap-4 rounded-lg bg-[color:var(--sport-bg)] p-4 sm:p-5"
+      style={
+        {
+          "--sport-accent": "#2e7dff",
+          "--sport-bg": "#141414",
+          "--sport-surface": "#1c1c1c",
+          "--sport-elevated": "#242424",
+          "--sport-border": "rgba(255,255,255,0.12)",
+          "--sport-text": "#f5f5f5",
+          "--sport-muted": "#9a9a9a",
+          // Bu kapsam içinde render edilen paylaşılan bileşenler
+          // (SegmentedControl, Modal vb.) site-geneli --accent'i doğrudan
+          // kullanıyor — modülün kendi bakır yerine mavi kimliğini
+          // taşıması için genel token'lar da burada yerel olarak eziliyor.
+          "--accent": "#2e7dff",
+          "--accent-soft": "#2e7dff26",
+          "--accent-foreground": "#ffffff",
+        } as React.CSSProperties
+      }
+    >
       <SportTabBar value={tab} onChange={setTab} />
 
       {tab === "workout" && (
         <div className="flex flex-col gap-4">
           <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-            <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5">
-              <h2 className="text-sm font-medium text-foreground">Hareketlerim</h2>
-              <p className="text-xs text-muted">
+            <div className="flex flex-col gap-4 rounded-lg border border-[color:var(--sport-border)] bg-[color:var(--sport-surface)] shadow-card p-5">
+              <h2 className="text-sm font-medium text-[color:var(--sport-text)]">Hareketlerim</h2>
+              <p className="text-xs text-[color:var(--sport-muted)]">
                 Bir hareket kartını aşağıdaki haftanın günlerinden birine sürükleyip bırak — set/tekrar/ağırlığı
                 orada gireceksin. Kamera tabanlı vücut/ilerleme analizi henüz yok.
               </p>
@@ -436,12 +456,12 @@ export function WorkoutLogPanel({ categoryId }: { categoryId: string }) {
                   value={newExerciseName}
                   onChange={(e) => setNewExerciseName(e.target.value)}
                   placeholder="örn. Şınav"
-                  className="h-9 flex-1 rounded-lg border-2 border-muted/30 bg-surface px-3 text-sm text-foreground outline-none placeholder:text-muted focus:border-accent/50"
+                  className="h-9 flex-1 rounded-lg border-2 border-[color:var(--sport-muted)]/30 bg-[color:var(--sport-surface)] px-3 text-sm text-[color:var(--sport-text)] outline-none placeholder:text-[color:var(--sport-muted)] focus:border-[color:var(--sport-accent)]/50"
                 />
                 <button
                   type="submit"
                   disabled={addingExercise || !newExerciseName.trim()}
-                  className="btn flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-accent-soft px-4 text-xs font-medium text-accent hover:bg-accent/25 disabled:pointer-events-none disabled:opacity-50"
+                  className="btn flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[color:var(--sport-accent)]/15 px-4 text-xs font-medium text-[color:var(--sport-accent)] hover:bg-[color:var(--sport-accent)]/25 disabled:pointer-events-none disabled:opacity-50"
                 >
                   <PlusIcon width={12} height={12} />
                   Hareket Ekle

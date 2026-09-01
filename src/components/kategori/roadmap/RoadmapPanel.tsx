@@ -30,6 +30,27 @@ import { RoadmapTemplatePicker } from "./RoadmapTemplatePicker";
 
 const nodeTypes = { roadmapNode: RoadmapNode };
 
+// Kategori Bazlı Tasarım Farklılaştırma — Bölüm 6 (Yol Haritam → Miro dili,
+// 2026-09-02). "Dijital beyaz tahta" hissi için zemin site temasından
+// bağımsız olarak AÇIK (Freeletics/Robinhood'un koyuya zorlanmasının
+// tersi yönü, Duolingo/Bölüm 5'teki gibi) — aynı kök-token-ezme yöntemi
+// (bkz. Robinhood bölümündeki açıklama). Vurgu, roadmap.sh'in bakır/
+// turuncusu yerine Miro'nun pastel leylak tonuna çevrildi.
+const ROADMAP_WHITEBOARD_SCOPE = {
+  "--background": "#fafafa",
+  "--background-elevated": "#f4f4f5",
+  "--surface": "#ffffff",
+  "--surface-hover": "#f0f0f1",
+  "--border": "#e4e4e7",
+  "--border-soft": "#ececef",
+  "--foreground": "#27272a",
+  "--muted": "#71717a",
+  "--muted-soft": "#a1a1aa",
+  "--accent": "#a78bfa",
+  "--accent-soft": "#a78bfa26",
+  "--accent-foreground": "#211a3d",
+} as React.CSSProperties;
+
 // roadmap.sh'teki (piyasa araştırması) "dallanan harita + tıkla-işaretle"
 // fikrinin uyarlaması — kod/tasarım kopyalanmadı, sadece etkileşim mantığı.
 // Roadmap ilerlemesi bilinçli olarak ana günlük skor motoruna (tasks)
@@ -280,16 +301,18 @@ export function RoadmapPanel({ categoryId }: { categoryId: string }) {
       };
     });
     return (
-      <RoadmapTemplatePicker
-        existingRoadmaps={existingRoadmaps}
-        onSelectExisting={(roadmapId) => {
-          setActiveRoadmapId(roadmapId);
-          setViewMode("tree");
-        }}
-        onPickTemplate={handlePickTemplate}
-        onCreateCustom={handleCreateCustom}
-        creating={creating}
-      />
+      <div className="rounded-lg bg-[color:var(--background)] p-4 sm:p-5" style={ROADMAP_WHITEBOARD_SCOPE}>
+        <RoadmapTemplatePicker
+          existingRoadmaps={existingRoadmaps}
+          onSelectExisting={(roadmapId) => {
+            setActiveRoadmapId(roadmapId);
+            setViewMode("tree");
+          }}
+          onPickTemplate={handlePickTemplate}
+          onCreateCustom={handleCreateCustom}
+          creating={creating}
+        />
+      </div>
     );
   }
 
@@ -321,7 +344,10 @@ export function RoadmapPanel({ categoryId }: { categoryId: string }) {
   const bookmarkedNodes = activeNodes.filter((n) => n.bookmarked);
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5">
+    <div
+      className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5"
+      style={ROADMAP_WHITEBOARD_SCOPE}
+    >
       {/* 2026-08-26: harita ağacı açıldığında çıkış yolu yoktu (kullanıcı
           bulgusu). İlk versiyon Dashboard'a giden bir Link'ti — ama bu
           kategoriden tamamen çıkarıyordu; kullanıcı asıl aynı kategoride

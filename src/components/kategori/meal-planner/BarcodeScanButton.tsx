@@ -141,7 +141,7 @@ export function BarcodeScanButton({ onResult }: { onResult: (product: BarcodePro
                 setError(null);
                 setMode("camera");
               }}
-              className="btn flex flex-col items-center gap-2 rounded-lg border-2 border-muted/25 p-4 text-center text-muted hover:border-accent/30 hover:text-foreground"
+              className="btn flex flex-col items-center gap-2 rounded-lg border-2 border-muted/25 p-4 text-center text-muted hover:border-[color:var(--nutrition-accent)]/30 hover:text-foreground"
             >
               <CameraIcon width={22} height={22} />
               <span className="text-xs font-semibold">Kameradan Tara</span>
@@ -152,7 +152,7 @@ export function BarcodeScanButton({ onResult }: { onResult: (product: BarcodePro
                 setError(null);
                 setMode("manual");
               }}
-              className="btn flex flex-col items-center gap-2 rounded-lg border-2 border-muted/25 p-4 text-center text-muted hover:border-accent/30 hover:text-foreground"
+              className="btn flex flex-col items-center gap-2 rounded-lg border-2 border-muted/25 p-4 text-center text-muted hover:border-[color:var(--nutrition-accent)]/30 hover:text-foreground"
             >
               <KeyboardIcon width={22} height={22} />
               <span className="text-xs font-semibold">Elle Yaz</span>
@@ -194,7 +194,7 @@ export function BarcodeScanButton({ onResult }: { onResult: (product: BarcodePro
               <button
                 type="submit"
                 disabled={loading || !manualCode.trim()}
-                className="btn h-10 shrink-0 rounded-lg bg-accent-soft px-4 text-sm font-medium text-accent hover:bg-accent/25 disabled:pointer-events-none disabled:opacity-50"
+                className="btn h-10 shrink-0 rounded-lg bg-[color:var(--nutrition-accent)]/15 px-4 text-sm font-medium text-[color:var(--nutrition-accent)] hover:bg-[color:var(--nutrition-accent)]/25 disabled:pointer-events-none disabled:opacity-50"
               >
                 {loading ? "Aranıyor..." : "Ara"}
               </button>

@@ -173,7 +173,7 @@ export function MirrorSelfieDetector({
             type="button"
             disabled={committing || items.every((i) => !i.included || !i.blob)}
             onClick={handleCommit}
-            className="btn h-10 rounded-lg px-4 text-sm font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
+            className="btn h-10 rounded-lg px-4 text-sm font-semibold text-[#141400] disabled:pointer-events-none disabled:opacity-50"
             style={{ backgroundColor: "var(--stil-accent)" }}
           >
             {committing ? "Ekleniyor..." : "Seçilenleri Gardırobuma Ekle"}

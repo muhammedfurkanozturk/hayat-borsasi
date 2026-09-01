@@ -37,7 +37,33 @@ import { UrgeReliefModal } from "./habit/UrgeReliefModal";
 // turda genişletildi.
 const STREAK_WINDOW_DAYS = 1825;
 
-export function HabitBreakCard({ task }: { task: Task }) {
+// Kategori Bazlı Tasarım Farklılaştırma — Bölüm 7 (Headspace dili,
+// 2026-09-02). Headspace'in "renk-bloklu içerik kartları" fikri — her
+// kartın kendi doygun renginin OLMASI gerekiyordu, sabit tek bir kategori
+// vurgusu değil. Renk task.id'den DETERMİNİSTİK olarak türetiliyor (sayfa
+// yenilenince/liste sırası değişince aynı alışkanlık aynı rengi koruyor),
+// yeni bir DB sütunu gerekmedi.
+export interface HabitPalette {
+  bg: string;
+  fg: string;
+  muted: string;
+}
+
+const HABIT_PALETTE_POOL: HabitPalette[] = [
+  { bg: "#d4a72c", fg: "#2b2100", muted: "#5c4c12" }, // hardal sarısı
+  { bg: "#c1502e", fg: "#ffffff", muted: "#ffe4d9" }, // toprak turuncusu
+  { bg: "#2f5233", fg: "#ffffff", muted: "#cfe0d1" }, // orman yeşili
+  { bg: "#6b4e8e", fg: "#ffffff", muted: "#e3d9ee" }, // leylak moru
+  { bg: "#1a1a1a", fg: "#ffffff", muted: "#b8b8b8" }, // siyah
+];
+
+export function hashHabitColor(id: string): HabitPalette {
+  let hash = 0;
+  for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  return HABIT_PALETTE_POOL[hash % HABIT_PALETTE_POOL.length];
+}
+
+export function HabitBreakCard({ task, palette }: { task: Task; palette: HabitPalette }) {
   const { toggleTask, changeHabitCost } = useAppData();
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -205,7 +231,19 @@ export function HabitBreakCard({ task }: { task: Task }) {
   }, [improvementMode, expanded, loading]);
 
   return (
-    <div className="rounded-lg border-2 border-muted/30 bg-background-elevated">
+    <div
+      className="rounded-lg border-2 border-muted/30 bg-background-elevated"
+      style={
+        {
+          "--background-elevated": palette.bg,
+          "--accent": palette.fg,
+          "--accent-soft": `${palette.fg}26`,
+          "--accent-foreground": palette.bg,
+          "--foreground": palette.fg,
+          "--muted": palette.muted,
+        } as React.CSSProperties
+      }
+    >
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}

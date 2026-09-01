@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { PlusIcon } from "@/components/icons";
 import { useAppData } from "@/lib/supabase/app-data-context";
-import { HabitBreakCard } from "./HabitBreakCard";
+import { HabitBreakCard, hashHabitColor } from "./HabitBreakCard";
 
 // "Kötü Alışkanlıklar" kategorisinin tüm içeriği — bu kategoride "Görev
 // Ekle" yerine bu panel var, kategoriye eklenen her şey otomatik olarak
@@ -27,7 +27,26 @@ export function HabitTrackerPanel({ categoryId }: { categoryId: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5">
+    // Kategori Bazlı Tasarım Farklılaştırma — Bölüm 7 (Headspace dili,
+    // 2026-09-02). Sıcak/sakin kağıt-rengi zemin (site temasından bağımsız)
+    // + her kartın kendi doygun rengi (bkz. hashHabitColor, HabitBreakCard.tsx).
+    <div
+      className="flex flex-col gap-4 rounded-lg bg-[color:var(--background)] p-4 sm:p-5"
+      style={
+        {
+          "--background": "#faf3e8",
+          "--background-elevated": "#ffffff",
+          "--surface": "#ffffff",
+          "--border": "#e8dcc8",
+          "--border-soft": "#f0e6d6",
+          "--foreground": "#3a2f22",
+          "--muted": "#8a7a63",
+          "--accent": "#c1502e",
+          "--accent-soft": "#c1502e26",
+          "--accent-foreground": "#ffffff",
+        } as React.CSSProperties
+      }
+    >
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-medium text-foreground">Kötü Alışkanlıklar</h2>
         <button
@@ -64,7 +83,7 @@ export function HabitTrackerPanel({ categoryId }: { categoryId: string }) {
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {habitTasks.map((task) => (
-            <HabitBreakCard key={task.id} task={task} />
+            <HabitBreakCard key={task.id} task={task} palette={hashHabitColor(task.id)} />
           ))}
         </div>
       )}

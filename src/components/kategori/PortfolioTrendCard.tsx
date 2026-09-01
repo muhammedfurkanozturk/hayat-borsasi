@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, YAxis } from "recharts";
+import { Area, AreaChart, ReferenceDot, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { TooltipProps } from "recharts";
 import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 import type { PortfolioPosition } from "@hayat-borsasi/shared";
@@ -144,9 +144,21 @@ export function PortfolioTrendCard({ positions }: { positions: PortfolioPosition
                 <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
               </linearGradient>
             </defs>
+            <XAxis dataKey="date" hide />
             <YAxis hide domain={["dataMin - 10", "dataMax + 10"]} />
             <Tooltip content={ChartTooltip} cursor={{ stroke: "var(--border)" }} />
             <Area type="monotone" dataKey="value" stroke="var(--accent)" strokeWidth={2} fill="url(#portfolioTrendFill)" />
+            {/* Robinhood'un sparkline uç-nokta parıltısı — CSS
+                drop-shadow'lu bir nokta, sadece son değerin üstünde. */}
+            <ReferenceDot
+              x={chartData[chartData.length - 1].date}
+              y={chartData[chartData.length - 1].value}
+              r={4}
+              fill={change >= 0 ? "var(--positive)" : "var(--negative)"}
+              stroke="none"
+              isFront
+              style={{ filter: `drop-shadow(0 0 4px ${change >= 0 ? "var(--positive)" : "var(--negative)"})` }}
+            />
           </AreaChart>
         </ResponsiveContainer>
       </div>

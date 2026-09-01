@@ -2,7 +2,22 @@
 
 import { useEffect, useState } from "react";
 import type { DbFastingSession } from "@hayat-borsasi/shared";
-import { ClockIcon } from "@/components/icons";
+import { ClockIcon, MountainIcon } from "@/components/icons";
+
+// Yazio tasarım dili (2026-08-31, Kategori Bazlı Tasarım Farklılaştırma,
+// Bölüm 1) — Aralıklı Oruç, Sağlıklı Beslenme'nin geri kalanından (açık/
+// nötr log ekranları) BİLİNÇLİ OLARAK farklı, koyu/atmosferik bir alt-tema
+// kullanıyor. Renkler tema tokenlarından (--foreground/--muted, açık/koyu
+// tema ile değişir) DEĞİL, sabit değerlerden geliyor — bu ekran tema
+// ayarından bağımsız hep koyu kalıyor, bekleme deneyimini farklı hissettirmek
+// için kasıtlı bir tasarım kararı.
+const FASTING_BG = "#1a2530";
+const FASTING_BORDER = "#2a3744";
+const FASTING_TEXT = "#f5f7fa";
+const FASTING_MUTED = "#8fa2b3";
+const FASTING_CHIP_BORDER = "#3a4b5c";
+const FASTING_TRACK = "#2a3744";
+const FASTING_MAGENTA = "#e91e63";
 
 const PRESET_HOURS = [14, 16, 18, 20];
 
@@ -44,9 +59,20 @@ export function FastingTimer({
 
   if (!session) {
     return (
-      <div className="flex flex-col items-center gap-4 rounded-lg border border-border bg-surface shadow-card p-6 text-center">
-        <h2 className="text-sm font-medium text-foreground">Aralıklı Oruç</h2>
-        <div className="flex flex-wrap items-center justify-center gap-2">
+      <div
+        className="relative flex flex-col items-center gap-4 overflow-hidden rounded-lg border p-6 text-center"
+        style={{ background: FASTING_BG, borderColor: FASTING_BORDER }}
+      >
+        <MountainIcon
+          width={520}
+          height={220}
+          className="pointer-events-none absolute -bottom-6 left-1/2 -z-0 -translate-x-1/2 opacity-[0.12]"
+          style={{ color: FASTING_TEXT }}
+        />
+        <h2 className="relative z-10 text-lg font-extrabold tracking-tight" style={{ color: FASTING_TEXT }}>
+          Aralıklı Oruç
+        </h2>
+        <div className="relative z-10 flex flex-wrap items-center justify-center gap-2">
           {PRESET_HOURS.map((h) => (
             <button
               key={h}
@@ -55,11 +81,12 @@ export function FastingTimer({
                 setTargetHours(h);
                 setCustomOpen(false);
               }}
-              className={`btn h-8 rounded-lg border-2 px-3 text-xs font-medium ${
+              className="btn h-8 rounded-lg border-2 px-3 text-xs font-medium"
+              style={
                 !customOpen && targetHours === h
-                  ? "border-accent/50 text-accent"
-                  : "border-muted/30 text-muted hover:text-foreground"
-              }`}
+                  ? { borderColor: "color-mix(in srgb, var(--nutrition-accent) 60%, transparent)", color: "var(--nutrition-accent)" }
+                  : { borderColor: FASTING_CHIP_BORDER, color: FASTING_MUTED }
+              }
             >
               {h} saat
             </button>
@@ -67,16 +94,19 @@ export function FastingTimer({
           <button
             type="button"
             onClick={() => setCustomOpen((v) => !v)}
-            className={`btn h-8 rounded-lg border-2 px-3 text-xs font-medium ${
-              customOpen ? "border-accent/50 text-accent" : "border-muted/30 text-muted hover:text-foreground"
-            }`}
+            className="btn h-8 rounded-lg border-2 px-3 text-xs font-medium"
+            style={
+              customOpen
+                ? { borderColor: "color-mix(in srgb, var(--nutrition-accent) 60%, transparent)", color: "var(--nutrition-accent)" }
+                : { borderColor: FASTING_CHIP_BORDER, color: FASTING_MUTED }
+            }
           >
             Özel
           </button>
         </div>
 
         {customOpen && (
-          <div className="flex items-center gap-2">
+          <div className="relative z-10 flex items-center gap-2">
             <input
               autoFocus
               type="number"
@@ -85,9 +115,12 @@ export function FastingTimer({
               placeholder="örn. 24"
               value={customHours}
               onChange={(e) => setCustomHours(e.target.value)}
-              className="h-9 w-24 rounded-lg border-2 border-muted/30 bg-background-elevated px-3 text-center text-sm text-foreground outline-none focus:border-accent/50"
+              className="h-9 w-24 rounded-lg border-2 px-3 text-center text-sm outline-none"
+              style={{ background: "#141d26", borderColor: FASTING_CHIP_BORDER, color: FASTING_TEXT }}
             />
-            <span className="text-xs text-muted">saat</span>
+            <span className="text-xs" style={{ color: FASTING_MUTED }}>
+              saat
+            </span>
           </div>
         )}
 
@@ -99,7 +132,8 @@ export function FastingTimer({
             onStart(hours);
           }}
           disabled={starting || (customOpen && !(Math.round(Number(customHours)) > 0))}
-          className="btn flex h-11 w-fit items-center gap-2 rounded-lg bg-accent px-5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+          className="btn relative z-10 flex h-11 w-fit items-center gap-2 rounded-lg px-5 text-sm font-semibold text-white hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+          style={{ background: FASTING_MAGENTA }}
         >
           <ClockIcon width={16} height={16} />
           Orucu Başlat
@@ -117,24 +151,38 @@ export function FastingTimer({
   const remainingMs = Math.max(0, targetMs - elapsedMs);
 
   return (
-    <div className="flex flex-col items-center gap-4 rounded-lg border border-border bg-surface shadow-card p-6 text-center">
-      <div className="flex flex-col items-center gap-1">
-        <h2 className="text-sm font-medium text-foreground">Aralıklı Oruç</h2>
-        <span className={`text-xs font-medium ${reached ? "text-positive" : "text-muted"}`}>
+    <div
+      className="relative flex flex-col items-center gap-4 overflow-hidden rounded-lg border p-6 text-center"
+      style={{ background: FASTING_BG, borderColor: FASTING_BORDER }}
+    >
+      <MountainIcon
+        width={520}
+        height={220}
+        className="pointer-events-none absolute -bottom-6 left-1/2 -z-0 -translate-x-1/2 opacity-[0.12]"
+        style={{ color: FASTING_TEXT }}
+      />
+      <div className="relative z-10 flex flex-col items-center gap-1">
+        <h2 className="text-lg font-extrabold tracking-tight" style={{ color: FASTING_TEXT }}>
+          Aralıklı Oruç
+        </h2>
+        <span className="text-xs font-medium" style={{ color: reached ? "var(--nutrition-accent)" : FASTING_MUTED }}>
           Hedef: {session.target_hours} saat{reached ? " — tamamlandı" : ""}
         </span>
       </div>
-      <p className="font-mono text-4xl font-semibold tabular-nums text-foreground">{formatDuration(remainingMs)}</p>
-      <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-border-soft">
+      <p className="relative z-10 font-mono text-4xl font-semibold tabular-nums" style={{ color: FASTING_TEXT }}>
+        {formatDuration(remainingMs)}
+      </p>
+      <div className="relative z-10 h-1.5 w-full max-w-xs overflow-hidden rounded-full" style={{ background: FASTING_TRACK }}>
         <div
-          className={`h-full rounded-full transition-[width] duration-500 ${reached ? "bg-positive" : "bg-accent"}`}
-          style={{ width: `${progress * 100}%` }}
+          className="h-full rounded-full transition-[width] duration-500"
+          style={{ width: `${progress * 100}%`, background: "var(--nutrition-accent)" }}
         />
       </div>
       <button
         type="button"
         onClick={onStop}
-        className="btn h-9 w-fit rounded-lg border-2 border-muted/30 px-4 text-xs text-muted hover:text-foreground"
+        className="btn relative z-10 h-11 w-fit rounded-lg px-5 text-sm font-semibold text-white hover:opacity-90"
+        style={{ background: FASTING_MAGENTA }}
       >
         Orucu Bitir
       </button>

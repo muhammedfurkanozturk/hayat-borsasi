@@ -15,6 +15,7 @@ import {
   fetchYesterdaySubtaskLogs,
   fetchYesterdayTaskLogs,
   getOrCreateTodayEntry,
+  insertCategoriesFromTemplates,
   insertCategory,
   insertSubtask,
   insertTask,
@@ -24,8 +25,11 @@ import {
   updateCategoryIcon,
   updateCategoryName,
   updateDailyNote,
+  updateHabitCost,
   updateTaskFrequency,
+  type CategoryModuleType,
   type DailyScorePoint,
+  type HabitCostPeriod,
   type IconKey,
   type TaskFrequency,
 } from "@hayat-borsasi/shared";
@@ -35,6 +39,7 @@ export interface Category {
   id: string;
   name: string;
   icon: IconKey;
+  moduleType: CategoryModuleType;
 }
 
 export interface Task {
@@ -47,6 +52,10 @@ export interface Task {
   completedAt: string | null;
   subtaskTotal: number;
   subtaskCompleted: number;
+  isHabitBreak: boolean;
+  habitCostAmount: number | null;
+  habitCostPeriod: HabitCostPeriod | null;
+  createdAt: string;
 }
 
 export interface Subtask {
@@ -65,11 +74,15 @@ interface AppDataContextValue {
   previousDailyScore: number;
   dailyHistory: DailyScorePoint[];
   addCategory: (name: string, icon: IconKey) => Promise<void>;
+  addCategoriesFromTemplates: (
+    templates: { name: string; icon: IconKey; moduleType: CategoryModuleType }[]
+  ) => Promise<void>;
   removeCategory: (categoryId: string) => Promise<void>;
   renameCategory: (categoryId: string, name: string) => Promise<void>;
   changeCategoryIcon: (categoryId: string, icon: IconKey) => Promise<void>;
-  addTask: (categoryId: string, title: string, weight: number, frequency: TaskFrequency) => Promise<void>;
+  addTask: (categoryId: string, title: string, weight: number, frequency: TaskFrequency, isHabitBreak?: boolean) => Promise<void>;
   removeTask: (taskId: string) => Promise<void>;
+  changeHabitCost: (taskId: string, costAmount: number | null, costPeriod: HabitCostPeriod | null) => Promise<void>;
   toggleTask: (taskId: string) => Promise<void>;
   changeTaskFrequency: (taskId: string, frequency: TaskFrequency) => Promise<void>;
   addSubtask: (taskId: string, title: string) => Promise<void>;
@@ -149,6 +162,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         completedAt: log?.completed_at ?? null,
         subtaskTotal: taskSubtasks.length,
         subtaskCompleted,
+        isHabitBreak: t.is_habit_break,
+        habitCostAmount: t.habit_cost_amount,
+        habitCostPeriod: t.habit_cost_period,
+        createdAt: t.created_at,
       };
     });
 
@@ -190,7 +207,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     });
 
     setUserId(user.id);
-    setCategories(dbCategories.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon) })));
+    setCategories(dbCategories.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon), moduleType: c.module_type })));
     setTasks(nextTasks);
     setSubtasks(nextSubtasks);
     setPreviousDailyScore(calculateScore(yesterdayWeighted));
@@ -229,7 +246,22 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     if (!trimmed) return;
 
     const created = await insertCategory(supabase, userId, trimmed, icon, categories.length);
-    setCategories((prev) => [...prev, { id: created.id, name: created.name, icon: toIconKey(created.icon) }]);
+    setCategories((prev) => [
+      ...prev,
+      { id: created.id, name: created.name, icon: toIconKey(created.icon), moduleType: created.module_type },
+    ]);
+  }
+
+  async function addCategoriesFromTemplates(
+    templates: { name: string; icon: IconKey; moduleType: CategoryModuleType }[]
+  ) {
+    if (!userId || templates.length === 0) return;
+
+    const created = await insertCategoriesFromTemplates(supabase, userId, templates, categories.length);
+    setCategories((prev) => [
+      ...prev,
+      ...created.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon), moduleType: c.module_type })),
+    ]);
   }
 
   async function removeCategory(categoryId: string) {
@@ -253,7 +285,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setCategories((prev) => prev.map((c) => (c.id === categoryId ? { ...c, icon } : c)));
   }
 
-  async function addTask(categoryId: string, title: string, weight: number, frequency: TaskFrequency) {
+  async function addTask(
+    categoryId: string,
+    title: string,
+    weight: number,
+    frequency: TaskFrequency,
+    isHabitBreak = false
+  ) {
     if (!userId) return;
     const trimmed = title.trim();
     if (!trimmed) return;
@@ -264,7 +302,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       categoryId,
       trimmed,
       Math.min(10, Math.max(1, weight)),
-      frequency
+      frequency,
+      isHabitBreak
     );
     setTasks((prev) => [
       ...prev,
@@ -278,8 +317,19 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         completedAt: null,
         subtaskTotal: 0,
         subtaskCompleted: 0,
+        isHabitBreak: created.is_habit_break,
+        habitCostAmount: created.habit_cost_amount,
+        habitCostPeriod: created.habit_cost_period,
+        createdAt: created.created_at,
       },
     ]);
+  }
+
+  async function changeHabitCost(taskId: string, costAmount: number | null, costPeriod: HabitCostPeriod | null) {
+    await updateHabitCost(supabase, taskId, costAmount, costPeriod);
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, habitCostAmount: costAmount, habitCostPeriod: costPeriod } : t))
+    );
   }
 
   async function removeTask(taskId: string) {
@@ -402,11 +452,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         previousDailyScore,
         dailyHistory,
         addCategory,
+        addCategoriesFromTemplates,
         removeCategory,
         renameCategory,
         changeCategoryIcon,
         addTask,
         removeTask,
+        changeHabitCost,
         toggleTask,
         changeTaskFrequency,
         addSubtask,

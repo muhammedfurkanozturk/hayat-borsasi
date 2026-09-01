@@ -633,7 +633,13 @@ export function MealLogPanel({
     .filter(Boolean);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div
+      className="flex flex-col gap-4"
+      // Sağlıklı Beslenme — Yazio tasarım dili (2026-08-31, Kategori Bazlı
+      // Tasarım Farklılaştırma, Bölüm 1). Sadece bu kategoriye özel, yerel
+      // vurgu rengi — Stil & Giyim'deki --stil-accent deseniyle aynı mantık.
+      style={{ "--nutrition-accent": "#00c896", "--nutrition-accent-fg": "#ffffff" } as React.CSSProperties}
+    >
       <NutritionTabBar value={tab} onChange={setTab} />
 
       {tab === "checklist" && (
@@ -644,7 +650,7 @@ export function MealLogPanel({
         <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h2 className="text-sm font-medium text-foreground">Öğün Kaydı</h2>
+              <h2 className="text-lg font-extrabold tracking-tight text-foreground">Öğün Kaydı</h2>
               <p className="text-xs text-muted">
                 Fotoğraf analiz edilir; onaylarsan fotoğraf ve sonucu birlikte kaydedilir.
               </p>
@@ -657,7 +663,7 @@ export function MealLogPanel({
           {!pending && (
             <div className="flex flex-col gap-3 rounded-lg border-2 border-muted/30 p-3">
               <div className="flex flex-wrap items-center gap-2">
-                <label className="btn flex h-10 w-fit cursor-pointer items-center gap-2 rounded-lg bg-accent-soft px-4 text-sm font-medium text-accent hover:bg-accent/25">
+                <label className="btn flex h-10 w-fit cursor-pointer items-center gap-2 rounded-lg bg-[color:var(--nutrition-accent)]/15 px-4 text-sm font-medium text-[color:var(--nutrition-accent)] hover:bg-[color:var(--nutrition-accent)]/25">
                   {analyzing ? "Analiz ediliyor..." : "Yemek Fotoğrafı Yükle ve Analiz Et"}
                   <input type="file" accept="image/*" onChange={handlePhotoSelect} disabled={analyzing} className="hidden" />
                 </label>
@@ -684,7 +690,7 @@ export function MealLogPanel({
           )}
 
           {pending && (
-            <div className="rounded-lg border-2 border-accent/40 bg-accent-soft/30 p-4">
+            <div className="rounded-lg border-2 border-[color:var(--nutrition-accent)]/40 bg-[color:var(--nutrition-accent)]/20 p-4">
               <PendingFoodEditor
                 initial={{
                   description: pending.description,
@@ -739,7 +745,7 @@ export function MealLogPanel({
                   />
                   <button
                     type="submit"
-                    className="btn h-9 shrink-0 rounded-lg bg-accent-soft px-4 text-xs font-medium text-accent hover:bg-accent/25"
+                    className="btn h-9 shrink-0 rounded-lg bg-[color:var(--nutrition-accent)]/15 px-4 text-xs font-medium text-[color:var(--nutrition-accent)] hover:bg-[color:var(--nutrition-accent)]/25"
                   >
                     Ekle
                   </button>

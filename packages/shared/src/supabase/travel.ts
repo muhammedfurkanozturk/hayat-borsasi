@@ -69,7 +69,12 @@ export async function toggleTravelVisit(
     ref_code: refCode,
     visited_at: new Date().toISOString().slice(0, 10),
   });
-  if (error) throw error;
+  // Aynı anda iki hızlı dokunuş (örn. çift tıklama) aynı yeri iki kez eklemeye
+  // çalışabilir — ikincisi unique constraint'e (kullanıcı+kategori+level+ref_code)
+  // çarpar. İstenen son durum (ziyaret var) zaten ilk istekle sağlandığı için
+  // bunu hataya değil no-op'a çeviriyoruz (bkz. CLAUDE.md 7.1, getOrCreateEntryForDate
+  // ile aynı desen).
+  if (error && error.code !== "23505") throw error;
 }
 
 export async function updateTravelVisitDetails(
@@ -166,5 +171,6 @@ export async function toggleTravelBucketItem(
     theme_key: themeKey,
     item_key: itemKey,
   });
-  if (error) throw error;
+  // bkz. toggleTravelVisit'teki aynı 23505 (unique constraint) notu.
+  if (error && error.code !== "23505") throw error;
 }

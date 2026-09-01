@@ -40,7 +40,7 @@ export function MealPresetsPanel({
                   onClick={() => setOpenPresetId(open ? null : preset.id)}
                   className="btn flex flex-1 items-center gap-2 text-left"
                 >
-                  <StarIcon width={14} height={14} className="shrink-0 text-accent" />
+                  <StarIcon width={14} height={14} className="shrink-0 text-[color:var(--nutrition-accent)]" />
                   <span className="text-sm text-foreground">{preset.name}</span>
                   <span className="font-mono text-[11px] tabular-nums text-muted">{itemCount} yemek</span>
                 </button>
@@ -64,7 +64,7 @@ export function MealPresetsPanel({
                         onApply(preset.id, meal.id);
                         setOpenPresetId(null);
                       }}
-                      className="btn h-7 rounded-lg border-2 border-muted/30 px-2.5 text-xs text-muted hover:border-accent/50 hover:text-accent"
+                      className="btn h-7 rounded-lg border-2 border-muted/30 px-2.5 text-xs text-muted hover:border-[color:var(--nutrition-accent)]/50 hover:text-[color:var(--nutrition-accent)]"
                     >
                       {meal.name}
                     </button>

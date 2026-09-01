@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SparkleIcon } from "@/components/icons";
 
 export interface EditableFoodValues {
   description: string;
@@ -95,7 +96,18 @@ export function PendingFoodEditor({
         placeholder="Yemek adı"
         className="h-10 rounded-lg border-2 border-muted/30 bg-surface px-3 text-sm font-medium text-foreground outline-none focus:border-accent/50"
       />
-      {summary && <p className="text-xs italic text-muted">{summary}</p>}
+      {summary && (
+        <div className="flex items-start gap-2">
+          <span
+            className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+            style={{ background: "#b39ddb26", color: "#8b6fc7" }}
+          >
+            <SparkleIcon width={10} height={10} />
+            AI
+          </span>
+          <p className="text-xs italic text-muted">{summary}</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         <div className="flex flex-col gap-1">
@@ -176,7 +188,7 @@ export function PendingFoodEditor({
           type="button"
           onClick={handleConfirm}
           disabled={saving}
-          className="btn h-10 flex-1 rounded-lg bg-accent px-4 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+          className="btn h-10 flex-1 rounded-lg bg-[color:var(--nutrition-accent)] px-4 text-sm font-semibold text-[color:var(--nutrition-accent-fg)] hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
         >
           {saving ? "Kaydediliyor..." : confirmLabel}
         </button>

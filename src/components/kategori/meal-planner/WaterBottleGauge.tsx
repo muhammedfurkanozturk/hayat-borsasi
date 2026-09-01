@@ -53,11 +53,11 @@ export function WaterBottleGauge({ percent, size = 96 }: { percent: number; size
           {/* Sabit büyük yükseklik — grup zaten fillY'e kaydırılıyor,
               clipPath şişenin gerçek dışına taşan kısmı zaten kırpıyor,
               bu yüzden fillHeight ile birebir eşleşmesi gerekmiyor. */}
-          <rect x={0} y={0} width={60} height={200} fill="var(--accent)" fillOpacity={FILL_OPACITY} />
+          <rect x={0} y={0} width={60} height={200} fill="var(--nutrition-accent)" fillOpacity={FILL_OPACITY} />
           {!prefersReducedMotion && clamped > 0 && (
             <motion.path
               d={WAVE_PATH}
-              fill="var(--accent)"
+              fill="var(--nutrition-accent)"
               fillOpacity={FILL_OPACITY}
               animate={{ x: [0, -30] }}
               transition={{ duration: 2.2, ease: "linear", repeat: Infinity }}

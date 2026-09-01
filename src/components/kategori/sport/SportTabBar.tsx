@@ -26,7 +26,7 @@ export function SportTabBar({ value, onChange }: { value: SportTab; onChange: (v
 
   return (
     <div className="flex justify-center overflow-x-auto">
-      <div className="inline-flex items-center gap-1 rounded-lg border border-border-soft bg-background-elevated p-1.5">
+      <div className="inline-flex items-center gap-1 rounded-lg border border-[color:var(--sport-border)] bg-[color:var(--sport-elevated)] p-1.5">
         {TABS.map((t) => {
           const Icon = t.icon;
           const active = value === t.value;
@@ -38,13 +38,13 @@ export function SportTabBar({ value, onChange }: { value: SportTab; onChange: (v
               onClick={() => onChange(t.value)}
               aria-pressed={active}
               className={`btn relative flex h-11 shrink-0 items-center gap-2 rounded-lg px-3.5 text-sm font-medium whitespace-nowrap ${
-                active ? "text-accent" : "text-muted hover:text-foreground"
+                active ? "text-[color:var(--sport-accent)]" : "text-[color:var(--sport-muted)] hover:text-[color:var(--sport-text)]"
               }`}
             >
               {active && (
                 <motion.span
                   layoutId={`sport-tab-pill-${instanceId}`}
-                  className="absolute inset-0 rounded-lg bg-accent-soft"
+                  className="absolute inset-0 rounded-lg bg-[color:var(--sport-accent)]/15"
                   transition={pillSpring}
                 />
               )}

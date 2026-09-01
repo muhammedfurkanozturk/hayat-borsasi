@@ -50,14 +50,14 @@ export function RoadmapNode({ data }: NodeProps) {
           onToggle();
         }
       }}
-      className={`group relative flex cursor-pointer items-center justify-center rounded-lg border-2 text-center transition-colors ${
+      className={`group relative flex cursor-pointer items-center justify-center border-2 text-center transition-colors ${
         isTrunk
-          ? `px-4 py-3.5 text-sm font-semibold ${
+          ? `rounded-full px-4 py-3.5 text-sm font-semibold ${
               completed
                 ? "border-positive bg-positive text-white"
                 : "border-accent bg-accent text-accent-foreground hover:brightness-110"
             }`
-          : `px-3 py-2 text-xs font-medium ${
+          : `rounded-lg px-3 py-2 text-xs font-medium ${
               completed
                 ? "border-positive/50 bg-positive-soft text-positive"
                 : "border-accent/30 bg-accent-soft/50 text-foreground hover:border-accent/50"

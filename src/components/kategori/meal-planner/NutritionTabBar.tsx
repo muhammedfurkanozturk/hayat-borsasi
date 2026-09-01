@@ -50,13 +50,13 @@ export function NutritionTabBar({ value, onChange }: { value: NutritionTab; onCh
               onClick={() => onChange(t.value)}
               aria-pressed={active}
               className={`btn relative flex h-11 shrink-0 items-center gap-2 rounded-lg px-3.5 text-sm font-medium whitespace-nowrap ${
-                active ? "text-accent" : "text-muted hover:text-foreground"
+                active ? "text-[color:var(--nutrition-accent)]" : "text-muted hover:text-foreground"
               }`}
             >
               {active && (
                 <motion.span
                   layoutId={`nutrition-tab-pill-${instanceId}`}
-                  className="absolute inset-0 rounded-lg bg-accent-soft"
+                  className="absolute inset-0 rounded-lg bg-[color:var(--nutrition-accent)]/15"
                   transition={pillSpring}
                 />
               )}

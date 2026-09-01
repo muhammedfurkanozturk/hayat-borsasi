@@ -41,13 +41,18 @@ export function StyleCalendarPanel({
   return (
     <div
       className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5"
-      style={{ "--stil-accent": "#9c4a3d" } as React.CSSProperties}
+      style={{
+          "--stil-accent": "#d4ff00",
+          "--accent": "#d4ff00",
+          "--accent-soft": "#d4ff0026",
+          "--accent-foreground": "#141400",
+        } as React.CSSProperties}
     >
       <div className="flex items-baseline gap-2.5">
         <span className="font-mono text-xs font-semibold" style={{ color: "var(--stil-accent)" }}>
           05
         </span>
-        <h2 className="text-sm font-medium uppercase tracking-wider text-foreground">Stil Takvimi</h2>
+        <h2 className="font-serif text-lg font-medium italic tracking-tight text-foreground">Stil Takvimi</h2>
       </div>
 
       {outfits.length === 0 ? (

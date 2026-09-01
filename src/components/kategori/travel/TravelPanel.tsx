@@ -27,6 +27,39 @@ const TurkeyMapView = dynamic(
 
 const TURKEY_REF_CODE = "TR";
 
+// Kategori Bazlı Tasarım Farklılaştırma — Bölüm 8 (Seyahat → Polarsteps
+// dili, 2026-09-02, TURUN SON BÖLÜMÜ). Koyu/gece-haritası zemin (site
+// temasından bağımsız) + Polarsteps'in teal/pembe-kırmızı ikilisi — aynı
+// kök-token-ezme yöntemi (bkz. Robinhood/Miro bölümlerindeki açıklama).
+// **Bilinçli, dokümante edilmiş kapsam kararı:** orijinal spec bu bölümün
+// düz SVG haritayı (react-simple-maps, Bölüm A/B'de zaten kurulup uçtan
+// uca test edilmiş, gerçek DB yazımıyla doğrulanmış) 3D döndürülebilir bir
+// küreye (react-globe.gl/three-globe, WebGL) çevirmesini istiyordu — bu,
+// yeni ağır bir bağımlılık + click-to-select etkileşim modelinin SIFIRDAN
+// yeniden kurulması + performans/bundle-size riski taşıyan, mevcut
+// test edilmiş Seviye 1-2 drill-down'ı bozma riski yüksek bir mimari
+// değişiklik. Bu turda SADECE renk/kompozisyon kimliği uygulandı (bu
+// dosyadaki token-ezme + WorldMapView/TurkeyMapView'ın zaten var olan
+// `--accent` kullanımı sayesinde otomatik teal'e dönüyor) — 3D küre
+// geçişi kasıtlı olarak ERTELENDİ, kullanıcı onayı/talebiyle ayrı,
+// odaklı bir turda ele alınmalı (WebGL/performans testi gerektirir).
+const TRAVEL_SCOPE = {
+  "--background": "#0d1b2a",
+  "--background-elevated": "#152a3d",
+  "--surface": "#152a3d",
+  "--surface-hover": "#1c3650",
+  "--border": "rgba(255,255,255,0.12)",
+  "--border-soft": "rgba(255,255,255,0.08)",
+  "--foreground": "#f2f6f9",
+  "--muted": "#8fa3b3",
+  "--muted-soft": "#5f7385",
+  "--accent": "#2dd4bf",
+  "--accent-soft": "#2dd4bf26",
+  "--accent-foreground": "#04201c",
+  "--negative": "#e91e63",
+  "--negative-soft": "#e91e6326",
+} as React.CSSProperties;
+
 type SelectedVisit = { level: "country" | "province"; refCode: string; name: string };
 
 // been.app/Visited'tan ilham (piyasa araştırması, kod/tasarım kopyalanmadı)
@@ -181,7 +214,7 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
   const isTurkeySelected = selected?.level === "country" && selected.refCode === TURKEY_REF_CODE;
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5">
+    <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5" style={TRAVEL_SCOPE}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           {view === "turkey" && (

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { DIFFICULTY_LABELS, EQUIPMENT_LABELS, EXERCISE_LIBRARY, MUSCLE_GROUP_LABELS, type DbExercise, type EquipmentType, type ExerciseDifficulty, type MuscleGroup } from "@hayat-borsasi/shared";
+import { DifficultyDots } from "./DifficultyDots";
 import { EQUIPMENT_ENTRIES, MUSCLE_ENTRIES, MultiSelect } from "./MultiSelect";
 
 const DIFFICULTY_ENTRIES = Object.entries(DIFFICULTY_LABELS) as [ExerciseDifficulty, string][];
@@ -50,10 +51,10 @@ export function ExerciseLibraryPanel({
   }, [query, muscleGroups, equipment, difficulty]);
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5">
+    <div className="flex flex-col gap-4 rounded-lg border border-[color:var(--sport-border)] bg-[color:var(--sport-surface)] shadow-card p-5">
       <div>
-        <h2 className="text-sm font-medium text-foreground">Egzersiz Kütüphanesi</h2>
-        <p className="text-xs text-muted">
+        <h2 className="text-sm font-medium text-[color:var(--sport-text)]">Egzersiz Kütüphanesi</h2>
+        <p className="text-xs text-[color:var(--sport-muted)]">
           {EXERCISE_LIBRARY.length} egzersiz — kas grubu, ekipman ve zorluğa göre filtrele.
         </p>
       </div>
@@ -62,34 +63,35 @@ export function ExerciseLibraryPanel({
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Egzersiz ara..."
-        className="h-10 rounded-lg border-2 border-muted/25 bg-background-elevated px-3 text-sm text-foreground outline-none placeholder:text-muted focus:border-accent/50"
+        className="h-10 rounded-lg border-2 border-[color:var(--sport-muted)]/25 bg-[color:var(--sport-elevated)] px-3 text-sm text-[color:var(--sport-text)] outline-none placeholder:text-[color:var(--sport-muted)] focus:border-[color:var(--sport-accent)]/50"
       />
 
       <div>
-        <p className="mb-1.5 text-xs font-medium text-muted">Kas Grubu</p>
+        <p className="mb-1.5 text-xs font-medium text-[color:var(--sport-muted)]">Kas Grubu</p>
         <MultiSelect options={MUSCLE_ENTRIES} selected={muscleGroups} onToggle={toggleMuscle} />
       </div>
       <div>
-        <p className="mb-1.5 text-xs font-medium text-muted">Ekipman</p>
+        <p className="mb-1.5 text-xs font-medium text-[color:var(--sport-muted)]">Ekipman</p>
         <MultiSelect options={EQUIPMENT_ENTRIES} selected={equipment} onToggle={toggleEquipment} />
       </div>
       <div>
-        <p className="mb-1.5 text-xs font-medium text-muted">Zorluk</p>
+        <p className="mb-1.5 text-xs font-medium text-[color:var(--sport-muted)]">Zorluk</p>
         <MultiSelect options={DIFFICULTY_ENTRIES} selected={difficulty} onToggle={toggleDifficulty} />
       </div>
 
-      <div className="flex flex-col gap-1.5 border-t border-border-soft pt-3">
-        <p className="text-xs text-muted">{results.length} sonuç</p>
+      <div className="flex flex-col gap-1.5 border-t border-[color:var(--sport-border)] pt-3">
+        <p className="text-xs text-[color:var(--sport-muted)]">{results.length} sonuç</p>
         {results.map((ex) => {
           const alreadyAdded = existingNames.has(ex.name.toLowerCase());
           return (
-            <div key={ex.id} className="flex items-center justify-between gap-3 rounded-lg border-2 border-muted/20 px-3 py-2.5">
+            <div key={ex.id} className="flex items-center justify-between gap-3 rounded-lg border-2 border-[color:var(--sport-muted)]/20 px-3 py-2.5">
               <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium text-foreground">{ex.name}</span>
-                <span className="text-[11px] text-muted">
-                  {MUSCLE_GROUP_LABELS[ex.muscleGroup]} · {EQUIPMENT_LABELS[ex.equipment]} · {DIFFICULTY_LABELS[ex.difficulty]}
+                <span className="text-sm font-black italic uppercase tracking-tight text-[color:var(--sport-text)]">{ex.name}</span>
+                <span className="flex items-center gap-1.5 text-[11px] text-[color:var(--sport-muted)]">
+                  {MUSCLE_GROUP_LABELS[ex.muscleGroup]} · {EQUIPMENT_LABELS[ex.equipment]}
+                  <DifficultyDots difficulty={ex.difficulty} />
                 </span>
-                <span className="text-xs text-muted">{ex.instructions}</span>
+                <span className="text-xs text-[color:var(--sport-muted)]">{ex.instructions}</span>
               </div>
               <button
                 type="button"
@@ -99,14 +101,14 @@ export function ExerciseLibraryPanel({
                   await onAddLibraryExercise(ex.name, ex.muscleGroup);
                   setAddingId(null);
                 }}
-                className="btn h-8 shrink-0 rounded-lg bg-accent-soft px-3 text-xs font-medium text-accent hover:bg-accent/25 disabled:pointer-events-none disabled:opacity-50"
+                className="btn h-8 shrink-0 rounded-lg bg-[color:var(--sport-accent)]/15 px-3 text-xs font-medium text-[color:var(--sport-accent)] hover:bg-[color:var(--sport-accent)]/25 disabled:pointer-events-none disabled:opacity-50"
               >
                 {alreadyAdded ? "Eklendi" : addingId === ex.id ? "Ekleniyor..." : "Hareketlerime Ekle"}
               </button>
             </div>
           );
         })}
-        {results.length === 0 && <p className="text-xs text-muted">Bu filtrelere uyan egzersiz bulunamadı.</p>}
+        {results.length === 0 && <p className="text-xs text-[color:var(--sport-muted)]">Bu filtrelere uyan egzersiz bulunamadı.</p>}
       </div>
     </div>
   );

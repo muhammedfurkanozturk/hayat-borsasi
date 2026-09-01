@@ -13,14 +13,22 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AddCategoryModal } from "@/components/add-category-modal";
+import { HabitTrackerPanel } from "@/components/habit-tracker-panel";
+import { NutritionPanel } from "@/components/nutrition-panel";
+import { PomodoroPanel } from "@/components/pomodoro-panel";
+import { PortfolioPanel } from "@/components/portfolio-panel";
+import { RoadmapPanel } from "@/components/roadmap-panel";
+import { TravelPanel } from "@/components/travel-panel";
+import { WardrobePanel } from "@/components/wardrobe-panel";
+import { WorkoutPanel } from "@/components/workout-panel";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { useElevatedStyle, useTheme } from "@/hooks/use-theme";
 import { ICON_KEY_TO_MCI } from "@/lib/icon-map";
-import { useAppData, type Task } from "@/lib/app-data-context";
+import { useAppData, type Category, type Task } from "@/lib/app-data-context";
 import { useProfile } from "@/lib/profile-context";
 
-const DEFAULT_ICON: IconKey = "star";
 const FREE_CATEGORY_LIMIT = 6;
 
 const FREQUENCY_OPTIONS: { value: TaskFrequency; label: string }[] = [
@@ -31,26 +39,20 @@ const FREQUENCY_OPTIONS: { value: TaskFrequency; label: string }[] = [
 
 export default function KategorilerScreen() {
   const theme = useTheme();
-  const elevated = useElevatedStyle();
-  const { loading, categories, tasks, addCategory, removeCategory } = useAppData();
+  const { loading, categories, tasks, removeCategory } = useAppData();
   const { isPro } = useProfile();
-  const [newCategoryName, setNewCategoryName] = useState("");
-  const [addingCategory, setAddingCategory] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [limitModalOpen, setLimitModalOpen] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false);
 
   const limitReached = !isPro && categories.length >= FREE_CATEGORY_LIMIT;
 
-  async function handleAddCategory() {
+  function handleOpenAdd() {
     if (limitReached) {
       setLimitModalOpen(true);
       return;
     }
-    if (!newCategoryName.trim()) return;
-    setAddingCategory(true);
-    await addCategory(newCategoryName, DEFAULT_ICON);
-    setNewCategoryName("");
-    setAddingCategory(false);
+    setAddModalOpen(true);
   }
 
   function confirmDeleteCategory(categoryId: string, name: string, taskCount: number) {
@@ -82,32 +84,15 @@ export default function KategorilerScreen() {
             Kategoriler
           </ThemedText>
 
-          <View style={[styles.addCategoryRow, { borderColor: theme.border, backgroundColor: theme.backgroundSelected }, elevated]}>
-            <TextInput
-              value={newCategoryName}
-              onChangeText={setNewCategoryName}
-              placeholder="Yeni kategori adı..."
-              placeholderTextColor={theme.textSecondary}
-              style={[styles.addCategoryInput, { color: theme.text }]}
-              onSubmitEditing={handleAddCategory}
-            />
-            <Pressable
-              onPress={handleAddCategory}
-              disabled={addingCategory || (!limitReached && !newCategoryName.trim())}
-              style={[
-                styles.addCategoryButton,
-                { backgroundColor: theme.accent, opacity: limitReached || newCategoryName.trim() ? 1 : 0.5 },
-              ]}
-            >
-              {addingCategory ? (
-                <ActivityIndicator color="#04191d" size="small" />
-              ) : limitReached ? (
-                <MaterialCommunityIcons name="lock-outline" size={18} color="#04191d" />
-              ) : (
-                <MaterialCommunityIcons name="plus" size={18} color="#04191d" />
-              )}
-            </Pressable>
-          </View>
+          <Pressable
+            onPress={handleOpenAdd}
+            style={[styles.addCategoryButtonWide, { borderColor: theme.accent + "66", backgroundColor: theme.accent + "1a" }]}
+          >
+            <MaterialCommunityIcons name={limitReached ? "lock-outline" : "plus"} size={18} color={theme.accent} />
+            <ThemedText themeColor="accent" style={styles.addCategoryButtonWideText}>
+              {limitReached ? "Pro'ya Geç" : "Kategori Ekle"}
+            </ThemedText>
+          </Pressable>
 
           {limitReached && (
             <ThemedText themeColor="textSecondary" style={styles.limitNote}>
@@ -152,9 +137,7 @@ export default function KategorilerScreen() {
                   />
                 </Pressable>
 
-                {isExpanded && (
-                  <CategoryDetail categoryId={category.id} tasks={categoryTasks} />
-                )}
+                {isExpanded && <CategoryDetail category={category} tasks={categoryTasks} />}
               </View>
             );
           })}
@@ -189,11 +172,13 @@ export default function KategorilerScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      <AddCategoryModal open={addModalOpen} onClose={() => setAddModalOpen(false)} categories={categories} />
     </ThemedView>
   );
 }
 
-function CategoryDetail({ categoryId, tasks }: { categoryId: string; tasks: Task[] }) {
+function CategoryDetail({ category, tasks }: { category: Category; tasks: Task[] }) {
   const theme = useTheme();
   const elevated = useElevatedStyle();
   const { addTask, removeTask } = useAppData();
@@ -201,6 +186,52 @@ function CategoryDetail({ categoryId, tasks }: { categoryId: string; tasks: Task
   const [weight, setWeight] = useState(5);
   const [frequency, setFrequency] = useState<TaskFrequency>("daily");
   const [saving, setSaving] = useState(false);
+  const categoryId = category.id;
+
+  // Kategori Bazlı Tasarım Farklılaştırma kararı (bkz. CLAUDE.md bölüm 9) —
+  // "Kötü Alışkanlıklar" modülü genel görev CRUD'u yerine kendi paneline
+  // sahip, web'deki HabitTrackerPanel.tsx'in mobil karşılığı.
+  if (category.moduleType === "habit") {
+    return (
+      <View style={[styles.detailContainer, { borderTopColor: theme.border }]}>
+        <HabitTrackerPanel categoryId={categoryId} tasks={tasks} />
+      </View>
+    );
+  }
+
+  // Kategori Bazlı Tasarım Farklılaştırma — Yol Haritam'ın mobil karşılığı
+  // (web: RoadmapPanel.tsx). module_type DB'de hâlâ "digital" (bkz. web
+  // CLAUDE.md notu — kod detayı, kullanıcıya görünmüyor).
+  if (category.moduleType === "digital") {
+    return (
+      <View style={[styles.detailContainer, { borderTopColor: theme.border }]}>
+        <RoadmapPanel categoryId={categoryId} />
+      </View>
+    );
+  }
+
+  // Kategori Bazlı Tasarım Farklılaştırma — Seyahat'in mobil karşılığı
+  // (web: TravelPanel.tsx). Web'de de bu kategoride genel checklist YOK
+  // (sport/habit/digital/travel — TAM DEĞİŞTİRME deseni).
+  if (category.moduleType === "travel") {
+    return (
+      <View style={[styles.detailContainer, { borderTopColor: theme.border }]}>
+        <TravelPanel categoryId={categoryId} />
+      </View>
+    );
+  }
+
+  // Kategori Bazlı Tasarım Farklılaştırma — Spor & Vücut'un mobil karşılığı
+  // (web: WorkoutLogPanel.tsx). Web'deki gibi genel görev listesinin
+  // YERİNE geçiyor (habit/digital ile aynı desen — nutrition/focus'un
+  // AKSİNE, web'de de sport kategorisinde genel checklist hiç yok).
+  if (category.moduleType === "sport") {
+    return (
+      <View style={[styles.detailContainer, { borderTopColor: theme.border }]}>
+        <WorkoutPanel categoryId={categoryId} />
+      </View>
+    );
+  }
 
   async function handleAddTask() {
     if (!title.trim()) return;
@@ -300,6 +331,27 @@ function CategoryDetail({ categoryId, tasks }: { categoryId: string; tasks: Task
           </Pressable>
         </View>
       </View>
+
+      {/* Kategori Bazlı Tasarım Farklılaştırma — Ders & Odaklanma'nın mobil
+          karşılığı (web: PomodoroTimer.tsx). Web'deki gibi genel görev
+          listesinin ALTINDA, onu değiştirmeden ek olarak render ediliyor —
+          Kötü Alışkanlıklar/Yol Haritam'ın aksine bu modülde genel checklist
+          web'de de duruyor. */}
+      {category.moduleType === "focus" && <PomodoroPanel categoryId={categoryId} />}
+      {/* Kategori Bazlı Tasarım Farklılaştırma — Sağlıklı Beslenme'nin
+          mobil karşılığı (web: MealLogPanel.tsx). Bölüm 1: sadece Su/
+          Oruç/Kalori taşındı, bkz. nutrition-panel.tsx başındaki not. */}
+      {category.moduleType === "nutrition" && <NutritionPanel categoryId={categoryId} />}
+      {/* Kategori Bazlı Tasarım Farklılaştırma — Stil & Giyim'in mobil
+          karşılığı (web: WardrobePanel.tsx). Web'de de bu kategoride genel
+          checklist duruyor (nutrition/focus ile AYNI "üstte liste, altta
+          panel" deseni — sport/habit/digital'in TAM DEĞİŞTİRME'sinin
+          AKSİNE). */}
+      {category.moduleType === "style" && <WardrobePanel categoryId={categoryId} />}
+      {/* Kategori Bazlı Tasarım Farklılaştırma — Finans & Portföy'ün mobil
+          karşılığı (web: PortfolioPanel.tsx). Web'de de bu kategoride genel
+          checklist duruyor (nutrition/focus/style ile AYNI desen). */}
+      {category.moduleType === "finance" && <PortfolioPanel categoryId={categoryId} />}
     </View>
   );
 }
@@ -320,6 +372,16 @@ const styles = StyleSheet.create({
   },
   addCategoryInput: { flex: 1, fontSize: 14, paddingVertical: 8 },
   addCategoryButton: { borderRadius: 8, width: 32, height: 32, alignItems: "center", justifyContent: "center" },
+  addCategoryButtonWide: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+  },
+  addCategoryButtonWideText: { fontSize: 14, fontWeight: "600" },
   categoryCard: { borderWidth: 1, borderRadius: 14, overflow: "hidden" },
   categoryHeader: { flexDirection: "row", alignItems: "center", gap: 10, padding: 14 },
   iconBadge: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },

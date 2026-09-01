@@ -59,7 +59,7 @@ function FilterGroup<T extends string>({
               type="button"
               onClick={() => onToggle(value)}
               className={`btn rounded-full border-2 px-2.5 py-1 text-[11px] font-medium ${
-                active ? "border-accent/50 bg-accent-soft text-accent" : "border-muted/25 text-muted hover:border-accent/30"
+                active ? "border-[color:var(--nutrition-accent)]/50 bg-[color:var(--nutrition-accent)]/15 text-[color:var(--nutrition-accent)]" : "border-muted/25 text-muted hover:border-[color:var(--nutrition-accent)]/30"
               }`}
             >
               {labels[value]}
@@ -124,14 +124,14 @@ export function SavedRecipesList({
     <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface shadow-card p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-sm font-medium text-foreground">Tarif Listem</h2>
+          <h2 className="text-lg font-extrabold tracking-tight text-foreground">Tarif Listem</h2>
           <p className="text-xs text-muted">Kaydettiğin tarifler.</p>
         </div>
         <button
           type="button"
           onClick={() => setFiltersOpen((v) => !v)}
           className={`btn flex h-8 items-center gap-1.5 rounded-lg border-2 px-3 text-xs font-medium ${
-            activeFilterCount > 0 ? "border-accent/50 bg-accent-soft text-accent" : "border-muted/25 text-muted hover:text-foreground"
+            activeFilterCount > 0 ? "border-[color:var(--nutrition-accent)]/50 bg-[color:var(--nutrition-accent)]/15 text-[color:var(--nutrition-accent)]" : "border-muted/25 text-muted hover:text-foreground"
           }`}
         >
           <GearIcon width={13} height={13} />
@@ -189,9 +189,9 @@ export function SavedRecipesList({
             key={recipe.id}
             type="button"
             onClick={() => setSelected(recipe)}
-            className="btn flex w-40 shrink-0 flex-col gap-1 rounded-lg border-2 border-muted/25 bg-background-elevated p-3 text-left hover:border-accent/40"
+            className="btn flex w-40 shrink-0 flex-col gap-1 rounded-lg border-2 border-muted/25 bg-background-elevated p-3 text-left hover:border-[color:var(--nutrition-accent)]/40"
           >
-            <UtensilsIcon width={16} height={16} className="text-accent" />
+            <UtensilsIcon width={16} height={16} className="text-[color:var(--nutrition-accent)]" />
             <span className="line-clamp-2 text-sm font-medium text-foreground">{recipe.tarif_adi}</span>
             {recipe.hazirlik_suresi && <span className="text-xs text-muted">{recipe.hazirlik_suresi}</span>}
           </button>

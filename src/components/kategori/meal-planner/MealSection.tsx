@@ -75,7 +75,7 @@ export function MealSection({
     <div
       ref={setNodeRef}
       className={`flex flex-col gap-3 rounded-lg border-2 p-3 transition-colors ${
-        isOver ? "border-accent/60 bg-accent-soft/40" : "border-muted/25"
+        isOver ? "border-[color:var(--nutrition-accent)]/60 bg-[color:var(--nutrition-accent)]/25" : "border-muted/25"
       }`}
     >
       <div className="flex items-center justify-between gap-2">
@@ -86,7 +86,7 @@ export function MealSection({
             onChange={(e) => setName(e.target.value)}
             onBlur={submitRename}
             onKeyDown={(e) => e.key === "Enter" && submitRename()}
-            className="h-8 flex-1 rounded-lg border-2 border-accent/40 bg-surface px-2 text-sm text-foreground outline-none"
+            className="h-8 flex-1 rounded-lg border-2 border-[color:var(--nutrition-accent)]/40 bg-surface px-2 text-sm text-foreground outline-none"
           />
         ) : (
           <span className="text-sm font-medium text-foreground">{title}</span>
@@ -99,7 +99,7 @@ export function MealSection({
                 type="button"
                 onClick={() => setSavingPreset(true)}
                 aria-label="Bu öğünü sık kullanılan yap"
-                className="btn flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-surface-hover hover:text-accent"
+                className="btn flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-surface-hover hover:text-[color:var(--nutrition-accent)]"
               >
                 <StarIcon width={15} height={15} />
               </button>
@@ -131,12 +131,12 @@ export function MealSection({
             value={presetName}
             onChange={(e) => setPresetName(e.target.value)}
             placeholder="örn. Kahvaltım"
-            className="h-8 flex-1 rounded-lg border-2 border-accent/40 bg-surface px-2 text-sm text-foreground outline-none"
+            className="h-8 flex-1 rounded-lg border-2 border-[color:var(--nutrition-accent)]/40 bg-surface px-2 text-sm text-foreground outline-none"
           />
           <button
             type="submit"
             disabled={!presetName.trim()}
-            className="btn h-8 rounded-lg bg-accent-soft px-3 text-xs font-medium text-accent hover:bg-accent/25 disabled:pointer-events-none disabled:opacity-50"
+            className="btn h-8 rounded-lg bg-[color:var(--nutrition-accent)]/15 px-3 text-xs font-medium text-[color:var(--nutrition-accent)] hover:bg-[color:var(--nutrition-accent)]/25 disabled:pointer-events-none disabled:opacity-50"
           >
             Kaydet
           </button>

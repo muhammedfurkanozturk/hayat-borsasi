@@ -82,7 +82,7 @@ export function CalorieGoalSetup({
               className="flex flex-col gap-4"
             >
               <div>
-                <h2 className="text-sm font-medium text-foreground">Kalori Hedefini Hesaplayalım</h2>
+                <h2 className="text-lg font-extrabold tracking-tight text-foreground">Kalori Hedefini Hesaplayalım</h2>
                 <p className="text-xs text-muted">Günlük kalori hedefin için birkaç bilgiye ihtiyacımız var.</p>
               </div>
 
@@ -126,7 +126,7 @@ export function CalorieGoalSetup({
                         type="button"
                         onClick={() => setSex(option)}
                         className={`btn flex-1 rounded-md text-xs font-medium ${
-                          sex === option ? "bg-accent-soft text-accent" : "text-muted hover:text-foreground"
+                          sex === option ? "bg-[color:var(--nutrition-accent)]/15 text-[color:var(--nutrition-accent)]" : "text-muted hover:text-foreground"
                         }`}
                       >
                         {option === "female" ? "Kadın" : "Erkek"}
@@ -152,7 +152,7 @@ export function CalorieGoalSetup({
                   type="button"
                   onClick={() => setStep(1)}
                   disabled={!step1Valid}
-                  className="btn h-9 rounded-lg bg-accent px-4 text-xs font-semibold text-accent-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+                  className="btn h-9 rounded-lg bg-[color:var(--nutrition-accent)] px-4 text-xs font-semibold text-[color:var(--nutrition-accent-fg)] hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
                 >
                   Devam Et
                 </button>
@@ -168,7 +168,7 @@ export function CalorieGoalSetup({
               className="flex flex-col gap-4"
             >
               <div>
-                <h2 className="text-sm font-medium text-foreground">Ne Kadar Hareketlisin?</h2>
+                <h2 className="text-lg font-extrabold tracking-tight text-foreground">Ne Kadar Hareketlisin?</h2>
                 <p className="text-xs text-muted">Günlük kalori ihtiyacın (TDEE) buna göre hesaplanır.</p>
               </div>
 
@@ -180,12 +180,12 @@ export function CalorieGoalSetup({
                     onClick={() => setActivityLevel(option.value)}
                     className={`btn flex flex-col items-start gap-0.5 rounded-lg border-2 px-4 py-2 text-left ${
                       activityLevel === option.value
-                        ? "border-accent/50 bg-accent-soft"
-                        : "border-muted/30 hover:border-accent/30"
+                        ? "border-[color:var(--nutrition-accent)]/50 bg-[color:var(--nutrition-accent)]/15"
+                        : "border-muted/30 hover:border-[color:var(--nutrition-accent)]/30"
                     }`}
                   >
                     <span
-                      className={`text-sm font-medium ${activityLevel === option.value ? "text-accent" : "text-foreground"}`}
+                      className={`text-sm font-medium ${activityLevel === option.value ? "text-[color:var(--nutrition-accent)]" : "text-foreground"}`}
                     >
                       {option.label}
                     </span>
@@ -206,7 +206,7 @@ export function CalorieGoalSetup({
                   type="button"
                   onClick={() => setStep(2)}
                   disabled={!activityLevel}
-                  className="btn h-9 rounded-lg bg-accent px-4 text-xs font-semibold text-accent-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+                  className="btn h-9 rounded-lg bg-[color:var(--nutrition-accent)] px-4 text-xs font-semibold text-[color:var(--nutrition-accent-fg)] hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
                 >
                   Devam Et
                 </button>
@@ -222,7 +222,7 @@ export function CalorieGoalSetup({
               className="flex flex-col gap-4"
             >
               <div>
-                <h2 className="text-sm font-medium text-foreground">Hedefin Ne?</h2>
+                <h2 className="text-lg font-extrabold tracking-tight text-foreground">Hedefin Ne?</h2>
                 <p className="text-xs text-muted">Günlük kalori hedefin buna göre ayarlanacak.</p>
               </div>
 
@@ -235,8 +235,8 @@ export function CalorieGoalSetup({
                     disabled={saving}
                     className={`btn h-11 rounded-lg border-2 px-4 text-left text-sm font-medium disabled:pointer-events-none disabled:opacity-50 ${
                       goal === option.value
-                        ? "border-accent/50 bg-accent-soft text-accent"
-                        : "border-muted/30 text-foreground hover:border-accent/30"
+                        ? "border-[color:var(--nutrition-accent)]/50 bg-[color:var(--nutrition-accent)]/15 text-[color:var(--nutrition-accent)]"
+                        : "border-muted/30 text-foreground hover:border-[color:var(--nutrition-accent)]/30"
                     }`}
                   >
                     {saving && goal === option.value ? "Hesaplanıyor..." : option.label}
@@ -262,7 +262,7 @@ export function CalorieGoalSetup({
             <span
               key={dot}
               className={`h-1.5 rounded-full transition-all ${
-                dot === step ? "w-4 bg-accent" : "w-1.5 bg-muted/30"
+                dot === step ? "w-4 bg-[color:var(--nutrition-accent)]" : "w-1.5 bg-muted/30"
               }`}
             />
           ))}
