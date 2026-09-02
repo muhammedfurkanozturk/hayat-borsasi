@@ -1,8 +1,17 @@
-import { ComingSoonScreen } from "@/components/coming-soon-screen";
+import { ScrollView } from "react-native";
+import { FinanceCalculators } from "@/components/finance-calculators";
+import { ROBINHOOD } from "@/components/portfolio-panel";
 
-// Web'in vergi raporu + hesaplayıcılar (Ortalama Maliyet, Kâr/Zarar, Hedef
-// Satış Fiyatı, Temettü Bileşik Getiri) — mobilde henüz yok (bkz. CLAUDE.md
-// bölüm 9).
+// Finans & Portföy'ün Seviye 2 "Araçlar" route'u (bkz. CLAUDE.md bölüm 9)
+// — SADECE 4 hesaplayıcı (tamamen istemci-taraflı, Supabase'e hiç
+// dokunmuyor). Vergi Raporu (CSV export) ve Fiyat Alarmı (cron'a bağlı,
+// deploy açığıyla aynı kısıtlama) KASITLI OLARAK bu turda ertelendi —
+// Spor & Vücut'un "sadece 1RM hesaplayıcı" kapsam sınırlamasıyla aynı
+// felsefe.
 export default function AraclarTab() {
-  return <ComingSoonScreen label="Araçlar" icon="calculator-variant" backgroundColor="#000000" textColor="#8e8e93" />;
+  return (
+    <ScrollView contentContainerStyle={{ padding: 14, flexGrow: 1 }} style={{ backgroundColor: ROBINHOOD.bg }}>
+      <FinanceCalculators />
+    </ScrollView>
+  );
 }

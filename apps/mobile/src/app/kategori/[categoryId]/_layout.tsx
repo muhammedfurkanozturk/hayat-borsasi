@@ -72,7 +72,7 @@ const MODULE_TABS: Partial<Record<Category["moduleType"], TabConfig[]>> = {
     { name: "portfoy", title: "Portföy", icon: "briefcase" },
     { name: "piyasalar", title: "Piyasalar", icon: "trending-up", comingSoon: true },
     { name: "tarama", title: "Tarama", icon: "filter", comingSoon: true },
-    { name: "araclar", title: "Araçlar", icon: "tool", comingSoon: true },
+    { name: "araclar", title: "Araçlar", icon: "tool" },
   ],
   focus: [
     { name: "checklist", title: "Checklist", icon: "check-square" },

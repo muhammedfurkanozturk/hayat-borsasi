@@ -29,7 +29,7 @@ import { supabase } from "@/lib/supabase/client";
 // tamamen maliyet-bazlı, saf istemci-taraflı hesap) — bu yüzden şimdiden
 // tam işlevsel ve test edilebilir. Canlı fiyat/K-Z gösterimi, o route'lar
 // deploy edildikten sonra ayrı bir turda eklenebilir.
-const ROBINHOOD = {
+export const ROBINHOOD = {
   bg: "#000000",
   surface: "#0a0a0a",
   elevated: "#141414",
