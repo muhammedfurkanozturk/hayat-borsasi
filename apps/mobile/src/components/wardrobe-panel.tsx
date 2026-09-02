@@ -19,8 +19,8 @@ import { supabase } from "@/lib/supabase/client";
 // `expo-image-picker` (fotoğraf seçimi — mobilde İLK KEZ kullanılıyor),
 // `base64-arraybuffer` (Supabase Storage'a RN'den yükleme için standart
 // desen — `fetch().blob()` RN'de local file:// URI'lerde güvenilir değil).
-const WHERING_LIME = "#d4ff00";
-const WHERING_LIME_TEXT = "#141400";
+export const WHERING_LIME = "#d4ff00";
+export const WHERING_LIME_TEXT = "#141400";
 const BUCKET = "clothing-photos";
 const SIGNED_URL_TTL_SECONDS = 3600;
 

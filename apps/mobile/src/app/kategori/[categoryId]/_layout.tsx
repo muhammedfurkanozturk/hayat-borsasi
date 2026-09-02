@@ -63,7 +63,7 @@ const MODULE_TABS: Partial<Record<Category["moduleType"], TabConfig[]>> = {
     { name: "checklist", title: "Checklist", icon: "check-square" },
     { name: "gardirobum", title: "Gardırobum", icon: "image" },
     { name: "kombin-olustur", title: "Kombin Oluştur", icon: "layers", comingSoon: true },
-    { name: "kombinlerim", title: "Kombinlerim", icon: "archive", comingSoon: true },
+    { name: "kombinlerim", title: "Kombinlerim", icon: "archive" },
     { name: "ai-stilist", title: "AI Stilist", icon: "cloud", comingSoon: true },
     { name: "stil-takvimi", title: "Takvim", icon: "calendar", comingSoon: true },
   ],

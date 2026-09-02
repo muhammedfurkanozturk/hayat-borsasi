@@ -1,7 +1,13 @@
-import { ComingSoonScreen } from "@/components/coming-soon-screen";
+import { useGlobalSearchParams } from "expo-router";
+import { ScrollView } from "react-native";
+import { OutfitGalleryPanel } from "@/components/outfit-gallery-panel";
 
-// Kaydedilen kombinler listesi — Kombin Oluştur'a bağımlı, o taşınınca
-// birlikte ele alınmalı (bkz. CLAUDE.md bölüm 9).
+// Stil & Giyim'in Seviye 2 "Kombinlerim" route'u (bkz. CLAUDE.md bölüm 9).
 export default function KombinlerimTab() {
-  return <ComingSoonScreen label="Kombinlerim" icon="hanger" backgroundColor="#0a0a0a" textColor="#a1a1aa" />;
+  const { categoryId } = useGlobalSearchParams<{ categoryId: string }>();
+  return (
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }} style={{ backgroundColor: "#0a0a0a" }}>
+      <OutfitGalleryPanel categoryId={categoryId} />
+    </ScrollView>
+  );
 }
