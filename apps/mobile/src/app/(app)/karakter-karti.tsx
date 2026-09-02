@@ -10,6 +10,7 @@ import {
 } from "@hayat-borsasi/shared";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LeaderboardCard } from "@/components/leaderboard-card";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { BottomTabInset } from "@/constants/theme";
@@ -102,6 +103,12 @@ export default function KarakterKartiScreen() {
                 ))}
               </View>
             </View>
+          )}
+
+          {data.length > 0 && (
+            <LeaderboardCard
+              currentUser={{ name: displayName, initial, score: overallScore, tierLabel: tier.label, tierColor: tier.color }}
+            />
           )}
 
           <View style={[styles.periodRow, { borderColor: theme.border }]}>
