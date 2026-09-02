@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { type IconKey, type TaskFrequency } from "@hayat-borsasi/shared";
+import { type IconKey } from "@hayat-borsasi/shared";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import {
   ActivityIndicator,
   Alert,
@@ -9,33 +9,37 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AddCategoryModal } from "@/components/add-category-modal";
-import { HabitTrackerPanel } from "@/components/habit-tracker-panel";
-import { NutritionPanel } from "@/components/nutrition-panel";
-import { PomodoroPanel } from "@/components/pomodoro-panel";
-import { PortfolioPanel } from "@/components/portfolio-panel";
-import { RoadmapPanel } from "@/components/roadmap-panel";
-import { TravelPanel } from "@/components/travel-panel";
-import { WardrobePanel } from "@/components/wardrobe-panel";
-import { WorkoutPanel } from "@/components/workout-panel";
+import { CategoryChecklistPanel } from "@/components/category-checklist-panel";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { useElevatedStyle, useTheme } from "@/hooks/use-theme";
+import { BottomTabInset } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
 import { ICON_KEY_TO_MCI } from "@/lib/icon-map";
 import { useAppData, type Category, type Task } from "@/lib/app-data-context";
 import { useProfile } from "@/lib/profile-context";
 
 const FREE_CATEGORY_LIMIT = 6;
 
-const FREQUENCY_OPTIONS: { value: TaskFrequency; label: string }[] = [
-  { value: "daily", label: "Günlük" },
-  { value: "weekly", label: "Haftalık" },
-  { value: "monthly", label: "Aylık" },
-];
+// Seviye 2'nin (bkz. CLAUDE.md bölüm 9) her moduleType için ilk/varsayılan
+// sekmesi — kategori/[categoryId]/_layout.tsx'teki MODULE_TABS'ın ilk
+// elemanıyla AYNI sırada tutulmalı. "standard" (kullanıcının kendi
+// oluşturduğu, modülsüz) kategoriler burada YOK — onlar hâlâ eski
+// inline-akordeon davranışını koruyor (tek bir Checklist'ten fazlası yok,
+// yeni bir ekran/alt bar açmanın kazancı yok).
+const LEVEL2_FIRST_TAB: Partial<Record<Category["moduleType"], string>> = {
+  nutrition: "checklist",
+  sport: "hareketlerim",
+  style: "checklist",
+  finance: "checklist",
+  focus: "checklist",
+  digital: "haritalarim",
+  habit: "aliskanliklar",
+  travel: "seyahat",
+};
 
 export default function KategorilerScreen() {
   const theme = useTheme();
@@ -109,10 +113,20 @@ export default function KategorilerScreen() {
           {categories.map((category) => {
             const categoryTasks = tasks.filter((t) => t.categoryId === category.id);
             const isExpanded = expandedId === category.id;
+            // Seviye 2 (kategori-içi navigasyon, bkz. CLAUDE.md bölüm 9) —
+            // 8 modül tipinin 7'si artık kendi Seviye 2 ekranına gidiyor.
+            // Sadece "standard" (kullanıcının kendi oluşturduğu, modülsüz)
+            // kategoriler eski inline-akordeon davranışını koruyor.
+            const firstTab = LEVEL2_FIRST_TAB[category.moduleType];
+            const hasLevel2 = firstTab != null;
             return (
               <View key={category.id} style={[styles.categoryCard, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}>
                 <Pressable
-                  onPress={() => setExpandedId(isExpanded ? null : category.id)}
+                  onPress={() =>
+                    firstTab
+                      ? router.push(`/kategori/${category.id}/${firstTab}` as Href)
+                      : setExpandedId(isExpanded ? null : category.id)
+                  }
                   style={styles.categoryHeader}
                 >
                   <View style={[styles.iconBadge, { backgroundColor: theme.accent + "1a" }]}>
@@ -131,13 +145,13 @@ export default function KategorilerScreen() {
                     <MaterialCommunityIcons name="trash-can-outline" size={18} color={theme.negative} />
                   </Pressable>
                   <MaterialCommunityIcons
-                    name={isExpanded ? "chevron-up" : "chevron-down"}
+                    name={hasLevel2 ? "chevron-right" : isExpanded ? "chevron-up" : "chevron-down"}
                     size={20}
                     color={theme.textSecondary}
                   />
                 </Pressable>
 
-                {isExpanded && <CategoryDetail category={category} tasks={categoryTasks} />}
+                {!hasLevel2 && isExpanded && <CategoryDetail category={category} tasks={categoryTasks} />}
               </View>
             );
           })}
@@ -178,187 +192,21 @@ export default function KategorilerScreen() {
   );
 }
 
+// Artık SADECE "standard" (kullanıcının kendi oluşturduğu, modülsüz)
+// kategoriler için çalışıyor — 8 modül tipinin hepsi kendi Seviye 2
+// ekranına yönlendiriliyor (bkz. LEVEL2_FIRST_TAB), buraya hiç düşmüyor.
 function CategoryDetail({ category, tasks }: { category: Category; tasks: Task[] }) {
   const theme = useTheme();
-  const elevated = useElevatedStyle();
-  const { addTask, removeTask } = useAppData();
-  const [title, setTitle] = useState("");
-  const [weight, setWeight] = useState(5);
-  const [frequency, setFrequency] = useState<TaskFrequency>("daily");
-  const [saving, setSaving] = useState(false);
-  const categoryId = category.id;
-
-  // Kategori Bazlı Tasarım Farklılaştırma kararı (bkz. CLAUDE.md bölüm 9) —
-  // "Kötü Alışkanlıklar" modülü genel görev CRUD'u yerine kendi paneline
-  // sahip, web'deki HabitTrackerPanel.tsx'in mobil karşılığı.
-  if (category.moduleType === "habit") {
-    return (
-      <View style={[styles.detailContainer, { borderTopColor: theme.border }]}>
-        <HabitTrackerPanel categoryId={categoryId} tasks={tasks} />
-      </View>
-    );
-  }
-
-  // Kategori Bazlı Tasarım Farklılaştırma — Yol Haritam'ın mobil karşılığı
-  // (web: RoadmapPanel.tsx). module_type DB'de hâlâ "digital" (bkz. web
-  // CLAUDE.md notu — kod detayı, kullanıcıya görünmüyor).
-  if (category.moduleType === "digital") {
-    return (
-      <View style={[styles.detailContainer, { borderTopColor: theme.border }]}>
-        <RoadmapPanel categoryId={categoryId} />
-      </View>
-    );
-  }
-
-  // Kategori Bazlı Tasarım Farklılaştırma — Seyahat'in mobil karşılığı
-  // (web: TravelPanel.tsx). Web'de de bu kategoride genel checklist YOK
-  // (sport/habit/digital/travel — TAM DEĞİŞTİRME deseni).
-  if (category.moduleType === "travel") {
-    return (
-      <View style={[styles.detailContainer, { borderTopColor: theme.border }]}>
-        <TravelPanel categoryId={categoryId} />
-      </View>
-    );
-  }
-
-  // Kategori Bazlı Tasarım Farklılaştırma — Spor & Vücut'un mobil karşılığı
-  // (web: WorkoutLogPanel.tsx). Web'deki gibi genel görev listesinin
-  // YERİNE geçiyor (habit/digital ile aynı desen — nutrition/focus'un
-  // AKSİNE, web'de de sport kategorisinde genel checklist hiç yok).
-  if (category.moduleType === "sport") {
-    return (
-      <View style={[styles.detailContainer, { borderTopColor: theme.border }]}>
-        <WorkoutPanel categoryId={categoryId} />
-      </View>
-    );
-  }
-
-  async function handleAddTask() {
-    if (!title.trim()) return;
-    setSaving(true);
-    await addTask(categoryId, title, weight, frequency);
-    setTitle("");
-    setWeight(5);
-    setFrequency("daily");
-    setSaving(false);
-  }
-
   return (
     <View style={[styles.detailContainer, { borderTopColor: theme.border }]}>
-      {tasks.length === 0 && (
-        <ThemedText themeColor="textSecondary" style={styles.noTasks}>
-          Bu kategoride henüz görev yok.
-        </ThemedText>
-      )}
-
-      {tasks.map((task) => (
-        <View key={task.id} style={styles.taskRow}>
-          <ThemedText style={{ flex: 1 }}>{task.title}</ThemedText>
-          <View style={[styles.badge, { backgroundColor: theme.border }]}>
-            <ThemedText themeColor="textSecondary" style={styles.badgeText}>
-              {FREQUENCY_OPTIONS.find((f) => f.value === task.frequency)?.label}
-            </ThemedText>
-          </View>
-          <View style={[styles.badge, { backgroundColor: theme.border }]}>
-            <ThemedText themeColor="textSecondary" style={styles.badgeText}>
-              {task.weight}
-            </ThemedText>
-          </View>
-          <Pressable hitSlop={8} onPress={() => removeTask(task.id)}>
-            <MaterialCommunityIcons name="close" size={16} color={theme.textSecondary} />
-          </Pressable>
-        </View>
-      ))}
-
-      <View style={styles.addTaskForm}>
-        <TextInput
-          value={title}
-          onChangeText={setTitle}
-          placeholder="Yeni görev ekle..."
-          placeholderTextColor={theme.textSecondary}
-          style={[styles.addTaskInput, { borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundSelected }, elevated]}
-          onSubmitEditing={handleAddTask}
-        />
-
-        <View style={styles.frequencyRow}>
-          {FREQUENCY_OPTIONS.map((option) => (
-            <Pressable
-              key={option.value}
-              onPress={() => setFrequency(option.value)}
-              style={[
-                styles.frequencyPill,
-                {
-                  borderColor: frequency === option.value ? theme.accent : theme.border,
-                  backgroundColor: frequency === option.value ? theme.accent + "1a" : "transparent",
-                },
-              ]}
-            >
-              <ThemedText themeColor={frequency === option.value ? "accent" : "textSecondary"} style={styles.frequencyPillText}>
-                {option.label}
-              </ThemedText>
-            </Pressable>
-          ))}
-        </View>
-
-        <View style={styles.weightRow}>
-          <ThemedText themeColor="textSecondary" style={styles.weightLabel}>
-            Ağırlık
-          </ThemedText>
-          <Pressable
-            onPress={() => setWeight((w) => Math.max(1, w - 1))}
-            style={[styles.weightButton, { borderColor: theme.border }]}
-          >
-            <MaterialCommunityIcons name="minus" size={16} color={theme.text} />
-          </Pressable>
-          <ThemedText style={styles.weightValue}>{weight}</ThemedText>
-          <Pressable
-            onPress={() => setWeight((w) => Math.min(10, w + 1))}
-            style={[styles.weightButton, { borderColor: theme.border }]}
-          >
-            <MaterialCommunityIcons name="plus" size={16} color={theme.text} />
-          </Pressable>
-
-          <Pressable
-            onPress={handleAddTask}
-            disabled={saving || !title.trim()}
-            style={[styles.addTaskButton, { backgroundColor: theme.accent, opacity: title.trim() ? 1 : 0.5 }]}
-          >
-            {saving ? (
-              <ActivityIndicator color="#04191d" size="small" />
-            ) : (
-              <ThemedText style={styles.addTaskButtonText}>Ekle</ThemedText>
-            )}
-          </Pressable>
-        </View>
-      </View>
-
-      {/* Kategori Bazlı Tasarım Farklılaştırma — Ders & Odaklanma'nın mobil
-          karşılığı (web: PomodoroTimer.tsx). Web'deki gibi genel görev
-          listesinin ALTINDA, onu değiştirmeden ek olarak render ediliyor —
-          Kötü Alışkanlıklar/Yol Haritam'ın aksine bu modülde genel checklist
-          web'de de duruyor. */}
-      {category.moduleType === "focus" && <PomodoroPanel categoryId={categoryId} />}
-      {/* Kategori Bazlı Tasarım Farklılaştırma — Sağlıklı Beslenme'nin
-          mobil karşılığı (web: MealLogPanel.tsx). Bölüm 1: sadece Su/
-          Oruç/Kalori taşındı, bkz. nutrition-panel.tsx başındaki not. */}
-      {category.moduleType === "nutrition" && <NutritionPanel categoryId={categoryId} />}
-      {/* Kategori Bazlı Tasarım Farklılaştırma — Stil & Giyim'in mobil
-          karşılığı (web: WardrobePanel.tsx). Web'de de bu kategoride genel
-          checklist duruyor (nutrition/focus ile AYNI "üstte liste, altta
-          panel" deseni — sport/habit/digital'in TAM DEĞİŞTİRME'sinin
-          AKSİNE). */}
-      {category.moduleType === "style" && <WardrobePanel categoryId={categoryId} />}
-      {/* Kategori Bazlı Tasarım Farklılaştırma — Finans & Portföy'ün mobil
-          karşılığı (web: PortfolioPanel.tsx). Web'de de bu kategoride genel
-          checklist duruyor (nutrition/focus/style ile AYNI desen). */}
-      {category.moduleType === "finance" && <PortfolioPanel categoryId={categoryId} />}
+      <CategoryChecklistPanel categoryId={category.id} tasks={tasks} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   loadingContainer: { flex: 1, alignItems: "center", justifyContent: "center" },
-  container: { padding: 20, gap: 12 },
+  container: { padding: 20, paddingBottom: BottomTabInset, gap: 12 },
   headerTitle: { fontSize: 22, lineHeight: 28, marginBottom: 4 },
   addCategoryRow: {
     flexDirection: "row",
@@ -388,21 +236,6 @@ const styles = StyleSheet.create({
   categoryName: { fontSize: 14, fontWeight: "600" },
   categoryMeta: { fontSize: 12, marginTop: 2 },
   detailContainer: { borderTopWidth: 1, padding: 14, gap: 10 },
-  noTasks: { fontSize: 13 },
-  taskRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  badge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  badgeText: { fontSize: 11 },
-  addTaskForm: { gap: 10, marginTop: 4, paddingTop: 10, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "transparent" },
-  addTaskInput: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13 },
-  frequencyRow: { flexDirection: "row", gap: 8 },
-  frequencyPill: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
-  frequencyPillText: { fontSize: 12 },
-  weightRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  weightLabel: { fontSize: 12, marginRight: 2 },
-  weightButton: { width: 28, height: 28, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
-  weightValue: { fontSize: 14, minWidth: 18, textAlign: "center" },
-  addTaskButton: { marginLeft: "auto", borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
-  addTaskButtonText: { color: "#04191d", fontWeight: "600", fontSize: 13 },
   limitNote: { fontSize: 12, marginTop: -4 },
   modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", alignItems: "center", justifyContent: "center", padding: 24 },
   modalCard: { width: "100%", maxWidth: 340, borderWidth: 1, borderRadius: 20, padding: 24, alignItems: "center", gap: 12 },

@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { BottomTabInset } from "@/constants/theme";
 import { useElevatedStyle, useTheme } from "@/hooks/use-theme";
 import { useAppData } from "@/lib/app-data-context";
 import { useAuth } from "@/lib/auth-context";
@@ -329,7 +330,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, gap: 16 },
+  container: { padding: 20, paddingBottom: BottomTabInset, gap: 16 },
   headerTitle: { fontSize: 22, lineHeight: 28 },
   section: { borderWidth: 1, borderRadius: 16, padding: 16, gap: 12 },
   sectionTitle: { fontSize: 14, fontWeight: "600" },

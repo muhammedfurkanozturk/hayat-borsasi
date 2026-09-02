@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "reac
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { BottomTabInset } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useAppData, type Subtask, type Task } from "@/lib/app-data-context";
 
@@ -153,7 +154,7 @@ function SubtaskRow({ subtask }: { subtask: Subtask }) {
 
 const styles = StyleSheet.create({
   loadingContainer: { flex: 1, alignItems: "center", justifyContent: "center" },
-  container: { padding: 20, gap: 16 },
+  container: { padding: 20, paddingBottom: BottomTabInset, gap: 16 },
   headerTitle: { fontSize: 22, lineHeight: 28 },
   scoreCard: {
     borderWidth: 1,

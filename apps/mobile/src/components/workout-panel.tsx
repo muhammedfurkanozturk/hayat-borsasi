@@ -1,19 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   DIFFICULTY_LABELS,
   EQUIPMENT_LABELS,
   EXERCISE_LIBRARY,
   MUSCLE_GROUP_LABELS,
-  calculateLastDoneDates,
-  calculatePersonalRecords,
-  daysAgoIso,
-  deleteExercise,
   deleteWorkoutSet,
-  fetchExercises,
-  fetchWorkoutSets,
   formatDaysAgo,
-  insertDefaultExercises,
-  insertExercise,
   insertWorkoutSet,
   todayIso,
   type DbExercise,
@@ -38,7 +30,14 @@ import { supabase } from "@/lib/supabase/client";
 // sürükle-bırak için yeni bir kütüphane gerekirdi, bunun yerine "hareket
 // seç → BUGÜNE set/tekrar/ağırlık gir" akışı (haftanın diğer günleri
 // yok, sadece bugün). **Takip** (grafikler) de bu turda atlandı.
-const FREELETICS = {
+// Bu panel önceden `WorkoutPanel` adında tek bir bileşendi (kendi iç
+// Hareketlerim/Kütüphane/Hesap sekme geçişiyle) — Seviye 2'ye (kategori-içi
+// navigasyon, bkz. CLAUDE.md bölüm 9) geçilince bu üç alt bileşen ayrı
+// route'lara (hareketlerim.tsx/kutuphane.tsx/hesaplayicilar.tsx) taşındı,
+// her biri kendi verisini kendi yüklüyor (nutrition'ın su/oruç/kalori
+// route'larıyla AYNI desen). `WorkoutPanel` sarmalayıcısı KALDIRILDI, sadece
+// bu üç alt bileşen + paylaşılan sabitler export ediliyor.
+export const FREELETICS = {
   bg: "#141414",
   surface: "#1c1c1c",
   elevated: "#242424",
@@ -55,120 +54,7 @@ function brzycki(weight: number, reps: number): number {
   return weight * (36 / (37 - reps));
 }
 
-export function WorkoutPanel({ categoryId }: { categoryId: string }) {
-  const [tab, setTab] = useState<"log" | "library" | "calc">("log");
-  const [loading, setLoading] = useState(true);
-  const [exercises, setExercises] = useState<DbExercise[]>([]);
-  const [sets, setSets] = useState<DbWorkoutSet[]>([]);
-  const [newExerciseName, setNewExerciseName] = useState("");
-
-  async function load() {
-    try {
-      let exerciseRows = await fetchExercises(supabase, categoryId);
-      if (exerciseRows.length === 0) {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user) exerciseRows = await insertDefaultExercises(supabase, user.id, categoryId);
-      }
-      setExercises(exerciseRows);
-      const since = daysAgoIso(365);
-      const setRows = await fetchWorkoutSets(supabase, categoryId, since);
-      setSets(setRows);
-    } catch (err) {
-      console.error("Spor verisi yüklenemedi:", err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryId]);
-
-  async function handleAddExercise() {
-    if (!newExerciseName.trim()) return;
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      const created = await insertExercise(supabase, user.id, categoryId, newExerciseName.trim(), exercises.length);
-      setExercises((prev) => [...prev, created]);
-      setNewExerciseName("");
-    }
-  }
-
-  async function handleDeleteExercise(id: string) {
-    setExercises((prev) => prev.filter((e) => e.id !== id));
-    await deleteExercise(supabase, id);
-  }
-
-  async function handleAddLibraryExercise(name: string) {
-    if (exercises.some((e) => e.name.toLowerCase() === name.toLowerCase())) return;
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      const created = await insertExercise(supabase, user.id, categoryId, name, exercises.length);
-      setExercises((prev) => [...prev, created]);
-    }
-  }
-
-  const personalRecords = calculatePersonalRecords(sets);
-  const lastDoneDates = calculateLastDoneDates(sets);
-
-  if (loading) {
-    return (
-      <View style={[styles.container, { backgroundColor: FREELETICS.bg }]}>
-        <ActivityIndicator color={FREELETICS.accent} />
-      </View>
-    );
-  }
-
-  return (
-    <View style={[styles.container, { backgroundColor: FREELETICS.bg }]}>
-      <View style={styles.tabRow}>
-        {(
-          [
-            { key: "log", label: "Hareketlerim" },
-            { key: "library", label: "Kütüphane" },
-            { key: "calc", label: "Hesap" },
-          ] as const
-        ).map((t) => (
-          <Pressable
-            key={t.key}
-            onPress={() => setTab(t.key)}
-            style={[styles.tabPill, tab === t.key && { backgroundColor: FREELETICS.accent + "26" }]}
-          >
-            <ThemedText style={{ color: tab === t.key ? FREELETICS.accent : FREELETICS.muted, fontSize: 12, fontWeight: "800" }}>
-              {t.label}
-            </ThemedText>
-          </Pressable>
-        ))}
-      </View>
-
-      {tab === "log" && (
-        <LogTab
-          categoryId={categoryId}
-          exercises={exercises}
-          sets={sets}
-          personalRecords={personalRecords}
-          lastDoneDates={lastDoneDates}
-          newExerciseName={newExerciseName}
-          onNewExerciseNameChange={setNewExerciseName}
-          onAddExercise={handleAddExercise}
-          onDeleteExercise={handleDeleteExercise}
-          onSetsChange={setSets}
-        />
-      )}
-      {tab === "library" && <LibraryTab existingNames={exercises.map((e) => e.name)} onAdd={handleAddLibraryExercise} />}
-      {tab === "calc" && <CalcTab />}
-    </View>
-  );
-}
-
-function LogTab({
+export function LogTab({
   categoryId,
   exercises,
   sets,
@@ -330,7 +216,7 @@ function LogTab({
   );
 }
 
-function LibraryTab({ existingNames, onAdd }: { existingNames: string[]; onAdd: (name: string) => void }) {
+export function LibraryTab({ existingNames, onAdd }: { existingNames: string[]; onAdd: (name: string) => void }) {
   const [query, setQuery] = useState("");
   const [muscle, setMuscle] = useState<MuscleGroup | null>(null);
 
@@ -388,7 +274,7 @@ function LibraryTab({ existingNames, onAdd }: { existingNames: string[]; onAdd: 
   );
 }
 
-function CalcTab() {
+export function CalcTab() {
   const [weight, setWeight] = useState("");
   const [reps, setReps] = useState("");
   const weightNum = Number(weight);

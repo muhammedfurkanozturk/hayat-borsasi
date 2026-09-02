@@ -1,69 +1,24 @@
-import { Feather } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { AppDataProvider } from "@/lib/app-data-context";
-import { ProfileProvider } from "@/lib/profile-context";
-import { useTheme } from "@/hooks/use-theme";
+import { FloatingTabBar } from "@/components/floating-tab-bar";
 
+// AppDataProvider/ProfileProvider artık kök _layout.tsx'te (session
+// guard'ının çevresinde) — bkz. oradaki not. Burada TEKRAR sarmak iki ayrı
+// instance oluşturup Seviye 2 (kategori/[categoryId]) ile veri
+// tutarsızlığına yol açardı.
 export default function AppLayout() {
-  const theme = useTheme();
-
   return (
-    <ProfileProvider>
-      <AppDataProvider>
-        <Tabs
-          initialRouteName="dashboard"
-          screenOptions={{
-            headerShown: false,
-            tabBarActiveTintColor: theme.accent,
-            tabBarInactiveTintColor: theme.textSecondary,
-            tabBarStyle: { backgroundColor: theme.backgroundElement, borderTopColor: theme.border },
-          }}
-        >
-          <Tabs.Screen
-            name="dashboard"
-            options={{
-              title: "Endeks",
-              tabBarIcon: ({ color, size }) => <Feather name="bar-chart-2" size={size} color={color} />,
-            }}
-          />
-          <Tabs.Screen
-            name="gunluk-giris"
-            options={{
-              title: "Günlük",
-              tabBarIcon: ({ color, size }) => <Feather name="edit-3" size={size} color={color} />,
-            }}
-          />
-          <Tabs.Screen
-            name="kategoriler"
-            options={{
-              title: "Kategoriler",
-              tabBarIcon: ({ color, size }) => <Feather name="grid" size={size} color={color} />,
-            }}
-          />
-          <Tabs.Screen
-            name="karakter-karti"
-            options={{
-              title: "Karakter",
-              tabBarIcon: ({ color, size }) => <Feather name="award" size={size} color={color} />,
-            }}
-          />
-          <Tabs.Screen
-            name="rapor"
-            options={{
-              title: "Rapor",
-              tabBarIcon: ({ color, size }) => <Feather name="file-text" size={size} color={color} />,
-            }}
-          />
-          <Tabs.Screen
-            name="ayarlar"
-            options={{
-              title: "Ayarlar",
-              tabBarIcon: ({ color, size }) => <Feather name="settings" size={size} color={color} />,
-            }}
-          />
-          <Tabs.Screen name="pro" options={{ href: null }} />
-        </Tabs>
-      </AppDataProvider>
-    </ProfileProvider>
+    <Tabs
+      initialRouteName="dashboard"
+      tabBar={(props) => <FloatingTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
+    >
+      <Tabs.Screen name="dashboard" options={{ title: "Endeks" }} />
+      <Tabs.Screen name="gunluk-giris" options={{ title: "Günlük" }} />
+      <Tabs.Screen name="kategoriler" options={{ title: "Kategoriler" }} />
+      <Tabs.Screen name="karakter-karti" options={{ title: "Karakter" }} />
+      <Tabs.Screen name="rapor" options={{ title: "Rapor" }} />
+      <Tabs.Screen name="ayarlar" options={{ title: "Ayarlar" }} />
+      <Tabs.Screen name="pro" options={{ href: null }} />
+    </Tabs>
   );
 }

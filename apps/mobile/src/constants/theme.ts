@@ -92,5 +92,10 @@ export const Spacing = {
   six: 64,
 } as const;
 
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
+// Seviye 1'in floating/pill tab bar'ı position:absolute ile ekranın ÜSTÜNE
+// biniyor (React Navigation bunun için otomatik yer ayırmıyor) — bu yüzden
+// (app) grubundaki her ekranın scroll içeriği bu kadar alttan boşluk
+// bırakmalı ki son eleman bar'ın arkasında kalmasın. Bar'ın kendi yüksekliği
+// (~48) + alt boşluğu (~12) + iOS home-indicator/Android gesture-bar payı.
+export const BottomTabInset = Platform.select({ ios: 110, android: 130 }) ?? 0;
 export const MaxContentWidth = 800;

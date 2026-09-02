@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { BottomTabInset } from "@/constants/theme";
 import { useElevatedStyle, useTheme } from "@/hooks/use-theme";
 import { useAppData } from "@/lib/app-data-context";
 
@@ -114,7 +115,7 @@ export default function GunlukGirisScreen() {
 
 const styles = StyleSheet.create({
   loadingContainer: { flex: 1, alignItems: "center", justifyContent: "center" },
-  container: { padding: 20, gap: 6 },
+  container: { padding: 20, paddingBottom: BottomTabInset, gap: 6 },
   headerTitle: { fontSize: 22, lineHeight: 28 },
   headerSubtitle: { marginBottom: 16 },
   idleButton: {

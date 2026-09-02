@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StructuredReportView } from "@/components/structured-report-view";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { BottomTabInset } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useAppData } from "@/lib/app-data-context";
 import { useProfile } from "@/lib/profile-context";
@@ -187,7 +188,7 @@ export default function RaporScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, gap: 16 },
+  container: { padding: 20, paddingBottom: BottomTabInset, gap: 16 },
   headerTitle: { fontSize: 22, lineHeight: 28 },
   lockOverlay: {
     ...StyleSheet.absoluteFillObject,
