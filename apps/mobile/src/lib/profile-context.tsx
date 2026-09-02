@@ -13,9 +13,11 @@ interface ProfileContextValue {
   isPro: boolean;
   contactInfo: ContactInfo;
   loading: boolean;
+  onboardingCompletedAt: string | null;
   updateDisplayName: (name: string) => Promise<{ error: string | null }>;
   updateContactInfo: (info: ContactInfo) => Promise<{ error: string | null }>;
   updateEmail: (newEmail: string) => Promise<{ error: string | null }>;
+  completeOnboarding: () => Promise<void>;
 }
 
 const ProfileContext = createContext<ProfileContextValue | null>(null);
@@ -28,6 +30,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [isPro, setIsPro] = useState(false);
   const [contactInfo, setContactInfo] = useState<ContactInfo>(emptyContactInfo);
   const [loading, setLoading] = useState(true);
+  const [onboardingCompletedAt, setOnboardingCompletedAt] = useState<string | null>(null);
 
   const loadProfile = useCallback(async () => {
     const {
@@ -43,7 +46,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
     const { data } = await supabase
       .from("profiles")
-      .select("display_name, is_pro, phone, address, occupation")
+      .select("display_name, is_pro, phone, address, occupation, onboarding_completed_at")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -55,6 +58,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         address: data.address ?? "",
         occupation: data.occupation ?? "",
       });
+      setOnboardingCompletedAt(data.onboarding_completed_at ?? null);
     } else {
       const fallbackName = (user.user_metadata?.display_name as string | undefined) ?? "Kullanıcı";
       await supabase.from("profiles").upsert({ id: user.id, display_name: fallbackName });
@@ -114,6 +118,17 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     return { error: null };
   }
 
+  async function completeOnboarding() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const now = new Date().toISOString();
+    const { error } = await supabase.from("profiles").update({ onboarding_completed_at: now }).eq("id", user.id);
+    if (!error) setOnboardingCompletedAt(now);
+  }
+
   async function updateEmail(newEmail: string) {
     const trimmed = newEmail.trim();
     if (!trimmed) return { error: "E-posta boş olamaz." };
@@ -127,7 +142,18 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   return (
     <ProfileContext.Provider
-      value={{ displayName, email, isPro, contactInfo, loading, updateDisplayName, updateContactInfo, updateEmail }}
+      value={{
+        displayName,
+        email,
+        isPro,
+        contactInfo,
+        loading,
+        onboardingCompletedAt,
+        updateDisplayName,
+        updateContactInfo,
+        updateEmail,
+        completeOnboarding,
+      }}
     >
       {children}
     </ProfileContext.Provider>

@@ -7,6 +7,7 @@ import { AppDataProvider } from "@/lib/app-data-context";
 import { useThemeMode } from "@/lib/theme-context";
 import { ProfileProvider } from "@/lib/profile-context";
 import { IntroAnimation } from "@/components/intro-animation";
+import { OnboardingGate } from "@/components/onboarding-gate";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -35,6 +36,7 @@ function RootNavigator() {
       <Stack.Protected guard={!!session}>
         <Stack.Screen name="(app)" />
         <Stack.Screen name="kategori/[categoryId]" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
       </Stack.Protected>
       <Stack.Protected guard={!session}>
         <Stack.Screen name="(auth)" />
@@ -47,7 +49,10 @@ function RootNavigator() {
       <StatusBar style={theme === "light" ? "dark" : "light"} />
       {session ? (
         <ProfileProvider>
-          <AppDataProvider>{stack}</AppDataProvider>
+          <AppDataProvider>
+            {stack}
+            <OnboardingGate />
+          </AppDataProvider>
         </ProfileProvider>
       ) : (
         stack
