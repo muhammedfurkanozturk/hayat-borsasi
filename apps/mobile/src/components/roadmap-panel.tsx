@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   ROADMAP_TEMPLATES,
+  bulkSetRoadmapTargetDates,
   deleteRoadmap,
   deleteRoadmapNode,
   fetchRoadmapNodes,
@@ -51,6 +52,10 @@ export function RoadmapPanel({ categoryId }: { categoryId: string }) {
   const [addingAtRoot, setAddingAtRoot] = useState(false);
   const [newNodeTitle, setNewNodeTitle] = useState("");
   const [savingNode, setSavingNode] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [scheduleDays, setScheduleDays] = useState("30");
+  const [scheduling, setScheduling] = useState(false);
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
 
   async function load() {
     const roadmapRows = await fetchRoadmaps(supabase, categoryId);
@@ -134,6 +139,59 @@ export function RoadmapPanel({ categoryId }: { categoryId: string }) {
       setAddingAtRoot(false);
     }
     setSavingNode(false);
+  }
+
+  // Web'in "Otomatik Planla"sının (Onepin'in kişisel hız fikrinden ilham)
+  // RN portu — bir bitiş TARİHİ seçmek yerine (native date picker yeni bir
+  // bağımlılık gerektirirdi, bilinçli olarak eklenmedi), "kaç gün içinde"
+  // sayısı giriliyor — Yol Haritam'ın ağaç→liste basitleştirmesiyle AYNI
+  // felsefe (yeni kütüphane eklemeden en basit girdiyle aynı sonucu almak).
+  function flattenPreOrder(all: DbRoadmapNode[]): DbRoadmapNode[] {
+    const byParent = new Map<string | null, DbRoadmapNode[]>();
+    for (const n of all) {
+      const list = byParent.get(n.parent_node_id) ?? [];
+      list.push(n);
+      byParent.set(n.parent_node_id, list);
+    }
+    for (const list of byParent.values()) list.sort((a, b) => a.sort_order - b.sort_order);
+    const result: DbRoadmapNode[] = [];
+    function visit(parentId: string | null) {
+      for (const n of byParent.get(parentId) ?? []) {
+        result.push(n);
+        visit(n.id);
+      }
+    }
+    visit(null);
+    return result;
+  }
+
+  async function handleAutoSchedule(activeNodes: DbRoadmapNode[]) {
+    const days = Number(scheduleDays);
+    if (!Number.isFinite(days) || days <= 0) return;
+    const incomplete = flattenPreOrder(activeNodes).filter((n) => !n.completed);
+    if (incomplete.length === 0) return;
+    setScheduling(true);
+    setScheduleError(null);
+
+    const start = new Date().getTime();
+    const totalMs = days * 24 * 60 * 60 * 1000;
+    const updates = incomplete.map((n, i) => {
+      const fraction = (i + 1) / incomplete.length;
+      const date = new Date(start + totalMs * fraction);
+      return { id: n.id, targetDate: date.toISOString().slice(0, 10) };
+    });
+
+    const byId = new Map(updates.map((u) => [u.id, u.targetDate]));
+    setNodes((prev) => prev.map((n) => (byId.has(n.id) ? { ...n, target_date: byId.get(n.id)! } : n)));
+
+    try {
+      await bulkSetRoadmapTargetDates(supabase, updates);
+      setScheduleOpen(false);
+    } catch (err) {
+      console.error("Otomatik planlama kaydedilemedi:", err);
+      setScheduleError("Kaydedilemedi, tekrar dener misin?");
+    }
+    setScheduling(false);
   }
 
   function confirmDeleteRoadmap(roadmap: DbRoadmap) {
@@ -337,6 +395,50 @@ export function RoadmapPanel({ categoryId }: { categoryId: string }) {
         <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: MIRO.positive }]} />
       </View>
 
+      {progress < 100 &&
+        (scheduleOpen ? (
+          <View style={[styles.scheduleBox, { borderColor: MIRO.border, backgroundColor: MIRO.surface }]}>
+            <ThemedText style={{ color: MIRO.text, fontSize: 13, fontWeight: "600" }}>Otomatik Planla</ThemedText>
+            <ThemedText style={{ color: MIRO.muted, fontSize: 11, lineHeight: 16 }}>
+              Tamamlanmamış tüm konulara ağaçtaki sırasına göre eşit aralıklı hedef tarihler dağıtılsın.
+            </ThemedText>
+            <View style={styles.customRow}>
+              <TextInput
+                value={scheduleDays}
+                onChangeText={setScheduleDays}
+                keyboardType="number-pad"
+                placeholder="30"
+                placeholderTextColor={MIRO.muted}
+                style={[styles.input, { flex: 1, borderColor: MIRO.border, color: MIRO.text, backgroundColor: MIRO.elevated }]}
+              />
+              <ThemedText style={{ color: MIRO.muted, fontSize: 12, alignSelf: "center" }}>gün içinde</ThemedText>
+              <Pressable
+                onPress={() => handleAutoSchedule(activeNodes)}
+                disabled={scheduling || !scheduleDays}
+                style={[styles.addButton, { backgroundColor: MIRO.accentSoft, opacity: scheduling ? 0.6 : 1 }]}
+              >
+                {scheduling ? (
+                  <ActivityIndicator color={MIRO.accent} size="small" />
+                ) : (
+                  <ThemedText style={{ color: MIRO.accent, fontWeight: "600", fontSize: 13 }}>Uygula</ThemedText>
+                )}
+              </Pressable>
+            </View>
+            {scheduleError && <ThemedText style={{ color: "#dc2626", fontSize: 11 }}>{scheduleError}</ThemedText>}
+            <Pressable onPress={() => setScheduleOpen(false)}>
+              <ThemedText style={{ color: MIRO.muted, fontSize: 12 }}>Vazgeç</ThemedText>
+            </Pressable>
+          </View>
+        ) : (
+          <Pressable
+            onPress={() => setScheduleOpen(true)}
+            style={[styles.dashedButton, { borderColor: MIRO.border }]}
+          >
+            <MaterialCommunityIcons name="calendar-clock-outline" size={14} color={MIRO.muted} />
+            <ThemedText style={{ color: MIRO.muted, fontSize: 13 }}>Otomatik Planla</ThemedText>
+          </Pressable>
+        ))}
+
       <ScrollView style={{ maxHeight: 480 }} contentContainerStyle={{ gap: 6 }}>
         {rootNodes.length === 0 && (
           <ThemedText style={{ color: MIRO.muted, fontSize: 13 }}>Henüz konu yok, aşağıdan ekle.</ThemedText>
@@ -388,5 +490,6 @@ const styles = StyleSheet.create({
   progressTrack: { height: 5, borderRadius: 999, overflow: "hidden" },
   progressFill: { height: "100%", borderRadius: 999 },
   nodeRow: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, borderRadius: 10, padding: 10 },
+  scheduleBox: { borderWidth: 1, borderRadius: 10, padding: 12, gap: 8 },
   dashedButton: { flexDirection: "row", alignItems: "center", gap: 5, justifyContent: "center", borderWidth: 1, borderStyle: "dashed", borderRadius: 8, paddingVertical: 8 },
 });
