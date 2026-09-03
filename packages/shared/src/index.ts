@@ -29,6 +29,7 @@ export * from "./supabase/nutritionProfile";
 export * from "./supabase/portfolio";
 export * from "./supabase/reports";
 export * from "./supabase/recipes";
+export * from "./supabase/reviews";
 export * from "./supabase/roadmaps";
 export * from "./supabase/styleProfile";
 export * from "./supabase/subtasks";
