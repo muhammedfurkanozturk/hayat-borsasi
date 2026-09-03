@@ -1,8 +1,12 @@
 "use client";
 
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { CheckIcon, CrownIcon } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useProfile } from "@/lib/supabase/profile-context";
+import { createClient } from "@/lib/supabase/client";
+import { IyzicoCheckoutModal } from "@/components/pro/IyzicoCheckoutModal";
 
 const MONTHLY_PRICE = 5;
 const YEARLY_PRICE = 40;
@@ -40,6 +44,54 @@ const features = [
 
 export default function ProPage() {
   const { isPro } = useProfile();
+  const searchParams = useSearchParams();
+  const odemeParam = searchParams.get("odeme");
+
+  const [checkoutLoadingPlan, setCheckoutLoadingPlan] = useState<string | null>(null);
+  // iyzico callback'i (bkz. /api/payments/callback) ödeme sonrası
+  // kullanıcıyı ?odeme=basarili/basarisiz/hata ile buraya geri
+  // yönlendiriyor — sunucu tarafı bir redirect olduğu için sayfa TAM
+  // yeniden yükleniyor, ProfileProvider da baştan mount olup profili
+  // (yeni is_pro dahil) tekrar çekiyor, ekstra bir "yenile" adımı gerekmiyor.
+  // Başlangıç hata mesajı doğrudan lazy initializer'da hesaplanıyor —
+  // bir effect + setState yerine, gereksiz bir render turu atlanıyor.
+  const [checkoutError, setCheckoutError] = useState<string | null>(() => {
+    if (odemeParam === "basarisiz") return "Ödeme tamamlanamadı, tekrar deneyebilirsin.";
+    if (odemeParam === "hata") return "Ödeme sırasında bir sorun oluştu, tekrar deneyebilirsin.";
+    return null;
+  });
+  const [checkoutFormContent, setCheckoutFormContent] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  async function handleCheckout(planId: string) {
+    setCheckoutLoadingPlan(planId);
+    setCheckoutError(null);
+    try {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const res = await fetch("/api/payments/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ plan: planId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCheckoutError(data?.message || data?.error || "Ödeme başlatılamadı.");
+        return;
+      }
+      setCheckoutFormContent(data.checkoutFormContent);
+      setModalOpen(true);
+    } catch {
+      setCheckoutError("Ödeme başlatılamadı. Bağlantını kontrol edip tekrar dene.");
+    } finally {
+      setCheckoutLoadingPlan(null);
+    }
+  }
 
   return (
     <div className="flex flex-1 flex-col">
@@ -93,10 +145,11 @@ export default function ProPage() {
 
                   <button
                     type="button"
-                    disabled
-                    className="btn mt-1 w-full cursor-not-allowed rounded-lg bg-pro py-2.5 text-sm font-semibold text-pro-foreground"
+                    disabled={checkoutLoadingPlan !== null}
+                    onClick={() => handleCheckout(plan.id)}
+                    className="btn mt-1 w-full rounded-lg bg-pro py-2.5 text-sm font-semibold text-pro-foreground disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    Yakında
+                    {checkoutLoadingPlan === plan.id ? "Hazırlanıyor..." : "Şimdi Öde"}
                   </button>
                 </div>
               ))}
@@ -113,10 +166,20 @@ export default function ProPage() {
               ))}
             </div>
 
-            <p className="text-center text-xs text-muted">Ödeme altyapısı henüz aktif değil.</p>
+            {checkoutError ? (
+              <p className="text-center text-xs text-negative">{checkoutError}</p>
+            ) : (
+              <p className="text-center text-xs text-muted">Ödeme iyzico ile güvenli şekilde işlenir.</p>
+            )}
           </div>
         )}
       </main>
+
+      <IyzicoCheckoutModal
+        open={modalOpen}
+        checkoutFormContent={checkoutFormContent}
+        onClose={() => setModalOpen(false)}
+      />
     </div>
   );
 }

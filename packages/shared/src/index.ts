@@ -26,6 +26,7 @@ export * from "./supabase/mealPresets";
 export * from "./supabase/measurements";
 export * from "./supabase/nutrition";
 export * from "./supabase/nutritionProfile";
+export * from "./supabase/payments";
 export * from "./supabase/portfolio";
 export * from "./supabase/reports";
 export * from "./supabase/recipes";

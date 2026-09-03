@@ -26,6 +26,7 @@
     "@zxing/library": "^0.23.0",
     "body-muscles": "^1.0.0",
     "d3-geo": "^3.1.1",
+    "iyzipay": "^2.0.69",
     "motion": "^13.1.0",
     "next": "16.3.0",
     "onnxruntime-web": "^1.21.0",
@@ -42,6 +43,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/d3-geo": "^3.1.1",
+    "@types/iyzipay": "^2.0.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
