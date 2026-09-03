@@ -67,6 +67,30 @@ Her şey aynı "kart" değil, iki net katman var:
 - **Kalıp 3 (gazete/keskin köşe):** Defter-satırı fikri kısmen ondan ödünç alındı ama her yer keskinleşmedi — sadece veri katmanında.
 - **Jenerik shadcn kart:** Asıl teşhis edilen sorundu — iki katmanlı köşe sistemi doğrudan çözüyor.
 
+## Kategori kimlikleri — Açık/Koyu tema senkronizasyonu (kritik düzeltme, 2026-09-03)
+
+Kategori Bazlı Tasarım Farklılaştırma turunda (bkz. CLAUDE.md, 2026-08-31/09-02) 8 kategorinin her biri kendi referans-uygulama kimliğini (Yazio/Freeletics/Whering/Robinhood/Duolingo/Miro/Headspace/Polarsteps) aldı — ama bu ilk uygulamada 6/8 kategori, zemin/kart/metin renklerini **genel site temasından (açık/koyu) bağımsız, tek bir moda sabit** kodlamıştı (bazıları hep koyu — Finans/Robinhood, Seyahat/Polarsteps —, bazıları hep açık — Yol Haritam/Miro, Ders&Odaklanma —, biri sabit sıcak açık — Alışkanlık Bırakma/Headspace). Kullanıcı siteyi açık temaya alınca bu kategoriler "asılı kalmış" — genel geçişe uymayan — bir renk gösteriyordu.
+
+**Kural netleştirildi:** Kategori KİMLİĞİ (imza vurgu rengi + kompozisyon/his) ile kategori TEMASI (açık/koyu) birbirinden bağımsız iki eksen. Kimlik sabit kalır, tema genel site anahtarına uyar. Örnek: Finans & Portföy'ün Robinhood kimliği (saf zemin + neon yeşil) her iki modda da "Robinhood" hissi verir — ama açık modda zemin beyaza, koyu modda saf siyaha döner; neon yeşil vurgu HER İKİ modda da aynı kalır.
+
+**Uygulanan teknik desen** (6 dosyanın hepsinde aynı): kök-token-ezme sabiti (`{ "--background": ..., "--surface": ... }`) `Record<"dark"|"light", Record<string,string>>` bir palet objesine dönüştürüldü, component `useTheme()` (`src/lib/theme-context.tsx`) çağırıp `PALETTE[theme]`'i `style` prop'una spread ediyor. Vurgu/pozitif/negatif renkler (marka kimliğinin kendisi) paletin DIŞINDA, ayrı bir sabit obje olarak kalıyor — hiçbir zaman tema ile değişmiyor.
+
+| Kategori | Kimlik | Vurgu (sabit) | Değişen |
+|---|---|---|---|
+| Spor & Vücut | Freeletics | mavi `#2e7dff` | zemin/kart/metin |
+| Finans & Portföy | Robinhood | neon yeşil `#00e676` (+ pozitif/negatif) | zemin/kart/metin |
+| Ders & Odaklanma (Checklist) | Duolingo | turuncu `#ff9600` | zemin/kart/metin |
+| Ders & Odaklanma (Pomodoro) | Duolingo | mavi `#1cb0f6` | zemin/kart/metin |
+| Yol Haritam | Miro | leylak `#a78bfa` | zemin/kart/metin ("beyaz tahta" ↔ "koyu tahta") |
+| Alışkanlık Bırakma | Headspace | terracotta `#c1502e` | sıcak "kağıt" zemin ↔ sıcak koyu zemin |
+| Seyahat | Polarsteps | teal `#2dd4bf` (+ pembe-kırmızı) | gece-lacivert ↔ açık gök-mavisi zemin |
+
+**Dokunulmayan 2 kategori:** Sağlıklı Beslenme (Yazio) ve Stil & Giyim (Whering) zaten SADECE `--accent`/`--accent-soft`/`--accent-foreground`'ı eziyordu, zemin/kart token'larına hiç dokunmuyordu — bu yüzden baştan beri genel site temasına doğru şekilde uyuyorlardı, değişiklik gerekmedi.
+
+**Kartların kendi iç renk sistemleri bu değişiklikten ETKİLENMEDİ** — örn. Alışkanlık Bırakma'daki her kartın `hashHabitColor(task.id)` ile deterministik kendi rengi (`HabitBreakCard.tsx`) ayrı bir sistem, task.id'ye bağlı, site temasından zaten bağımsız olması GEREKEN bir tasarım kararı.
+
+**Doğrulama:** Her kategori tek tek hem açık hem koyu modda gerçek tarayıcıda test edildi — JS `getComputedStyle` ile zemin renginin doğru palete geçtiği kanıtlandı (ekran görüntüsü tek başına güvenilmez: küçük/JPEG-sıkıştırılmış bir screenshot'ta orta tonlu koyu gri, çok daha koyu bir sidebar'ın yanında "açık" gibi görünebiliyor — bu turda birkaç kez yanlış pozitif "bozuk" izlenimine yol açtı, computed style ile çözüldü). Sonunda 8 kategorinin hepsi açık modda, sonra hepsi koyu modda tek tek gezilip görsel olarak da doğrulandı.
+
 ## Kapsam / durum
 
 - ✅ Renk token'ları (kontrast düzeltmesi dahil), tipografi, glow kaldırma, `.card-lift` tıklama hissi — **site genelinde**, otomatik olarak her sayfada (CSS custom property'ler + paylaşılan sınıflar sayesinde, ayrı ayrı sayfa güncellemesi gerekmedi). Dashboard + Ayarlar sayfalarında gerçek tarayıcıda görsel olarak doğrulandı.
