@@ -1,6 +1,7 @@
 "use client";
 
 import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { formatDaysAgo, todayIso } from "@hayat-borsasi/shared";
 import { BookmarkIcon, CheckIcon, PencilIcon, StarIcon } from "@/components/icons";
 import type { SpineSide } from "./layout";
 
@@ -19,9 +20,25 @@ export interface RoadmapNodeData extends Record<string, unknown> {
   targetDate: string | null;
   // roadmap.sh keşif eki (Madde 9) — bkz. RoadmapNodeDetailModal.
   bookmarked: boolean;
+  // "eksikler" envanteri madde 5 — zaman etiketi (ne zaman tamamlandığı).
+  completedAt: string | null;
+  // "eksikler" envanteri madde 5 — el-çizimi vurgu: pre-order sırasında
+  // İLK tamamlanmamış düğüm ("şu an sırada bu var"), RoadmapPanel'de
+  // flattenPreOrder ile hesaplanıyor.
+  isCurrentFocus: boolean;
+  // "eksikler" envanteri madde 5 — dal başına renk rotasyonu: 1=omurgaya
+  // en yakın dal, 2=onun çocuğu, vb. (RoadmapPanel'de layoutRoadmapSpine'ın
+  // depth parametresinden geliyor). Sadece "branch" variant'ı için anlamlı.
+  branchDepth: number;
 }
 
 const handleDot = "!h-2 !w-2 !border-2 !border-background !bg-border";
+
+// "eksikler" envanteri madde 5 — "her dal seviyesi için FARKLI pastel ton"
+// (önceden ertelenmişti, bkz. CLAUDE.md Bölüm 6). Omurganın kendi leylağıyla
+// (--accent) başlayıp, bir sonraki dal seviyesinde pembe, ondan sonra
+// maviye dönüyor, 4. seviye + tekrar leylağa sarıyor (modulo).
+const BRANCH_PALETTE = ["#a78bfa", "#f9a8d4", "#93c5fd"];
 
 // roadmap.sh'in gerçek yapısına (2026-08-26, tarayıcıdan canlı incelendi)
 // göre iki ayrı düğüm tipi: "trunk" (omurga — İnternet, HTML, CSS gibi ana
@@ -29,10 +46,23 @@ const handleDot = "!h-2 !w-2 !border-2 !border-background !bg-border";
 // Tamamlanma artık gövde içinde bir ikon değil, köşede küçük, roadmap.sh'in
 // kendi tamamlanma rozetlerini anımsatan dairesel bir rozet.
 export function RoadmapNode({ data }: NodeProps) {
-  const { title, completed, onToggle, onOpenDetail, variant, spineSide, isMilestone, targetDate, bookmarked } =
-    data as unknown as RoadmapNodeData;
+  const {
+    title,
+    completed,
+    onToggle,
+    onOpenDetail,
+    variant,
+    spineSide,
+    isMilestone,
+    targetDate,
+    bookmarked,
+    completedAt,
+    isCurrentFocus,
+    branchDepth,
+  } = data as unknown as RoadmapNodeData;
   const isTrunk = variant === "trunk";
   const isOverdue = !completed && targetDate != null && targetDate < new Date().toISOString().slice(0, 10);
+  const branchColor = BRANCH_PALETTE[((branchDepth ?? 1) - 1) % BRANCH_PALETTE.length];
 
   return (
     // Madde 8'de eklenen "Düğüm detayı" düzenleme butonu bu elemanın İÇİNDE
@@ -50,6 +80,7 @@ export function RoadmapNode({ data }: NodeProps) {
           onToggle();
         }
       }}
+      style={!isTrunk ? ({ "--branch-color": branchColor } as React.CSSProperties) : undefined}
       className={`group relative flex cursor-pointer items-center justify-center border-2 text-center transition-colors ${
         isTrunk
           ? `rounded-full px-4 py-3.5 text-sm font-semibold ${
@@ -60,10 +91,36 @@ export function RoadmapNode({ data }: NodeProps) {
           : `rounded-lg px-3 py-2 text-xs font-medium ${
               completed
                 ? "border-positive/50 bg-positive-soft text-positive"
-                : "border-accent/30 bg-accent-soft/50 text-foreground hover:border-accent/50"
+                : "border-[color:var(--branch-color)]/35 bg-[color:var(--branch-color)]/12 text-foreground hover:border-[color:var(--branch-color)]/60"
             }`
       }`}
     >
+      {/* "eksikler" envanteri madde 5 — el-çizimi vurgu: sıradaki (pre-order
+          ilk tamamlanmamış) düğümü, roadmap.sh/Onepin'de olmayan, elle
+          çizilmiş bir daireyle "şu an buna odaklanıyorum" diye işaretliyor.
+          Kesin geometrik bir daire değil, hafif düzensiz bir bezier — sabit,
+          animasyonsuz (dikkat dağıtmasın diye). */}
+      {isCurrentFocus && !completed && (
+        // Trunk'ın kendi dolu leylağı/dalın pastel tonuyla karışmasın diye
+        // bilinçli olarak paletteki HİÇBİR rengi kullanmıyor — gerçek bir
+        // el-çizimi vurgu gibi sıcak/kontrast bir sarı-turuncu (highlighter
+        // kalem hissi).
+        <svg
+          viewBox="0 0 100 60"
+          className="pointer-events-none absolute -inset-x-3 -inset-y-2.5"
+          style={{ transform: "rotate(-1.5deg)", color: "#f5b400" }}
+          aria-hidden="true"
+        >
+          <path
+            d="M 8,32 C 6,14 24,3 50,4 C 78,2 95,13 93,31 C 96,49 76,57 49,56 C 23,58 5,50 8,32 Z"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      )}
+
       {isTrunk ? (
         <>
           <Handle type="target" position={Position.Top} id="top" className={handleDot} />
@@ -129,10 +186,16 @@ export function RoadmapNode({ data }: NodeProps) {
 
       <span className="flex flex-col items-center gap-0.5">
         <span className="whitespace-nowrap">{title}</span>
-        {targetDate && (
+        {targetDate && !completed && (
           <span className={`font-mono text-[9px] tabular-nums ${isOverdue ? "text-negative" : "opacity-70"}`}>
             {targetDate.slice(5).split("-").reverse().join(".")}
           </span>
+        )}
+        {/* "eksikler" envanteri madde 5 — zaman etiketi. completed_at
+            migration'ı (20260903090000) henüz uygulanmamışsa completedAt
+            null geliyor, etiket sessizce hiç görünmüyor. */}
+        {completed && completedAt && (
+          <span className="text-[9px] opacity-70">{formatDaysAgo(completedAt.slice(0, 10), todayIso())}</span>
         )}
       </span>
 

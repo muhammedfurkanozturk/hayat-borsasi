@@ -18,19 +18,20 @@ export interface DbRoadmapNode {
   target_date: string | null;
   action_note: string | null;
   bookmarked: boolean;
+  completed_at: string | null;
 }
 
 const ROADMAP_NODE_COLUMNS = "id, roadmap_id, parent_node_id, title, sort_order, completed";
-const ROADMAP_NODE_COLUMNS_WITH_EXTRAS = `${ROADMAP_NODE_COLUMNS}, is_milestone, target_date, action_note, bookmarked`;
+const ROADMAP_NODE_COLUMNS_WITH_EXTRAS = `${ROADMAP_NODE_COLUMNS}, is_milestone, target_date, action_note, bookmarked, completed_at`;
 
-// `is_milestone`/`target_date`/`action_note` (20260901130000) ve
-// `bookmarked` (20260901140000) migration'ları henüz uygulanmamış olabilir
-// — önce yeni sütunlarla dener, "kolon yok" hatası alırsa eski sütun
-// listesine düşüp yeni alanları varsayılan değerlerle doldurur (projede
-// zaten defalarca kullanılan desen). İkisi ayrı migration dosyası ama aynı
-// turda birlikte uygulanacağı için tek bir "extras" katmanı olarak ele
-// alınıyor — sadece biri uygulanmışsa geçici olarak ikisi de varsayılana
-// düşer, ikisi de uygulanınca normale döner.
+// `is_milestone`/`target_date`/`action_note` (20260901130000),
+// `bookmarked` (20260901140000) ve `completed_at` (20260903090000, "eksikler"
+// envanteri madde 5 — zaman etiketi) migration'ları henüz uygulanmamış
+// olabilir — önce yeni sütunlarla dener, "kolon yok" hatası alırsa eski
+// sütun listesine düşüp yeni alanları varsayılan değerlerle doldurur
+// (projede zaten defalarca kullanılan desen). Üçü ayrı migration dosyası
+// ama tek bir "extras" katmanı olarak ele alınıyor — biri eksikse geçici
+// olarak hepsi varsayılana düşer, hepsi uygulanınca normale döner.
 type RawRoadmapNode = {
   id: string;
   roadmap_id: string;
@@ -42,6 +43,7 @@ type RawRoadmapNode = {
   target_date?: string | null;
   action_note?: string | null;
   bookmarked?: boolean;
+  completed_at?: string | null;
 };
 
 function normalizeRoadmapNode(n: RawRoadmapNode): DbRoadmapNode {
@@ -51,6 +53,7 @@ function normalizeRoadmapNode(n: RawRoadmapNode): DbRoadmapNode {
     target_date: n.target_date ?? null,
     bookmarked: n.bookmarked ?? false,
     action_note: n.action_note ?? null,
+    completed_at: n.completed_at ?? null,
   };
 }
 
@@ -171,8 +174,15 @@ export async function insertRoadmapNode(
 }
 
 export async function toggleRoadmapNode(supabase: SupabaseClient, nodeId: string, completed: boolean): Promise<void> {
-  const { error } = await supabase.from("roadmap_nodes").update({ completed }).eq("id", nodeId);
-  if (error) throw error;
+  // completed_at (20260903090000) henüz uygulanmamışsa "kolon yok" hatası
+  // alınıp sadece completed ile tekrar denenir — normalizeRoadmapNode zaten
+  // eksik alanı null'a düşürüyor, zaman etiketi o zamana dek gösterilmez.
+  const patch = { completed, completed_at: completed ? new Date().toISOString() : null };
+  const { error } = await supabase.from("roadmap_nodes").update(patch).eq("id", nodeId);
+  if (error) {
+    const { error: fallbackError } = await supabase.from("roadmap_nodes").update({ completed }).eq("id", nodeId);
+    if (fallbackError) throw fallbackError;
+  }
 }
 
 // Onepin'in "aksiyona geçirilebilir düğüm + kilometre taşı + hedef tarih"

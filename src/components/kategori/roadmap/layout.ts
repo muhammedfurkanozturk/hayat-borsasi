@@ -56,7 +56,7 @@ function layoutBranchRecursive(
   side: SpineSide,
   parentId: string,
   parentSourceHandle: string,
-  buildData: (node: DbRoadmapNode, variant: "trunk" | "branch", spineSide?: SpineSide) => Record<string, unknown>,
+  buildData: (node: DbRoadmapNode, variant: "trunk" | "branch", spineSide?: SpineSide, depth?: number) => Record<string, unknown>,
   nodes: Node[],
   edges: Edge[]
 ) {
@@ -67,7 +67,7 @@ function layoutBranchRecursive(
     id: node.id,
     type: "roadmapNode",
     position: { x: centerX - BRANCH_WIDTH / 2, y: centerY - BRANCH_HEIGHT / 2 },
-    data: buildData(node, "branch", side),
+    data: buildData(node, "branch", side, depth),
   });
   edges.push({
     id: `${parentId}-${node.id}`,
@@ -94,7 +94,7 @@ function layoutBranchRecursive(
 
 export function layoutRoadmapSpine(
   activeNodes: DbRoadmapNode[],
-  buildData: (node: DbRoadmapNode, variant: "trunk" | "branch", spineSide?: SpineSide) => Record<string, unknown>
+  buildData: (node: DbRoadmapNode, variant: "trunk" | "branch", spineSide?: SpineSide, depth?: number) => Record<string, unknown>
 ): { nodes: Node[]; edges: Edge[] } {
   const trunkNodes = activeNodes
     .filter((n) => n.parent_node_id === null)

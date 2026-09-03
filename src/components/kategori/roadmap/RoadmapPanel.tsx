@@ -321,9 +321,13 @@ export function RoadmapPanel({ categoryId }: { categoryId: string }) {
   const completedCount = activeNodes.filter((n) => n.completed).length;
   const progress = activeNodes.length > 0 ? Math.round((completedCount / activeNodes.length) * 100) : 0;
 
+  // "eksikler" envanteri madde 5 — el-çizimi vurgu: pre-order sırasındaki
+  // İLK tamamlanmamış düğüm "şu an sırada bu var" olarak işaretleniyor.
+  const currentFocusId = flattenPreOrder(activeNodes).find((n) => !n.completed)?.id ?? null;
+
   const { nodes: flowNodes, edges: flowEdges } = layoutRoadmapSpine(
     activeNodes,
-    (n, variant, spineSide: SpineSide | undefined) =>
+    (n, variant, spineSide: SpineSide | undefined, depth?: number) =>
       ({
         title: n.title,
         completed: n.completed,
@@ -334,6 +338,9 @@ export function RoadmapPanel({ categoryId }: { categoryId: string }) {
         isMilestone: n.is_milestone,
         targetDate: n.target_date,
         bookmarked: n.bookmarked,
+        completedAt: n.completed_at,
+        isCurrentFocus: n.id === currentFocusId,
+        branchDepth: depth ?? 1,
       }) satisfies RoadmapNodeData
   );
 

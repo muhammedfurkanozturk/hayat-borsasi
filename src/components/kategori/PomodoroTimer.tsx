@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   daysAgoIso,
   deleteFocusSubject,
@@ -12,11 +13,12 @@ import {
   type DbFocusSession,
   type DbFocusSubject,
 } from "@hayat-borsasi/shared";
-import { CameraIcon, PlusIcon, TrashIcon } from "@/components/icons";
+import { CameraIcon, CheckIcon, PlusIcon, TrashIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Modal } from "@/components/ui/Modal";
 import { FocusCameraMonitor } from "./focus/FocusCameraMonitor";
+import { FocusMascot } from "./focus/FocusMascot";
 import { FocusProgressPanel } from "./focus/FocusProgressPanel";
 import { FocusQA } from "./focus/FocusQA";
 import { FocusSoundPlayer } from "./focus/FocusSoundPlayer";
@@ -73,6 +75,10 @@ export function PomodoroTimer({ categoryId }: { categoryId: string }) {
   const [cameraDecisionOpen, setCameraDecisionOpen] = useState(false);
   const distractedSecondsRef = useRef(0);
   const [distractedSecondsDisplay, setDistractedSecondsDisplay] = useState(0);
+  // "eksikler" envanteri madde 5 — "başarı bandı": bir seans kaydedilince
+  // Duolingo'nun ders-sonu şeridinden ilham, alttan kayıp birkaç saniye
+  // sonra kendiliğinden kapanan yeşil bir bant.
+  const [showSuccessBand, setShowSuccessBand] = useState(false);
 
   async function loadSessions() {
     const supabase = createClient();
@@ -109,6 +115,8 @@ export function PomodoroTimer({ categoryId }: { categoryId: string }) {
     distractedSecondsRef.current = 0;
     setDistractedSecondsDisplay(0);
     setCameraOn(false);
+    setShowSuccessBand(true);
+    setTimeout(() => setShowSuccessBand(false), 2400);
   }
 
   useEffect(() => {
@@ -231,7 +239,7 @@ export function PomodoroTimer({ categoryId }: { categoryId: string }) {
     // BİLİNÇLİ OLARAK farklı — Duolingo'da alt-özelliğe göre renk değişiyor).
     // Aynı kök-token-ezme yöntemi (bkz. Finans/Robinhood bölümü) kullanıldı.
     <div
-      className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5"
+      className="relative flex flex-col gap-4 overflow-hidden rounded-lg border border-border bg-surface shadow-card p-5"
       style={
         {
           "--background": "#ffffff",
@@ -256,7 +264,10 @@ export function PomodoroTimer({ categoryId }: { categoryId: string }) {
       }
     >
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-medium text-foreground">Odaklanma</h2>
+        <div className="flex items-center gap-2">
+          <FocusMascot size={32} />
+          <h2 className="text-sm font-medium text-foreground">Odaklanma</h2>
+        </div>
         <SegmentedControl
           size="sm"
           options={[
@@ -476,6 +487,21 @@ export function PomodoroTimer({ categoryId }: { categoryId: string }) {
       )}
 
       {!loading && <FocusQA sessions={sessions} subjects={subjects} />}
+
+      <AnimatePresence>
+        {showSuccessBand && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-positive px-4 py-2.5 text-sm font-semibold text-white"
+          >
+            <CheckIcon width={14} height={14} strokeWidth={3} />
+            Harika! Seans kaydedildi.
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
