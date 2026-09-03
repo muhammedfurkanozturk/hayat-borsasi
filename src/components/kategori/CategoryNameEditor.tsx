@@ -1,17 +1,26 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { slugifyCategoryName } from "@hayat-borsasi/shared";
 import { CheckIcon, PencilIcon } from "@/components/icons";
 import { useAppData } from "@/lib/supabase/app-data-context";
 
 export function CategoryNameEditor({ categoryId, name }: { categoryId: string; name: string }) {
   const { renameCategory } = useAppData();
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(name);
 
   async function save() {
     await renameCategory(categoryId, draft);
     setEditing(false);
+    // "eksikler" envanteri madde 9 — URL kategori adına göre değiştiği için
+    // (okunur slug), yeniden adlandırınca adres çubuğu da senkron kalsın diye
+    // yeni slug'a yönlendiriyoruz — aksi halde adres çubuğundaki ESKİ slug
+    // artık hiçbir kategoriyle eşleşmeyip sayfa "kategori bulunamadı" gibi
+    // davranırdı (sayfa yenilenene kadar).
+    router.replace(`/kategori/${slugifyCategoryName(draft)}`);
   }
 
   function cancel() {

@@ -34,7 +34,10 @@ export default function KategoriPage() {
 
   const { categories, tasks: allTasks, dailyHistory, removeTask } = useAppData();
 
-  const category = categories.find((c) => c.id === slug);
+  // "eksikler" envanteri madde 9 — okunur kategori URL'leri. Hem yeni
+  // (slug) hem eski/geçiş-döneminde-kalmış (id/UUID) linkler çalışsın diye
+  // ikisi de deneniyor.
+  const category = categories.find((c) => c.slug === slug) ?? categories.find((c) => c.id === slug);
   // Kullanıcı bulgusu (2026-08-28): bu liste (kategori sayfasındaki
   // "Görevler"/Beslenme'nin Checklist sekmesi) ağırlığa göre OTOMATİK
   // sıralanmamalı — kullanıcı hangi sırayla oluşturduysa o sırada kalmalı,
@@ -45,7 +48,7 @@ export default function KategoriPage() {
   // o alanlar sortOrder'ı etkilemiyor. Dashboard'daki (DailyChecklist.tsx)
   // ağırlığa göre canlı sıralama BİLEREK dokunulmadı, orası ayrı kalıyor.
   const tasks = allTasks
-    .filter((t) => t.categoryId === slug)
+    .filter((t) => t.categoryId === category?.id)
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   // Spor, Kötü Alışkanlıklar, Yol Haritam ve Beslenme modüllerinin kendi
   // özel checklist'i var (Beslenme'de "Checklist" artık kendi sekmesinin

@@ -41,7 +41,13 @@ import {
   toggleSubtaskLog,
 } from "./subtasks";
 import { calculateScore } from "@/lib/scoring";
-import { ONBOARDING_TEMPLATES, type CategoryModuleType, type DailyScorePoint, type HabitCostPeriod } from "@hayat-borsasi/shared";
+import {
+  ONBOARDING_TEMPLATES,
+  slugifyCategoryName,
+  type CategoryModuleType,
+  type DailyScorePoint,
+  type HabitCostPeriod,
+} from "@hayat-borsasi/shared";
 
 export type { TaskFrequency } from "./tasks";
 export type { HabitCostPeriod } from "@hayat-borsasi/shared";
@@ -52,6 +58,9 @@ export interface Category {
   name: string;
   icon: IconKey;
   moduleType: CategoryModuleType;
+  // "eksikler" envanteri madde 9 — okunur kategori URL'leri. Migration
+  // henüz uygulanmamışsa null, linkler bu durumda id'ye düşer.
+  slug: string | null;
 }
 
 export interface Task {
@@ -235,7 +244,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
       setUserId(user.id);
       setCategories(
-        dbCategories.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon), moduleType: c.module_type }))
+        dbCategories.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon), moduleType: c.module_type, slug: c.slug }))
       );
       setTasks(nextTasks);
       setSubtasks(nextSubtasks);
@@ -269,7 +278,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     const created = await insertCategory(supabase, userId, trimmed, icon, categories.length);
     setCategories((prev) => [
       ...prev,
-      { id: created.id, name: created.name, icon: toIconKey(created.icon), moduleType: created.module_type },
+      { id: created.id, name: created.name, icon: toIconKey(created.icon), moduleType: created.module_type, slug: created.slug },
     ]);
   }
 
@@ -282,7 +291,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     const created = await insertCategoriesFromTemplates(supabase, userId, templates, categories.length);
     setCategories((prev) => [
       ...prev,
-      ...created.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon), moduleType: c.module_type })),
+      ...created.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon), moduleType: c.module_type, slug: c.slug })),
     ]);
   }
 
@@ -301,7 +310,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
     const supabase = createClient();
     await updateCategoryName(supabase, categoryId, trimmed);
-    setCategories((prev) => prev.map((c) => (c.id === categoryId ? { ...c, name: trimmed } : c)));
+    // Optimistik slug güncellemesi — updateCategoryName'in DB'de yaptığı
+    // AYNI slugify kuralı, migration henüz uygulanmadıysa (slug hep null
+    // kalıyor) da zararsız.
+    setCategories((prev) =>
+      prev.map((c) => (c.id === categoryId ? { ...c, name: trimmed, slug: slugifyCategoryName(trimmed) } : c))
+    );
   }
 
   async function changeCategoryIcon(categoryId: string, icon: IconKey) {
@@ -538,7 +552,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
     const recreated = await insertCategoriesFromTemplates(supabase, userId, ONBOARDING_TEMPLATES, 0);
     setCategories(
-      recreated.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon), moduleType: c.module_type }))
+      recreated.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon), moduleType: c.module_type, slug: c.slug }))
     );
   }
 

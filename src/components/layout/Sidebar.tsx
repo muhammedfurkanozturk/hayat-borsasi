@@ -297,7 +297,7 @@ export function Sidebar({ initialCollapsed = false }: { initialCollapsed?: boole
                     </div>
                   ) : (
                     categories.map((category) => {
-                      const href = `/kategori/${category.id}`;
+                      const href = `/kategori/${category.slug ?? category.id}`;
                       return (
                         <SidebarLink
                           key={category.id}

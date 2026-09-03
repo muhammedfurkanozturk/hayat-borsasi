@@ -4,6 +4,7 @@ import { DeltaBadge } from "./DeltaBadge";
 
 export interface CategoryTileData {
   id: string;
+  slug: string | null;
   name: string;
   icon: IconKey;
   score: number;
@@ -13,7 +14,7 @@ export interface CategoryTileData {
 export function CategoryTile({ category }: { category: CategoryTileData }) {
   return (
     <Link
-      href={`/kategori/${category.id}`}
+      href={`/kategori/${category.slug ?? category.id}`}
       className="card-lift flex min-w-0 flex-col items-stretch gap-2.5 rounded-lg border-2 border-border bg-surface p-2.5 shadow-card hover:border-accent/70 hover:bg-surface-hover sm:flex-row"
     >
       <div className="flex min-w-0 items-stretch gap-2.5 sm:flex-1">

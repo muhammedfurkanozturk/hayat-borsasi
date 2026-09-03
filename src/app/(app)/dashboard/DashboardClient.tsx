@@ -52,6 +52,7 @@ export default function Home() {
 
     return {
       id: category.id,
+      slug: category.slug,
       name: category.name,
       icon: category.icon,
       score,
