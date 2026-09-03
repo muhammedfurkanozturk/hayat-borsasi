@@ -6,7 +6,6 @@ import { createClient } from "./client";
 import {
   deleteAllCategoriesForUser,
   deleteCategoryById,
-  fetchCategories,
   insertCategoriesFromTemplates,
   insertCategory,
   toIconKey,
@@ -15,7 +14,6 @@ import {
 } from "./categories";
 import {
   deleteTaskById,
-  fetchTasks,
   insertTask,
   swapTaskSortOrder,
   updateHabitCost,
@@ -23,24 +21,9 @@ import {
   updateTaskWeight,
   type TaskFrequency,
 } from "./tasks";
-import {
-  daysAgoIso,
-  fetchTaskLogs,
-  fetchYesterdayTaskLogs,
-  getOrCreateTodayEntry,
-  toggleTaskLog,
-  updateDailyNote,
-} from "./daily";
-import { fetchDailyHistory } from "./history";
-import {
-  deleteSubtaskById,
-  fetchSubtaskLogs,
-  fetchSubtasks,
-  fetchYesterdaySubtaskLogs,
-  insertSubtask,
-  toggleSubtaskLog,
-} from "./subtasks";
-import { calculateScore } from "@/lib/scoring";
+import { toggleTaskLog, updateDailyNote } from "./daily";
+import { deleteSubtaskById, insertSubtask, toggleSubtaskLog } from "./subtasks";
+import { loadInitialAppData, type Category, type InitialAppData, type Subtask, type Task } from "./app-data-loader";
 import {
   ONBOARDING_TEMPLATES,
   slugifyCategoryName,
@@ -52,42 +35,7 @@ import {
 export type { TaskFrequency } from "./tasks";
 export type { HabitCostPeriod } from "@hayat-borsasi/shared";
 export type { CategoryModuleType, DailyScorePoint } from "@hayat-borsasi/shared";
-
-export interface Category {
-  id: string;
-  name: string;
-  icon: IconKey;
-  moduleType: CategoryModuleType;
-  // "eksikler" envanteri madde 9 — okunur kategori URL'leri. Migration
-  // henüz uygulanmamışsa null, linkler bu durumda id'ye düşer.
-  slug: string | null;
-}
-
-export interface Task {
-  id: string;
-  categoryId: string;
-  title: string;
-  weight: number;
-  frequency: TaskFrequency;
-  completed: boolean;
-  completedAt: string | null;
-  subtaskTotal: number;
-  subtaskCompleted: number;
-  isHabitBreak: boolean;
-  habitCostAmount: number | null;
-  habitCostPeriod: HabitCostPeriod | null;
-  createdAt: string;
-  // 2026-08-28: sort_order migration'ı henüz uygulanmamışsa null kalır —
-  // moveTaskUp/moveTaskDown bu durumda no-op olup konsola uyarı yazar.
-  sortOrder: number | null;
-}
-
-export interface Subtask {
-  id: string;
-  taskId: string;
-  title: string;
-  completed: boolean;
-}
+export type { Category, InitialAppData, Subtask, Task } from "./app-data-loader";
 
 interface AppDataContextValue {
   loading: boolean;
@@ -122,16 +70,29 @@ interface AppDataContextValue {
 
 const AppDataContext = createContext<AppDataContextValue | null>(null);
 
-export function AppDataProvider({ children }: { children: ReactNode }) {
-  const [loading, setLoading] = useState(true);
+// "eksikler" envanteri madde 9 — initialData verilmişse (server component'te
+// önceden çekilmiş, bkz. app-data-loader.ts + (app)/layout.tsx) state ONUNLA
+// başlıyor ve loading baştan false — mount-effect'te tekrar client'tan
+// çekilmiyor, "kısa yükleniyor anı" ortadan kalkıyor. initialData
+// verilmezse (server fetch başarısız olduysa ya da bu Provider başka bir
+// yerde initialData olmadan kullanılıyorsa) ESKİ davranışa (mount'ta
+// client-side fetch) sorunsuzca düşülüyor — geriye dönük uyumlu.
+export function AppDataProvider({
+  children,
+  initialData,
+}: {
+  children: ReactNode;
+  initialData?: InitialAppData | null;
+}) {
+  const [loading, setLoading] = useState(!initialData);
   const [userId, setUserId] = useState<string | null>(null);
-  const [dailyEntryId, setDailyEntryId] = useState<string | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [subtasks, setSubtasks] = useState<Subtask[]>([]);
-  const [dailyNote, setDailyNoteState] = useState("");
-  const [previousDailyScore, setPreviousDailyScore] = useState(0);
-  const [dailyHistory, setDailyHistory] = useState<DailyScorePoint[]>([]);
+  const [dailyEntryId, setDailyEntryId] = useState<string | null>(initialData?.dailyEntryId ?? null);
+  const [categories, setCategories] = useState<Category[]>(initialData?.categories ?? []);
+  const [tasks, setTasks] = useState<Task[]>(initialData?.tasks ?? []);
+  const [subtasks, setSubtasks] = useState<Subtask[]>(initialData?.subtasks ?? []);
+  const [dailyNote, setDailyNoteState] = useState(initialData?.dailyNote ?? "");
+  const [previousDailyScore, setPreviousDailyScore] = useState(initialData?.previousDailyScore ?? 0);
+  const [dailyHistory, setDailyHistory] = useState(initialData?.dailyHistory ?? []);
 
   const load = useCallback(async () => {
     try {
@@ -139,119 +100,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+      if (!user) return;
 
-      if (!user) {
-        return;
-      }
-
-      const [dbCategories, dbTasks, dbSubtasks, entry] = await Promise.all([
-        fetchCategories(supabase),
-        fetchTasks(supabase),
-        fetchSubtasks(supabase),
-        getOrCreateTodayEntry(supabase, user.id),
-      ]);
-
-      const [logs, subtaskLogs, yesterdayLogs, yesterdaySubtaskLogs, historyEntries] = await Promise.all([
-        fetchTaskLogs(supabase, entry.id),
-        fetchSubtaskLogs(supabase, entry.id),
-        fetchYesterdayTaskLogs(supabase, user.id),
-        fetchYesterdaySubtaskLogs(supabase, user.id),
-        fetchDailyHistory(supabase, user.id, daysAgoIso(365)),
-      ]);
-      const logByTaskId = new Map(logs.map((log) => [log.task_id, log]));
-      const subtaskLogById = new Map(subtaskLogs.map((log) => [log.subtask_id, log]));
-      const yesterdayLogByTaskId = new Map(yesterdayLogs.map((log) => [log.task_id, log]));
-      const yesterdaySubtaskLogById = new Map(yesterdaySubtaskLogs.map((log) => [log.subtask_id, log]));
-
-      const subtasksByTaskId = new Map<string, typeof dbSubtasks>();
-      for (const s of dbSubtasks) {
-        const arr = subtasksByTaskId.get(s.task_id) ?? [];
-        arr.push(s);
-        subtasksByTaskId.set(s.task_id, arr);
-      }
-
-      const nextSubtasks: Subtask[] = dbSubtasks.map((s) => ({
-        id: s.id,
-        taskId: s.task_id,
-        title: s.title,
-        completed: subtaskLogById.get(s.id)?.completed ?? false,
-      }));
-
-      const nextTasks = dbTasks.map((t) => {
-        const log = logByTaskId.get(t.id);
-        const taskSubtasks = subtasksByTaskId.get(t.id) ?? [];
-        const subtaskCompleted = taskSubtasks.filter((s) => subtaskLogById.get(s.id)?.completed).length;
-        return {
-          id: t.id,
-          categoryId: t.category_id,
-          title: t.title,
-          weight: t.weight,
-          frequency: t.frequency,
-          completed: log?.completed ?? false,
-          completedAt: log?.completed_at ?? null,
-          subtaskTotal: taskSubtasks.length,
-          subtaskCompleted,
-          isHabitBreak: t.is_habit_break,
-          habitCostAmount: t.habit_cost_amount,
-          habitCostPeriod: t.habit_cost_period,
-          createdAt: t.created_at,
-          sortOrder: t.sort_order ?? null,
-        };
-      });
-
-      // Aynı görev ağırlıklarını, dünkü işaretlenme durumuyla eşleştirip
-      // "önceki güne göre değişim" (delta) için bir kıyas noktası çıkarıyoruz.
-      const yesterdayWeighted = dbTasks.map((t) => {
-        const taskSubtasks = subtasksByTaskId.get(t.id) ?? [];
-        const subtaskCompleted = taskSubtasks.filter((s) => yesterdaySubtaskLogById.get(s.id)?.completed).length;
-        return {
-          weight: t.weight,
-          completed: yesterdayLogByTaskId.get(t.id)?.completed ?? false,
-          categoryId: t.category_id,
-          subtaskTotal: taskSubtasks.length,
-          subtaskCompleted,
-        };
-      });
-
-      // Geçmişteki her gün için, o günün işaretlenme kayıtlarını güncel görev/
-      // kategori tanımlarıyla eşleştirip o günün skorunu çıkarıyoruz (bugünkü
-      // satır da dahil, ama bugünkü canlı değeri kullanan bileşenler bunu
-      // kendi anlık hesaplamalarıyla ezip günceller — bkz. Dashboard/ScoreChart).
-      const nextDailyHistory: DailyScorePoint[] = historyEntries.map((day) => {
-        const dayTaskLogById = new Map(day.daily_task_logs.map((l) => [l.task_id, l.completed]));
-        const dayCompletedSubtaskIds = new Set(
-          day.daily_subtask_logs.filter((l) => l.completed).map((l) => l.subtask_id)
-        );
-
-        const dayWeighted = dbTasks.map((t) => {
-          const taskSubtasks = subtasksByTaskId.get(t.id) ?? [];
-          return {
-            weight: t.weight,
-            completed: dayTaskLogById.get(t.id) ?? false,
-            categoryId: t.category_id,
-            subtaskTotal: taskSubtasks.length,
-            subtaskCompleted: taskSubtasks.filter((s) => dayCompletedSubtaskIds.has(s.id)).length,
-          };
-        });
-
-        const categoryScores: Record<string, number> = {};
-        for (const category of dbCategories) {
-          categoryScores[category.id] = calculateScore(dayWeighted.filter((t) => t.categoryId === category.id));
-        }
-
-        return { date: day.date, overallScore: calculateScore(dayWeighted), categoryScores };
-      });
-
+      const data = await loadInitialAppData(supabase, user.id);
       setUserId(user.id);
-      setCategories(
-        dbCategories.map((c) => ({ id: c.id, name: c.name, icon: toIconKey(c.icon), moduleType: c.module_type, slug: c.slug }))
-      );
-      setTasks(nextTasks);
-      setSubtasks(nextSubtasks);
-      setPreviousDailyScore(calculateScore(yesterdayWeighted));
-      setDailyHistory(nextDailyHistory);
-      setDailyEntryId(entry.id);
-      setDailyNoteState(entry.note_text);
+      setCategories(data.categories);
+      setTasks(data.tasks);
+      setSubtasks(data.subtasks);
+      setPreviousDailyScore(data.previousDailyScore);
+      setDailyHistory(data.dailyHistory);
+      setDailyEntryId(data.dailyEntryId);
+      setDailyNoteState(data.dailyNote);
     } catch (error) {
       // Supabase oturum/ağ hataları (örn. saat kaymasından kaynaklanan
       // "JWT issued at future") burada sessizce loglanıyor — yakalanmazsa
@@ -262,12 +121,25 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // userId, initialData ile başlatılmışsa mount effect'inden ÖNCE bilinmiyor
+  // (server component'te session var ama userId ayrıca dönmedi) — mutation
+  // fonksiyonları (addCategory vb.) userId'ye ihtiyaç duyduğu için, initialData
+  // varken de gerçek kullanıcıyı sessizce (ekstra veri çekmeden, sadece
+  // auth.getUser() ile) çözüyoruz.
   useEffect(() => {
-    // Mount'ta kullanıcının verisini çekiyoruz — effect'in React tarafından
-    // önerilen meşru kullanımlarından biri (dış sistemden veri çekme).
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    load();
-  }, [load]);
+    if (!initialData) {
+      // Mount'ta kullanıcının verisini çekiyoruz — effect'in React tarafından
+      // önerilen meşru kullanımlarından biri (dış sistemden veri çekme).
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      load();
+      return;
+    }
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function addCategory(name: string, icon: IconKey) {
     if (!userId) return;
