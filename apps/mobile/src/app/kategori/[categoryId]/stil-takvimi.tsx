@@ -1,7 +1,13 @@
-import { ComingSoonScreen } from "@/components/coming-soon-screen";
+import { useGlobalSearchParams } from "expo-router";
+import { ScrollView } from "react-native";
+import { StyleCalendarPanel } from "@/components/style-calendar-panel";
 
-// Web'in react-day-picker tabanlı stil takvimi — mobilde henüz yok
-// (bkz. CLAUDE.md bölüm 9).
+// Stil & Giyim'in Seviye 2 "Takvim" route'u (bkz. CLAUDE.md bölüm 9).
 export default function StilTakvimiTab() {
-  return <ComingSoonScreen label="Stil Takvimi" icon="calendar-month" backgroundColor="#0a0a0a" textColor="#a1a1aa" />;
+  const { categoryId } = useGlobalSearchParams<{ categoryId: string }>();
+  return (
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }} style={{ backgroundColor: "#0a0a0a" }}>
+      <StyleCalendarPanel categoryId={categoryId} />
+    </ScrollView>
+  );
 }
