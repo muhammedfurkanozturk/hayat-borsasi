@@ -33,6 +33,7 @@ import {
 } from "@hayat-borsasi/shared";
 import { PlusIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
+import { useTheme } from "@/lib/theme-context";
 import { BodyMeasurementPanel } from "./sport/BodyMeasurementPanel";
 import { DayColumn } from "./sport/DayColumn";
 import { ExerciseCard } from "./sport/ExerciseCard";
@@ -48,6 +49,30 @@ import { WorkoutTemplates } from "./sport/WorkoutTemplates";
 import { WorkoutVolumeChart } from "./sport/WorkoutVolumeChart";
 
 const DAY_LABELS = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
+
+// Kritik düzeltme (2026-09-03, kullanıcı bulgusu) — bu kategori önceden
+// SABİT koyu zemine kilitliydi, genel site teması (açık/koyu) değiştirilince
+// hiç uymuyordu. Freeletics kimliği (mavi vurgu + kalın/italik tipografi)
+// KORUNUYOR — sadece zemin/kart/metin çifti artık genel site temasına göre
+// iki varyant arasında seçiliyor, vurgu rengi (#2e7dff) HER İKİ modda da aynı.
+const SPORT_PALETTE: Record<"dark" | "light", Record<string, string>> = {
+  dark: {
+    "--sport-bg": "#141414",
+    "--sport-surface": "#1c1c1c",
+    "--sport-elevated": "#242424",
+    "--sport-border": "rgba(255,255,255,0.12)",
+    "--sport-text": "#f5f5f5",
+    "--sport-muted": "#9a9a9a",
+  },
+  light: {
+    "--sport-bg": "#f2f2f2",
+    "--sport-surface": "#ffffff",
+    "--sport-elevated": "#ffffff",
+    "--sport-border": "rgba(0,0,0,0.12)",
+    "--sport-text": "#141414",
+    "--sport-muted": "#6b6b6b",
+  },
+};
 const HISTORY_WINDOW_DAYS = 365;
 const MEASUREMENT_WINDOW_DAYS = 90;
 const DEFAULT_TEMPLATE_SETS = 3;
@@ -70,6 +95,7 @@ function getCurrentWeekDates(): { date: string; label: string; isToday: boolean 
 }
 
 export function WorkoutLogPanel({ categoryId }: { categoryId: string }) {
+  const { theme } = useTheme();
   const [tab, setTab] = useState<SportTab>("workout");
   const [exercises, setExercises] = useState<DbExercise[]>([]);
   const [sets, setSets] = useState<DbWorkoutSet[]>([]);
@@ -411,16 +437,13 @@ export function WorkoutLogPanel({ categoryId }: { categoryId: string }) {
       style={
         {
           "--sport-accent": "#2e7dff",
-          "--sport-bg": "#141414",
-          "--sport-surface": "#1c1c1c",
-          "--sport-elevated": "#242424",
-          "--sport-border": "rgba(255,255,255,0.12)",
-          "--sport-text": "#f5f5f5",
-          "--sport-muted": "#9a9a9a",
+          ...SPORT_PALETTE[theme],
           // Bu kapsam içinde render edilen paylaşılan bileşenler
           // (SegmentedControl, Modal vb.) site-geneli --accent'i doğrudan
           // kullanıyor — modülün kendi bakır yerine mavi kimliğini
           // taşıması için genel token'lar da burada yerel olarak eziliyor.
+          // Vurgu (mavi) tema fark etmeksizin SABİT — sadece zemin/kart
+          // çifti (SPORT_PALETTE) genel site temasına göre değişiyor.
           "--accent": "#2e7dff",
           "--accent-soft": "#2e7dff26",
           "--accent-foreground": "#ffffff",
