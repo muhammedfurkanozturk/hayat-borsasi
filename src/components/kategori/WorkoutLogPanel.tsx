@@ -41,6 +41,7 @@ import { ExerciseProgressChart } from "./sport/ExerciseProgressChart";
 import { MuscleMapPanel } from "./sport/MuscleMapPanel";
 import { MuscleVolumeDistribution } from "./sport/MuscleVolumeDistribution";
 import { OneRepMaxCalculator } from "./sport/OneRepMaxCalculator";
+import { SportHeroBanner } from "./sport/SportHeroBanner";
 import { SportTabBar, type SportTab } from "./sport/SportTabBar";
 import { WorkoutBuilderPanel } from "./sport/WorkoutBuilderPanel";
 import { WorkoutTemplates } from "./sport/WorkoutTemplates";
@@ -426,6 +427,7 @@ export function WorkoutLogPanel({ categoryId }: { categoryId: string }) {
         } as React.CSSProperties
       }
     >
+      <SportHeroBanner />
       <SportTabBar value={tab} onChange={setTab} />
 
       {tab === "workout" && (
