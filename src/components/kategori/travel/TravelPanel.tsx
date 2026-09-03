@@ -11,6 +11,7 @@ import {
 } from "@hayat-borsasi/shared";
 import { ArrowLeftIcon, GlobeIcon, TrashIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
+import { useTheme } from "@/lib/theme-context";
 import { countryHasProvinces } from "@/lib/travel/world-provinces";
 import { WorldMapView } from "./WorldMapView";
 
@@ -61,16 +62,35 @@ const TURKEY_REF_CODE = "TR";
 // (sahte fotoğraf/puan/özet) BİLİNÇLİ OLARAK ALINMADI — projenin "gerçek
 // veri, uydurma yok" ilkesine aykırı, mevcut gerçek not+ziyaret sistemi
 // korundu.
-const TRAVEL_SCOPE = {
-  "--background": "#0d1b2a",
-  "--background-elevated": "#152a3d",
-  "--surface": "#152a3d",
-  "--surface-hover": "#1c3650",
-  "--border": "rgba(255,255,255,0.12)",
-  "--border-soft": "rgba(255,255,255,0.08)",
-  "--foreground": "#f2f6f9",
-  "--muted": "#8fa3b3",
-  "--muted-soft": "#5f7385",
+// Kritik düzeltme (2026-09-03, kullanıcı bulgusu) — koyu gece-lacivert
+// zemin ÖNCEDEN site temasından bağımsız SABİT koyuydu, artık genel site
+// temasına göre açık/koyu arasında geçiş yapıyor. Teal vurgu (#2dd4bf) ve
+// pembe-kırmızı "ziyareti kaldır" rengi (#e91e63) HER İKİ modda da aynı.
+const TRAVEL_PALETTE: Record<"dark" | "light", Record<string, string>> = {
+  dark: {
+    "--background": "#0d1b2a",
+    "--background-elevated": "#152a3d",
+    "--surface": "#152a3d",
+    "--surface-hover": "#1c3650",
+    "--border": "rgba(255,255,255,0.12)",
+    "--border-soft": "rgba(255,255,255,0.08)",
+    "--foreground": "#f2f6f9",
+    "--muted": "#8fa3b3",
+    "--muted-soft": "#5f7385",
+  },
+  light: {
+    "--background": "#f4f8fa",
+    "--background-elevated": "#ffffff",
+    "--surface": "#ffffff",
+    "--surface-hover": "#eaf1f4",
+    "--border": "#d7e3e8",
+    "--border-soft": "#e6eef1",
+    "--foreground": "#0d1b2a",
+    "--muted": "#5f7385",
+    "--muted-soft": "#8fa3b3",
+  },
+};
+const TRAVEL_ACCENT: React.CSSProperties = {
   "--accent": "#2dd4bf",
   "--accent-soft": "#2dd4bf26",
   "--accent-foreground": "#04201c",
@@ -88,6 +108,8 @@ type SelectedVisit = { level: "country" | "province"; refCode: string; name: str
 // oluşturma (Level 4), Seyahat Pasaportu kartı ve temalı bucket list'ler
 // ayrı bölümler olarak eklenecek (bkz. CLAUDE.md, kullanıcı onaylı iş sırası).
 export function TravelPanel({ categoryId }: { categoryId: string }) {
+  const { theme } = useTheme();
+  const travelScope = { ...TRAVEL_PALETTE[theme], ...TRAVEL_ACCENT } as React.CSSProperties;
   const [visits, setVisits] = useState<DbTravelVisit[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -274,7 +296,7 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
     view === "world" ? "Bir ülkeye tıkla, gezdiysen işaretle." : "Bir bölgeye tıkla, gezdiysen işaretle.";
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5" style={TRAVEL_SCOPE}>
+    <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5" style={travelScope}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           {view !== "world" && (
