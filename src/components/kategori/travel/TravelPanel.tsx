@@ -11,6 +11,7 @@ import {
 } from "@hayat-borsasi/shared";
 import { ArrowLeftIcon, GlobeIcon, TrashIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
+import { countryHasProvinces } from "@/lib/travel/world-provinces";
 import { WorldMapView } from "./WorldMapView";
 
 // TurkeyMapView'ın topojson'ı (~100KB) sadece kullanıcı gerçekten
@@ -25,24 +26,41 @@ const TurkeyMapView = dynamic(
   { ssr: false, loading: () => <div className="flex h-64 items-center justify-center text-xs text-muted">Harita yükleniyor...</div> }
 );
 
+// Aynı sebeple, Türkiye dışındaki ülkeler için GENEL il/eyalet drill-down'ı
+// da (world-provinces-topo.json, ~1.4MB) ayrı bir chunk'a bölündü.
+const CountryProvinceMapView = dynamic(
+  () => import("./CountryProvinceMapView").then((m) => m.CountryProvinceMapView),
+  { ssr: false, loading: () => <div className="flex h-64 items-center justify-center text-xs text-muted">Harita yükleniyor...</div> }
+);
+
 const TURKEY_REF_CODE = "TR";
 
 // Kategori Bazlı Tasarım Farklılaştırma — Bölüm 8 (Seyahat → Polarsteps
 // dili, 2026-09-02, TURUN SON BÖLÜMÜ). Koyu/gece-haritası zemin (site
 // temasından bağımsız) + Polarsteps'in teal/pembe-kırmızı ikilisi — aynı
 // kök-token-ezme yöntemi (bkz. Robinhood/Miro bölümlerindeki açıklama).
-// **Bilinçli, dokümante edilmiş kapsam kararı:** orijinal spec bu bölümün
-// düz SVG haritayı (react-simple-maps, Bölüm A/B'de zaten kurulup uçtan
-// uca test edilmiş, gerçek DB yazımıyla doğrulanmış) 3D döndürülebilir bir
-// küreye (react-globe.gl/three-globe, WebGL) çevirmesini istiyordu — bu,
-// yeni ağır bir bağımlılık + click-to-select etkileşim modelinin SIFIRDAN
-// yeniden kurulması + performans/bundle-size riski taşıyan, mevcut
-// test edilmiş Seviye 1-2 drill-down'ı bozma riski yüksek bir mimari
-// değişiklik. Bu turda SADECE renk/kompozisyon kimliği uygulandı (bu
-// dosyadaki token-ezme + WorldMapView/TurkeyMapView'ın zaten var olan
-// `--accent` kullanımı sayesinde otomatik teal'e dönüyor) — 3D küre
-// geçişi kasıtlı olarak ERTELENDİ, kullanıcı onayı/talebiyle ayrı,
-// odaklı bir turda ele alınmalı (WebGL/performans testi gerektirir).
+// **Bilinçli, dokümante edilmiş kapsam kararı (2026-09-02, ilk uygulama):**
+// orijinal spec bu bölümün düz SVG haritayı 3D döndürülebilir bir küreye
+// (react-globe.gl/three-globe, WebGL) çevirmesini istiyordu — bu, yeni ağır
+// bir bağımlılık + click-to-select etkileşim modelinin SIFIRDAN yeniden
+// kurulması + performans/bundle-size riski taşıyan büyük bir mimari
+// değişiklikti, o turda SADECE renk/kompozisyon kimliği uygulanıp 3D küre
+// ERTELENDİ. **2026-09-03'te kullanıcının kendi referans projesinden
+// ("dunya-app-1") esinlenerek gerçek bir "zoom/uç" etkileşimi eklendi**
+// (bkz. WorldMapView.tsx'teki `computeFlyTo`) — WebGL/3D küre değil, 2D
+// SVG üzerinde d3-geo bounds hesabıyla seçilen ülkeye akıcı bir şekilde
+// yakınlaşan react-simple-maps `ZoomableGroup` (bkz. altındaki not: gerçek
+// bir WebGL küresi hâlâ ERTELENMİŞ durumda, bu sadece 2D'de "içine uçma"
+// hissi veriyor — kullanıcı referans projesinin (D3 + zoom, aslında o da
+// 2D) gerçek tekniğiyle birebir aynı yaklaşım). Aynı oturumda, Türkiye
+// dışındaki ülkeler için de GENEL bir il/eyalet drill-down'ı eklendi (bkz.
+// CountryProvinceMapView.tsx + world-provinces.ts) — Natural Earth'ün 10m
+// admin-1 verisi mapshaper ile ~1.4MB'a sıkıştırılıp bundle'landı (canlı
+// 40MB fetch YAPILMIYOR, Türkiye'nin topojson'ıyla AYNI önceden-işleme
+// yöntemi). Kullanıcının referans projesindeki uydurma "şehir kartı"
+// (sahte fotoğraf/puan/özet) BİLİNÇLİ OLARAK ALINMADI — projenin "gerçek
+// veri, uydurma yok" ilkesine aykırı, mevcut gerçek not+ziyaret sistemi
+// korundu.
 const TRAVEL_SCOPE = {
   "--background": "#0d1b2a",
   "--background-elevated": "#152a3d",
@@ -73,7 +91,8 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
   const [visits, setVisits] = useState<DbTravelVisit[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [view, setView] = useState<"world" | "turkey">("world");
+  const [view, setView] = useState<"world" | "turkey" | "provinces">("world");
+  const [provinceCountry, setProvinceCountry] = useState<{ refCode: string; name: string } | null>(null);
   const [selected, setSelected] = useState<SelectedVisit | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
   const [savingNote, setSavingNote] = useState(false);
@@ -116,9 +135,20 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
   );
   const visitedRefCodes = useMemo(() => new Set(countryVisits.map((v) => v.ref_code)), [countryVisits]);
   const visitedPlateCodes = useMemo(
-    () => new Set(provinceVisits.map((v) => Number(v.ref_code.replace("TR-", "")))),
+    () =>
+      new Set(
+        provinceVisits.filter((v) => v.ref_code.startsWith("TR-")).map((v) => Number(v.ref_code.replace("TR-", "")))
+      ),
     [provinceVisits]
   );
+  // Türkiye dışındaki ülkelerin il/eyalet ref_code'ları ISO 3166-2 formatı
+  // ({ISO2}-{kod}, ör. "US-CA") — o anki provinceCountry'ye ait olanları
+  // önek eşleşmesiyle filtreliyoruz.
+  const visitedGenericProvinceRefCodes = useMemo(() => {
+    if (!provinceCountry) return new Set<string>();
+    const prefix = `${provinceCountry.refCode}-`;
+    return new Set(provinceVisits.filter((v) => v.ref_code.startsWith(prefix)).map((v) => v.ref_code));
+  }, [provinceVisits, provinceCountry]);
   const levelVisits = selected?.level === "province" ? provinceVisits : countryVisits;
   const selectedVisit = selected ? levelVisits.find((v) => v.ref_code === selected.refCode) ?? null : null;
 
@@ -144,8 +174,26 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
     }
   }
 
-  async function handleToggleProvince(plateCode: number, name: string) {
+  async function handleToggleTurkeyProvince(plateCode: number, name: string) {
     const refCode = turkeyProvinceRefCode(plateCode);
+    const existing = provinceVisits.find((v) => v.ref_code === refCode) ?? null;
+    setSelected({ level: "province", refCode, name });
+    setNoteDraft(existing?.note ?? "");
+    if (existing) return;
+    const supabase = createClient();
+    try {
+      await toggleTravelVisit(supabase, categoryId, "province", refCode, null);
+      await load();
+    } catch (err) {
+      console.error("Ziyaret güncellenemedi:", err);
+    }
+  }
+
+  // Türkiye dışındaki ülkelerin il/eyalet drill-down'ı (CountryProvinceMapView)
+  // için genel yol — mantık handleToggleTurkeyProvince ile birebir aynı,
+  // sadece ref_code doğrudan ISO 3166-2 string'i olarak geliyor (plaka kodu
+  // gibi ayrı bir sayısal kodlama gerekmiyor).
+  async function handleToggleGenericProvince(refCode: string, name: string) {
     const existing = provinceVisits.find((v) => v.ref_code === refCode) ?? null;
     setSelected({ level: "province", refCode, name });
     setNoteDraft(existing?.note ?? "");
@@ -176,8 +224,15 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
     setView("turkey");
   }
 
+  function handleOpenCountryProvinces(refCode: string, name: string) {
+    setSelected(null);
+    setProvinceCountry({ refCode, name });
+    setView("provinces");
+  }
+
   function handleBackToWorld() {
     setSelected(null);
+    setProvinceCountry(null);
     setView("world");
   }
 
@@ -212,12 +267,17 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
   }
 
   const isTurkeySelected = selected?.level === "country" && selected.refCode === TURKEY_REF_CODE;
+  const canDrillIntoSelected =
+    selected?.level === "country" && selected.refCode !== TURKEY_REF_CODE && countryHasProvinces(selected.refCode);
+  const viewTitle = view === "world" ? "Dünya" : view === "turkey" ? "Türkiye" : (provinceCountry?.name ?? "Bölgeler");
+  const viewSubtitle =
+    view === "world" ? "Bir ülkeye tıkla, gezdiysen işaretle." : "Bir bölgeye tıkla, gezdiysen işaretle.";
 
   return (
     <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5" style={TRAVEL_SCOPE}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          {view === "turkey" && (
+          {view !== "world" && (
             <button
               type="button"
               onClick={handleBackToWorld}
@@ -229,21 +289,35 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
           )}
           <GlobeIcon width={16} height={16} className="text-accent" />
           <div>
-            <h2 className="text-sm font-medium text-foreground">{view === "world" ? "Dünya" : "Türkiye"}</h2>
-            <p className="text-xs text-muted">
-              {view === "world" ? "Bir ülkeye tıkla, gezdiysen işaretle." : "Bir ile tıkla, gezdiysen işaretle."}
-            </p>
+            <h2 className="text-sm font-medium text-foreground">{viewTitle}</h2>
+            <p className="text-xs text-muted">{viewSubtitle}</p>
           </div>
         </div>
         <span className="rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent">
-          {view === "world" ? `${countryVisits.length} ülke ziyaret edildi` : `${provinceVisits.length}/81 il ziyaret edildi`}
+          {view === "world"
+            ? `${countryVisits.length} ülke ziyaret edildi`
+            : view === "turkey"
+              ? `${provinceVisits.filter((v) => v.ref_code.startsWith("TR-")).length}/81 il ziyaret edildi`
+              : `${visitedGenericProvinceRefCodes.size} bölge ziyaret edildi`}
         </span>
       </div>
 
-      {view === "world" ? (
-        <WorldMapView visitedRefCodes={visitedRefCodes} onToggleCountry={handleToggleCountry} />
-      ) : (
-        <TurkeyMapView visitedPlateCodes={visitedPlateCodes} onToggleProvince={handleToggleProvince} />
+      {view === "world" && (
+        <WorldMapView
+          visitedRefCodes={visitedRefCodes}
+          focusedRefCode={selected?.level === "country" ? selected.refCode : null}
+          onToggleCountry={handleToggleCountry}
+        />
+      )}
+      {view === "turkey" && (
+        <TurkeyMapView visitedPlateCodes={visitedPlateCodes} onToggleProvince={handleToggleTurkeyProvince} />
+      )}
+      {view === "provinces" && provinceCountry && (
+        <CountryProvinceMapView
+          countryIso2={provinceCountry.refCode}
+          visitedRefCodes={visitedGenericProvinceRefCodes}
+          onToggleProvince={handleToggleGenericProvince}
+        />
       )}
 
       {selected && (
@@ -255,11 +329,13 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
             </button>
           </div>
 
-          {/* Türkiye'nin il haritasına geçiş — kullanıcı testinde bulundu:
-              bu buton eskiden not kutusunun ALTINDAYDI, uzun dünya haritası
-              kartının altında kalınca fark edilmiyordu ("sadece turunu
-              oluyor, ileri gidemiyorum" geri bildirimi). Şimdi panelin en
-              üstünde, tek başına belirgin bir birincil buton. */}
+          {/* Bir ülkenin il/eyalet haritasına geçiş — kullanıcı testinde
+              bulundu: bu buton eskiden not kutusunun ALTINDAYDI, uzun dünya
+              haritası kartının altında kalınca fark edilmiyordu ("sadece
+              turunu oluyor, ileri gidemiyorum" geri bildirimi). Şimdi
+              panelin en üstünde, tek başına belirgin bir birincil buton.
+              Türkiye kendi özel yoluna, diğer ülkeler (bölge verisi varsa)
+              GENEL CountryProvinceMapView yoluna gidiyor. */}
           {isTurkeySelected && (
             <button
               type="button"
@@ -267,6 +343,15 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
               className="btn flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground hover:opacity-90"
             >
               Türkiye İllerini Gör →
+            </button>
+          )}
+          {canDrillIntoSelected && (
+            <button
+              type="button"
+              onClick={() => handleOpenCountryProvinces(selected.refCode, selected.name)}
+              className="btn flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground hover:opacity-90"
+            >
+              {selected.name} Bölgelerini Gör →
             </button>
           )}
 
@@ -278,7 +363,7 @@ export function TravelPanel({ categoryId }: { categoryId: string }) {
               <textarea
                 value={noteDraft}
                 onChange={(e) => setNoteDraft(e.target.value)}
-                placeholder={selected.level === "country" ? "Bu ülkeyle ilgili kısa bir not (opsiyonel)..." : "Bu ille ilgili kısa bir not (opsiyonel)..."}
+                placeholder={selected.level === "country" ? "Bu ülkeyle ilgili kısa bir not (opsiyonel)..." : "Bu bölgeyle ilgili kısa bir not (opsiyonel)..."}
                 rows={2}
                 className="w-full resize-none rounded-lg border-2 border-muted/25 bg-background-elevated px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted focus:border-accent/50"
               />
