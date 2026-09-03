@@ -15,6 +15,7 @@ import {
 } from "@hayat-borsasi/shared";
 import { CameraIcon, CheckIcon, PlusIcon, TrashIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
+import { useTheme } from "@/lib/theme-context";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Modal } from "@/components/ui/Modal";
 import { FocusCameraMonitor } from "./focus/FocusCameraMonitor";
@@ -22,6 +23,36 @@ import { FocusMascot } from "./focus/FocusMascot";
 import { FocusProgressPanel } from "./focus/FocusProgressPanel";
 import { FocusQA } from "./focus/FocusQA";
 import { FocusSoundPlayer } from "./focus/FocusSoundPlayer";
+
+// Kritik düzeltme (2026-09-03, kullanıcı bulgusu) — KategoriClient.tsx'teki
+// FOCUS_CHECKLIST_PALETTE ile AYNI zemin çifti (Duolingo'nun beyaz/koyu-gri
+// modu) — ayrı dosyada küçük bir tekrar, iki component arasında tuhaf bir
+// import bağımlılığı kurmaktan kaçınmak için bilinçli. Mavi vurgu
+// (#1cb0f6) HER İKİ modda da aynı.
+const FOCUS_PALETTE: Record<"dark" | "light", Record<string, string>> = {
+  dark: {
+    "--background": "#1c1c1e",
+    "--background-elevated": "#2c2c2e",
+    "--surface": "#2c2c2e",
+    "--surface-hover": "#3a3a3c",
+    "--border": "rgba(255,255,255,0.12)",
+    "--border-soft": "rgba(255,255,255,0.08)",
+    "--foreground": "#f5f5f5",
+    "--muted": "#a0a0a5",
+    "--muted-soft": "#6e6e73",
+  },
+  light: {
+    "--background": "#ffffff",
+    "--background-elevated": "#f7f7f7",
+    "--surface": "#ffffff",
+    "--surface-hover": "#f0f0f0",
+    "--border": "#e5e5e5",
+    "--border-soft": "#eeeeee",
+    "--foreground": "#3c3c3c",
+    "--muted": "#777777",
+    "--muted-soft": "#afafaf",
+  },
+};
 
 const FOCUS_MINUTES = 25;
 const FOCUS_SECONDS = FOCUS_MINUTES * 60;
@@ -43,6 +74,7 @@ function formatTime(totalSeconds: number) {
 type Mode = "pomodoro" | "stopwatch";
 
 export function PomodoroTimer({ categoryId }: { categoryId: string }) {
+  const { theme } = useTheme();
   const [mode, setMode] = useState<Mode>("pomodoro");
 
   const [secondsLeft, setSecondsLeft] = useState(FOCUS_SECONDS);
@@ -235,22 +267,16 @@ export function PomodoroTimer({ categoryId }: { categoryId: string }) {
 
   return (
     // Kategori Bazlı Tasarım Farklılaştırma — Bölüm 5 (Duolingo dili,
-    // 2026-09-02): beyaz zemin + mavi vurgu (Checklist'in turuncusundan
-    // BİLİNÇLİ OLARAK farklı — Duolingo'da alt-özelliğe göre renk değişiyor).
-    // Aynı kök-token-ezme yöntemi (bkz. Finans/Robinhood bölümü) kullanıldı.
+    // 2026-09-02): mavi vurgu (Checklist'in turuncusundan BİLİNÇLİ OLARAK
+    // farklı — Duolingo'da alt-özelliğe göre renk değişiyor). Aynı kök-
+    // token-ezme yöntemi (bkz. Finans/Robinhood bölümü) kullanıldı. Zemin
+    // artık FOCUS_PALETTE ile genel site temasına göre değişiyor (kritik
+    // düzeltme, 2026-09-03) — önceden SABİT beyazdı.
     <div
       className="relative flex flex-col gap-4 overflow-hidden rounded-lg border border-border bg-surface shadow-card p-5"
       style={
         {
-          "--background": "#ffffff",
-          "--background-elevated": "#f7f7f7",
-          "--surface": "#ffffff",
-          "--surface-hover": "#f0f0f0",
-          "--border": "#e5e5e5",
-          "--border-soft": "#eeeeee",
-          "--foreground": "#3c3c3c",
-          "--muted": "#777777",
-          "--muted-soft": "#afafaf",
+          ...FOCUS_PALETTE[theme],
           "--accent": "#1cb0f6",
           "--accent-soft": "#1cb0f626",
           "--accent-foreground": "#ffffff",

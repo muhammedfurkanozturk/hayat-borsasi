@@ -25,11 +25,72 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { calculateScore } from "@/lib/scoring";
 import { todayIso } from "@/lib/supabase/daily";
 import { useAppData } from "@/lib/supabase/app-data-context";
+import { useTheme } from "@/lib/theme-context";
 
 const YEARLY_WINDOW_DAYS = 365;
 
+// Kritik düzeltme (2026-09-03, kullanıcı bulgusu) — Finans & Portföy
+// (Robinhood kimliği) önceden SABİT saf siyah zemine kilitliydi, genel site
+// teması (açık/koyu) değiştirilince hiç uymuyordu. Neon yeşil vurgu
+// (#00e676) HER İKİ modda da AYNI kalıyor — sadece zemin/kart/metin çifti
+// artık site temasına göre iki varyant arasında seçiliyor.
+const FINANCE_PALETTE: Record<"dark" | "light", Record<string, string>> = {
+  dark: {
+    "--background": "#000000",
+    "--background-elevated": "#0a0a0a",
+    "--surface": "#0a0a0a",
+    "--surface-hover": "#141414",
+    "--border": "rgba(255,255,255,0.12)",
+    "--border-soft": "rgba(255,255,255,0.08)",
+    "--foreground": "#ffffff",
+    "--muted": "#8e8e93",
+    "--muted-soft": "#636366",
+  },
+  light: {
+    "--background": "#ffffff",
+    "--background-elevated": "#f7f7f7",
+    "--surface": "#f7f7f7",
+    "--surface-hover": "#eeeeee",
+    "--border": "rgba(0,0,0,0.12)",
+    "--border-soft": "rgba(0,0,0,0.08)",
+    "--foreground": "#000000",
+    "--muted": "#6e6e73",
+    "--muted-soft": "#8e8e93",
+  },
+};
+
+// "eksikler" envanteri madde 5 — Duolingo kimliği (Ders & Odaklanma
+// Checklist) de aynı şekilde SABİT beyaz zemine kilitliydi. Duolingo'nun
+// gerçek koyu modu da var (koyu gri, saf siyah değil) — turuncu vurgu
+// (#ff9600) HER İKİ modda da aynı.
+const FOCUS_CHECKLIST_PALETTE: Record<"dark" | "light", Record<string, string>> = {
+  dark: {
+    "--background": "#1c1c1e",
+    "--background-elevated": "#2c2c2e",
+    "--surface": "#2c2c2e",
+    "--surface-hover": "#3a3a3c",
+    "--border": "rgba(255,255,255,0.12)",
+    "--border-soft": "rgba(255,255,255,0.08)",
+    "--foreground": "#f5f5f5",
+    "--muted": "#a0a0a5",
+    "--muted-soft": "#6e6e73",
+  },
+  light: {
+    "--background": "#ffffff",
+    "--background-elevated": "#f7f7f7",
+    "--surface": "#ffffff",
+    "--surface-hover": "#f0f0f0",
+    "--border": "#e5e5e5",
+    "--border-soft": "#eeeeee",
+    "--foreground": "#3c3c3c",
+    "--muted": "#777777",
+    "--muted-soft": "#afafaf",
+  },
+};
+
 export default function KategoriPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { theme } = useTheme();
   const [financeTab, setFinanceTab] = useState<FinanceTab>("markets");
 
   const { categories, tasks: allTasks, dailyHistory, removeTask } = useAppData();
@@ -117,22 +178,14 @@ export default function KategoriPage() {
           // 2026-09-02). Duolingo'nun sabit TEK vurgu yerine alt-özelliğe
           // göre değişen doygun renk fikri — Checklist turuncu, Pomodoro
           // (PomodoroTimer.tsx'in kendi scope'u) mavi, İlerleme raporu mor.
-          // Zemin BEYAZ'a zorlanıyor (site temasından bağımsız — Freeletics/
-          // Robinhood'un koyuya zorlanmasının tersi yönü, aynı "kategori
-          // kendi kimliğini taşır" ilkesi).
+          // Kritik düzeltme (2026-09-03) — zemin ÖNCEDEN beyaza sabitliydi,
+          // artık genel site temasına göre (FOCUS_CHECKLIST_PALETTE) iki
+          // varyant arasında seçiliyor, turuncu vurgu HER İKİ modda da aynı.
           <div
             className="rounded-lg bg-[color:var(--background)] p-4 sm:p-5"
             style={
               {
-                "--background": "#ffffff",
-                "--background-elevated": "#f7f7f7",
-                "--surface": "#ffffff",
-                "--surface-hover": "#f0f0f0",
-                "--border": "#e5e5e5",
-                "--border-soft": "#eeeeee",
-                "--foreground": "#3c3c3c",
-                "--muted": "#777777",
-                "--muted-soft": "#afafaf",
+                ...FOCUS_CHECKLIST_PALETTE[theme],
                 "--accent": "#ff9600",
                 "--accent-soft": "#ff960026",
                 "--accent-foreground": "#ffffff",
@@ -168,15 +221,10 @@ export default function KategoriPage() {
             className="flex flex-col gap-4 rounded-lg bg-[color:var(--background)] p-4 sm:p-5"
             style={
               {
-                "--background": "#000000",
-                "--background-elevated": "#0a0a0a",
-                "--surface": "#0a0a0a",
-                "--surface-hover": "#141414",
-                "--border": "rgba(255,255,255,0.12)",
-                "--border-soft": "rgba(255,255,255,0.08)",
-                "--foreground": "#ffffff",
-                "--muted": "#8e8e93",
-                "--muted-soft": "#636366",
+                ...FINANCE_PALETTE[theme],
+                // Vurgu (neon yeşil) + negatif (kırmızı) tema fark etmeksizin
+                // SABİT — sadece zemin/kart çifti (FINANCE_PALETTE) site
+                // temasına göre değişiyor.
                 "--accent": "#00e676",
                 "--accent-soft": "#00e67626",
                 "--accent-foreground": "#000000",
