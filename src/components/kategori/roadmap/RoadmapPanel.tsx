@@ -21,6 +21,7 @@ import {
 } from "@hayat-borsasi/shared";
 import { ArrowLeftIcon, BookmarkIcon, CalendarIcon, PlusIcon, TrashIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
+import { useTheme } from "@/lib/theme-context";
 import { Modal } from "@/components/ui/Modal";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { layoutRoadmapSpine, type SpineSide } from "./layout";
@@ -31,21 +32,38 @@ import { RoadmapTemplatePicker } from "./RoadmapTemplatePicker";
 const nodeTypes = { roadmapNode: RoadmapNode };
 
 // Kategori Bazlı Tasarım Farklılaştırma — Bölüm 6 (Yol Haritam → Miro dili,
-// 2026-09-02). "Dijital beyaz tahta" hissi için zemin site temasından
-// bağımsız olarak AÇIK (Freeletics/Robinhood'un koyuya zorlanmasının
-// tersi yönü, Duolingo/Bölüm 5'teki gibi) — aynı kök-token-ezme yöntemi
-// (bkz. Robinhood bölümündeki açıklama). Vurgu, roadmap.sh'in bakır/
+// 2026-09-02). "Dijital beyaz tahta" hissi — vurgu, roadmap.sh'in bakır/
 // turuncusu yerine Miro'nun pastel leylak tonuna çevrildi.
-const ROADMAP_WHITEBOARD_SCOPE = {
-  "--background": "#fafafa",
-  "--background-elevated": "#f4f4f5",
-  "--surface": "#ffffff",
-  "--surface-hover": "#f0f0f1",
-  "--border": "#e4e4e7",
-  "--border-soft": "#ececef",
-  "--foreground": "#27272a",
-  "--muted": "#71717a",
-  "--muted-soft": "#a1a1aa",
+// Kritik düzeltme (2026-09-03, kullanıcı bulgusu): zemin ÖNCEDEN site
+// temasından bağımsız SABİT açıktı — artık genel site temasına göre
+// açık/koyu "tahta" arasında geçiş yapıyor, sadece leylak vurgu HER İKİ
+// modda da aynı kalıyor (bkz. Finans/Robinhood bölümündeki AYNI kök-
+// token-ezme yöntemi).
+const ROADMAP_PALETTE: Record<"dark" | "light", Record<string, string>> = {
+  dark: {
+    "--background": "#1a1a1d",
+    "--background-elevated": "#232326",
+    "--surface": "#1f1f23",
+    "--surface-hover": "#28282c",
+    "--border": "rgba(255,255,255,0.12)",
+    "--border-soft": "rgba(255,255,255,0.08)",
+    "--foreground": "#f4f4f5",
+    "--muted": "#a1a1aa",
+    "--muted-soft": "#71717a",
+  },
+  light: {
+    "--background": "#fafafa",
+    "--background-elevated": "#f4f4f5",
+    "--surface": "#ffffff",
+    "--surface-hover": "#f0f0f1",
+    "--border": "#e4e4e7",
+    "--border-soft": "#ececef",
+    "--foreground": "#27272a",
+    "--muted": "#71717a",
+    "--muted-soft": "#a1a1aa",
+  },
+};
+const ROADMAP_ACCENT: React.CSSProperties = {
   "--accent": "#a78bfa",
   "--accent-soft": "#a78bfa26",
   "--accent-foreground": "#211a3d",
@@ -57,6 +75,8 @@ const ROADMAP_WHITEBOARD_SCOPE = {
 // katılmıyor (kullanıcı onaylı, bkz. CLAUDE.md) — düğümler bir kereye
 // mahsus kilometre taşı, günlük tekrar eden görev değil.
 export function RoadmapPanel({ categoryId }: { categoryId: string }) {
+  const { theme } = useTheme();
+  const roadmapScope = { ...ROADMAP_PALETTE[theme], ...ROADMAP_ACCENT } as React.CSSProperties;
   const [roadmaps, setRoadmaps] = useState<DbRoadmap[]>([]);
   const [nodes, setNodes] = useState<DbRoadmapNode[]>([]);
   const [loading, setLoading] = useState(true);
@@ -301,7 +321,7 @@ export function RoadmapPanel({ categoryId }: { categoryId: string }) {
       };
     });
     return (
-      <div className="rounded-lg bg-[color:var(--background)] p-4 sm:p-5" style={ROADMAP_WHITEBOARD_SCOPE}>
+      <div className="rounded-lg bg-[color:var(--background)] p-4 sm:p-5" style={roadmapScope}>
         <RoadmapTemplatePicker
           existingRoadmaps={existingRoadmaps}
           onSelectExisting={(roadmapId) => {
@@ -353,7 +373,7 @@ export function RoadmapPanel({ categoryId }: { categoryId: string }) {
   return (
     <div
       className="flex flex-col gap-4 rounded-lg border border-border bg-surface shadow-card p-5"
-      style={ROADMAP_WHITEBOARD_SCOPE}
+      style={roadmapScope}
     >
       {/* 2026-08-26: harita ağacı açıldığında çıkış yolu yoktu (kullanıcı
           bulgusu). İlk versiyon Dashboard'a giden bir Link'ti — ama bu
