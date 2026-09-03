@@ -52,7 +52,7 @@ export function StyleCalendarPanel({
         <span className="font-mono text-xs font-semibold" style={{ color: "var(--stil-accent)" }}>
           05
         </span>
-        <h2 className="font-serif text-lg font-medium italic tracking-tight text-foreground">Stil Takvimi</h2>
+        <h2 className="font-[family-name:var(--font-playfair)] text-lg font-medium italic tracking-tight text-foreground">Stil Takvimi</h2>
       </div>
 
       {outfits.length === 0 ? (

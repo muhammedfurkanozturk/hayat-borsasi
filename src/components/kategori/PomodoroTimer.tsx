@@ -246,6 +246,12 @@ export function PomodoroTimer({ categoryId }: { categoryId: string }) {
           "--accent": "#1cb0f6",
           "--accent-soft": "#1cb0f626",
           "--accent-foreground": "#ffffff",
+          // Ders & Odaklanma "eksikler" envanteri madde 5 — Duolingo'nun
+          // yuvarlak/dostane tipografisi (Nunito, self-hosted). font-mono
+          // kullanan sayaç rakamları (aşağıda) Tailwind'in kendi
+          // font-family'sini ezdiği için bu miras alınan değerden
+          // ETKİLENMİYOR, sadece geri kalan tüm metin Nunito'ya geçiyor.
+          fontFamily: "var(--font-nunito)",
         } as React.CSSProperties
       }
     >

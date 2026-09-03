@@ -404,7 +404,7 @@ export function WardrobePanel({ categoryId }: { categoryId: string }) {
           <span className="font-mono text-xs font-semibold" style={{ color: "var(--stil-accent)" }}>
             01
           </span>
-          <h2 className="font-serif text-lg font-medium italic tracking-tight text-foreground">Gardırobum</h2>
+          <h2 className="font-[family-name:var(--font-playfair)] text-lg font-medium italic tracking-tight text-foreground">Gardırobum</h2>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -500,7 +500,7 @@ export function WardrobePanel({ categoryId }: { categoryId: string }) {
             <span className="font-mono text-xs font-semibold" style={{ color: "var(--stil-accent)" }}>
               02
             </span>
-            <h2 className="font-serif text-lg font-medium italic tracking-tight text-foreground">Kombin Oluştur</h2>
+            <h2 className="font-[family-name:var(--font-playfair)] text-lg font-medium italic tracking-tight text-foreground">Kombin Oluştur</h2>
           </div>
           <OutfitBuilder
             id={BUILDER_ID}
@@ -532,7 +532,7 @@ export function WardrobePanel({ categoryId }: { categoryId: string }) {
             <span className="font-mono text-xs font-semibold" style={{ color: "var(--stil-accent)" }}>
               03
             </span>
-            <h2 className="font-serif text-lg font-medium italic tracking-tight text-foreground">Kombinlerim</h2>
+            <h2 className="font-[family-name:var(--font-playfair)] text-lg font-medium italic tracking-tight text-foreground">Kombinlerim</h2>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {outfits.map((outfit) => (

@@ -133,6 +133,10 @@ export default function KategoriPage() {
                 "--accent": "#ff9600",
                 "--accent-soft": "#ff960026",
                 "--accent-foreground": "#ffffff",
+                // "eksikler" envanteri madde 5 — PomodoroTimer.tsx'teki AYNI
+                // Nunito uygulaması, Checklist'in kendi beyaz/turuncu
+                // scope'unda da tutarlı olsun diye.
+                fontFamily: "var(--font-nunito)",
               } as React.CSSProperties
             }
           >

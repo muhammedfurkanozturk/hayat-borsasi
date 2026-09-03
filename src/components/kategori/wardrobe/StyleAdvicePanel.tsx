@@ -90,7 +90,7 @@ export function StyleAdvicePanel({
           <span className="font-mono text-xs font-semibold" style={{ color: "var(--stil-accent)" }}>
             04
           </span>
-          <h2 className="font-serif text-lg font-medium italic tracking-tight text-foreground">AI Stilist</h2>
+          <h2 className="font-[family-name:var(--font-playfair)] text-lg font-medium italic tracking-tight text-foreground">AI Stilist</h2>
         </div>
         <button
           type="button"

@@ -1,6 +1,71 @@
 @import "tailwindcss";
 
+/* Stil & Giyim (editoryal serif) + Ders & Odaklanma (yuvarlak/dostane) —
+   2026-09-03, kullanıcı onaylı, "eksikler" envanteri madde 5. IBM Plex'in
+   next/font/local + `declarations` deseni yerine burada ELLE @font-face
+   yazıldı çünkü next/font/local'ın herkese açık tipi src başına
+   unicode-range VERMİYOR (sadece path/weight/style) — tek dosya kullanılsa
+   Türkçe'ye özgü ğ/ş (latin-ext bloğu, U+0100+) render olmazdı ya da a/ç/ö/ü
+   gibi temel Latin harfleri (latin bloğu, U+0000-00FF) kaybolurdu. Google'ın
+   kendi CSS'inin yaptığı gibi HER İKİ alt küme de ayrı unicode-range'lerle
+   tanımlanıp tarayıcının doğru dosyayı glyph başına seçmesine bırakıldı —
+   IBM Plex'teki AYNI "self-hosted, sıfır çalışma-anı ağ bağımlılığı"
+   ilkesiyle, dosyalar fonts.gstatic.com'dan bir kerelik indirilip
+   src/app/fonts/'a commit edildi (build/dev sırasında dış ağa hiç istek
+   atılmıyor). İkisi de değişken (variable) font — tek dosya geniş bir
+   ağırlık aralığını (`font-weight: A B`) kapsıyor. */
+@font-face {
+  font-family: "Playfair Display Var";
+  font-style: italic;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("./fonts/playfair-italic-var-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2122, U+2191, U+2193, U+2212, U+2215;
+}
+@font-face {
+  font-family: "Playfair Display Var";
+  font-style: italic;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("./fonts/playfair-italic-var-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Playfair Display Var";
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("./fonts/playfair-normal-var-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2122, U+2191, U+2193, U+2212, U+2215;
+}
+@font-face {
+  font-family: "Playfair Display Var";
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("./fonts/playfair-normal-var-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Nunito Var";
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("./fonts/nunito-var-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2122, U+2191, U+2193, U+2212, U+2215;
+}
+@font-face {
+  font-family: "Nunito Var";
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("./fonts/nunito-var-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 :root {
+  --font-playfair: "Playfair Display Var", Georgia, serif;
+  --font-nunito: "Nunito Var", ui-rounded, "Segoe UI", sans-serif;
   /* DESIGN.md — koyu zemin neredeyse aynı ruhta kalıyor (nötr neredeyse-
      siyah, lacivert değil), asıl kimlik değişikliği vurgu renginde.
      İlk revizyonda surface/border zemine göre çok yakındı, kutucuklar
