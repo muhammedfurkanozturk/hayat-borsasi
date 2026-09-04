@@ -13,7 +13,7 @@ with normalized as (
     id,
     user_id,
     lower(
-      translate(name, 'çÇğĞıİöÖşŞüÜ', 'ccggiiooссuu')
+      translate(name, 'çÇğĞıİöÖşŞüÜ', 'ccggiioossuu')
     ) as base_lower
   from public.categories
 ),
