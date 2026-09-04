@@ -16,6 +16,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { ThemedText } from "@/components/themed-text";
 import { supabase } from "@/lib/supabase/client";
+import { useThemeMode } from "@/lib/theme-context";
 
 // Kategori Bazlı Tasarım Farklılaştırma (bkz. CLAUDE.md bölüm 9) — Spor &
 // Vücut'un mobil karşılığı. Freeletics'in koyu/mavi/bold-italik kimliği
@@ -37,15 +38,36 @@ import { supabase } from "@/lib/supabase/client";
 // her biri kendi verisini kendi yüklüyor (nutrition'ın su/oruç/kalori
 // route'larıyla AYNI desen). `WorkoutPanel` sarmalayıcısı KALDIRILDI, sadece
 // bu üç alt bileşen + paylaşılan sabitler export ediliyor.
-export const FREELETICS = {
-  bg: "#141414",
-  surface: "#1c1c1c",
-  elevated: "#242424",
-  border: "rgba(255,255,255,0.12)",
-  text: "#f5f5f5",
-  muted: "#9a9a9a",
-  accent: "#2e7dff",
-};
+// Kritik düzeltme (2026-09-03, madde 3 — "eksikler" envanteri) — bu sabit
+// SABİT/tek moda kilitliydi (web'in bu turda düzeltilen 6 kategorisiyle
+// AYNI hata sınıfı, bkz. CLAUDE.md "Kategori Temaları" kritik düzeltme
+// notu). Artık bir FONKSİYON — çağıran component kendi `useThemeMode()`
+// değerine göre `getFreeleticsTheme(theme === "dark")` çağırıp sonucu
+// `FREELETICS` adıyla YEREL bir değişkene atıyor (aşağıdaki 3 component'in
+// hepsinde aynı desen) — bu sayede dosya içindeki onlarca `FREELETICS.x`
+// kullanım noktasının HİÇBİRİNE dokunmadan (gölgeleme/shadowing) doğru
+// temaya otomatik geçiyor. Mavi vurgu (#2e7dff) HER İKİ modda da aynı.
+export function getFreeleticsTheme(isDark: boolean) {
+  return isDark
+    ? {
+        bg: "#141414",
+        surface: "#1c1c1c",
+        elevated: "#242424",
+        border: "rgba(255,255,255,0.12)",
+        text: "#f5f5f5",
+        muted: "#9a9a9a",
+        accent: "#2e7dff",
+      }
+    : {
+        bg: "#f2f2f2",
+        surface: "#ffffff",
+        elevated: "#ffffff",
+        border: "rgba(0,0,0,0.12)",
+        text: "#141414",
+        muted: "#6b6b6b",
+        accent: "#2e7dff",
+      };
+}
 
 function epley(weight: number, reps: number): number {
   return weight * (1 + reps / 30);
@@ -77,6 +99,7 @@ export function LogTab({
   onDeleteExercise: (id: string) => void;
   onSetsChange: (updater: (prev: DbWorkoutSet[]) => DbWorkoutSet[]) => void;
 }) {
+  const FREELETICS = getFreeleticsTheme(useThemeMode().theme === "dark");
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
   const [reps, setReps] = useState("10");
   const [weight, setWeight] = useState("");
@@ -217,6 +240,7 @@ export function LogTab({
 }
 
 export function LibraryTab({ existingNames, onAdd }: { existingNames: string[]; onAdd: (name: string) => void }) {
+  const FREELETICS = getFreeleticsTheme(useThemeMode().theme === "dark");
   const [query, setQuery] = useState("");
   const [muscle, setMuscle] = useState<MuscleGroup | null>(null);
 
@@ -275,6 +299,7 @@ export function LibraryTab({ existingNames, onAdd }: { existingNames: string[]; 
 }
 
 export function CalcTab() {
+  const FREELETICS = getFreeleticsTheme(useThemeMode().theme === "dark");
   const [weight, setWeight] = useState("");
   const [reps, setReps] = useState("");
   const weightNum = Number(weight);

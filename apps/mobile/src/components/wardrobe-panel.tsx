@@ -6,6 +6,7 @@ import { decode } from "base64-arraybuffer";
 import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, View } from "react-native";
 import { ThemedText } from "@/components/themed-text";
 import { supabase } from "@/lib/supabase/client";
+import { useThemeMode } from "@/lib/theme-context";
 
 // Kategori Bazlı Tasarım Farklılaştırma (bkz. CLAUDE.md bölüm 9) — Stil &
 // Giyim'in mobil karşılığı, Bölüm 1: SADECE Gardırobum. Whering'in neon
@@ -21,10 +22,25 @@ import { supabase } from "@/lib/supabase/client";
 // desen — `fetch().blob()` RN'de local file:// URI'lerde güvenilir değil).
 export const WHERING_LIME = "#d4ff00";
 export const WHERING_LIME_TEXT = "#141400";
+
+// Kritik düzeltme (2026-09-03, madde 3) — zemin sabit/tek moda kilitliydi
+// (web'in bu turda düzeltilen 6 kategorisiyle AYNI hata sınıfı, bkz.
+// CLAUDE.md "Kategori Temaları" kritik düzeltme notu). Artık genel site
+// temasına göre (koyu/açık) iki varyant arasında geçiş yapıyor — lime
+// vurgu (WHERING_LIME) HER İKİ modda da aynı. Style & Giyim'in diğer
+// dosyaları (outfit-gallery-panel.tsx, style-calendar-panel.tsx) da bu
+// fonksiyonu yeniden kullanıyor.
+export function getWheringTheme(isDark: boolean) {
+  return isDark
+    ? { bg: "#0a0a0a", elevated: "#1c1c1c", border: "#2a2a2a", text: "#f5f5f5", muted: "#9a9a9a" }
+    : { bg: "#fafafa", elevated: "#f0f0f0", border: "#e4e4e7", text: "#141414", muted: "#6b6b6b" };
+}
+
 const BUCKET = "clothing-photos";
 const SIGNED_URL_TTL_SECONDS = 3600;
 
 export function WardrobePanel({ categoryId }: { categoryId: string }) {
+  const whering = getWheringTheme(useThemeMode().theme === "dark");
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<DbClothingItem[]>([]);
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
@@ -137,7 +153,7 @@ export function WardrobePanel({ categoryId }: { categoryId: string }) {
 
   if (loading) {
     return (
-      <View style={[styles.container, { backgroundColor: "#0a0a0a" }]}>
+      <View style={[styles.container, { backgroundColor: whering.bg }]}>
         <ActivityIndicator color={WHERING_LIME} />
       </View>
     );
@@ -146,7 +162,7 @@ export function WardrobePanel({ categoryId }: { categoryId: string }) {
   return (
     <View style={[styles.container, { backgroundColor: "#0a0a0a" }]}>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-        <ThemedText style={{ fontSize: 15, fontWeight: "700", color: "#f5f5f5", fontStyle: "italic" }}>01 Gardırobum</ThemedText>
+        <ThemedText style={{ fontSize: 15, fontWeight: "700", color: whering.text, fontStyle: "italic" }}>01 Gardırobum</ThemedText>
       </View>
 
       <Pressable onPress={handlePickPhoto} disabled={analyzing} style={[styles.uploadButton, { backgroundColor: WHERING_LIME, opacity: analyzing ? 0.6 : 1 }]}>
@@ -162,7 +178,7 @@ export function WardrobePanel({ categoryId }: { categoryId: string }) {
       {error && <ThemedText style={{ color: "#f87171", fontSize: 12 }}>{error}</ThemedText>}
 
       {items.length === 0 ? (
-        <ThemedText style={{ color: "#9a9a9a", fontSize: 12 }}>Henüz bir parça eklemedin.</ThemedText>
+        <ThemedText style={{ color: whering.muted, fontSize: 12 }}>Henüz bir parça eklemedin.</ThemedText>
       ) : (
         <View style={styles.grid}>
           {items.map((item) => (
@@ -170,11 +186,11 @@ export function WardrobePanel({ categoryId }: { categoryId: string }) {
               {photoUrls[item.id] ? (
                 <Image source={{ uri: photoUrls[item.id] }} style={styles.gridImage} accessibilityLabel={item.ai_label} />
               ) : (
-                <View style={[styles.gridImage, { alignItems: "center", justifyContent: "center", backgroundColor: "#1c1c1c" }]}>
+                <View style={[styles.gridImage, { alignItems: "center", justifyContent: "center", backgroundColor: whering.elevated }]}>
                   <ActivityIndicator size="small" color={WHERING_LIME} />
                 </View>
               )}
-              <ThemedText numberOfLines={1} style={{ color: "#f5f5f5", fontSize: 10, marginTop: 4 }}>
+              <ThemedText numberOfLines={1} style={{ color: whering.text, fontSize: 10, marginTop: 4 }}>
                 {item.ai_label}
               </ThemedText>
             </Pressable>

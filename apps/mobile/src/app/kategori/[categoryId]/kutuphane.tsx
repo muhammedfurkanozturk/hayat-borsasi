@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { fetchExercises, insertExercise, type DbExercise } from "@hayat-borsasi/shared";
 import { useGlobalSearchParams } from "expo-router";
 import { ActivityIndicator, ScrollView, View } from "react-native";
-import { FREELETICS, LibraryTab } from "@/components/workout-panel";
+import { getFreeleticsTheme, LibraryTab } from "@/components/workout-panel";
 import { supabase } from "@/lib/supabase/client";
+import { useThemeMode } from "@/lib/theme-context";
 
 // Spor & Vücut'un Seviye 2 "Kütüphane" route'u (bkz. CLAUDE.md bölüm 9).
 export default function KutuphaneTab() {
+  const FREELETICS = getFreeleticsTheme(useThemeMode().theme === "dark");
   const { categoryId } = useGlobalSearchParams<{ categoryId: string }>();
   const [loading, setLoading] = useState(true);
   const [exercises, setExercises] = useState<DbExercise[]>([]);

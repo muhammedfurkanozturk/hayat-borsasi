@@ -3,6 +3,7 @@ import { ScrollView } from "react-native";
 import { CategoryChecklistPanel } from "@/components/category-checklist-panel";
 import { useTheme } from "@/hooks/use-theme";
 import { useAppData } from "@/lib/app-data-context";
+import { useThemeMode } from "@/lib/theme-context";
 import { MODULE_THEMES } from "./_layout";
 
 // Checklist, tek fiziksel dosya olarak nutrition/style/finance/focus
@@ -12,18 +13,19 @@ import { MODULE_THEMES } from "./_layout";
 // girince header/alt bar Whering'in koyu temasında ama Checklist içeriği
 // beyaz zeminde kalıyordu). `_layout.tsx`'teki AYNI MODULE_THEMES tablosu
 // tekrar kullanılıyor (tek kaynak) — kategori moduleType'ına göre doğru
-// sabit/global temayı seçiyor.
+// themed/global temayı seçiyor (madde 3 kritik düzeltmesi — bkz. _layout.tsx).
 export default function ChecklistTab() {
   const { categoryId } = useGlobalSearchParams<{ categoryId: string }>();
   const { tasks, categories } = useAppData();
   const globalTheme = useTheme();
+  const { theme: themeMode } = useThemeMode();
   const category = categories.find((c) => c.id === categoryId);
   const categoryTasks = tasks.filter((t) => t.categoryId === categoryId);
 
   const moduleTheme = (category && MODULE_THEMES[category.moduleType]) ?? { mode: "global" as const };
   const resolved =
-    moduleTheme.mode === "fixed"
-      ? moduleTheme
+    moduleTheme.mode === "themed"
+      ? { ...(themeMode === "dark" ? moduleTheme.dark : moduleTheme.light), accent: moduleTheme.accent }
       : { bg: globalTheme.background, text: globalTheme.text, muted: globalTheme.textSecondary, accent: globalTheme.accent };
 
   return (

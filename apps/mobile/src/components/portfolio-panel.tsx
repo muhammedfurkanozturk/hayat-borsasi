@@ -14,6 +14,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { ThemedText } from "@/components/themed-text";
 import { supabase } from "@/lib/supabase/client";
+import { useThemeMode } from "@/lib/theme-context";
 
 // Kategori Bazlı Tasarım Farklılaştırma (bkz. CLAUDE.md bölüm 9) — Finans &
 // Portföy'ün mobil karşılığı, Bölüm 1: SADECE Portföy (işlem girişi +
@@ -29,16 +30,36 @@ import { supabase } from "@/lib/supabase/client";
 // tamamen maliyet-bazlı, saf istemci-taraflı hesap) — bu yüzden şimdiden
 // tam işlevsel ve test edilebilir. Canlı fiyat/K-Z gösterimi, o route'lar
 // deploy edildikten sonra ayrı bir turda eklenebilir.
-export const ROBINHOOD = {
-  bg: "#000000",
-  surface: "#0a0a0a",
-  elevated: "#141414",
-  border: "rgba(255,255,255,0.12)",
-  text: "#ffffff",
-  muted: "#8e8e93",
-  accent: "#00e676",
-  negative: "#ff3b30",
-};
+// Kritik düzeltme (2026-09-03, madde 3) — sabit/tek moda kilitliydi, web'in
+// bu turda düzeltilen 6 kategorisiyle AYNI hata sınıfı (bkz. CLAUDE.md
+// "Kategori Temaları" kritik düzeltme notu). Artık `getRobinhoodTheme`
+// fonksiyonu — çağıran component `useThemeMode()`'a göre sonucu YEREL
+// `ROBINHOOD` adıyla gölgeliyor (workout-panel.tsx'teki AYNI desen), dosya
+// içindeki `ROBINHOOD.x` kullanımlarının hiçbirine dokunulmadı. Neon yeşil
+// (#00e676) HER İKİ modda da aynı.
+export function getRobinhoodTheme(isDark: boolean) {
+  return isDark
+    ? {
+        bg: "#000000",
+        surface: "#0a0a0a",
+        elevated: "#141414",
+        border: "rgba(255,255,255,0.12)",
+        text: "#ffffff",
+        muted: "#8e8e93",
+        accent: "#00e676",
+        negative: "#ff3b30",
+      }
+    : {
+        bg: "#ffffff",
+        surface: "#f7f7f7",
+        elevated: "#eeeeee",
+        border: "rgba(0,0,0,0.12)",
+        text: "#000000",
+        muted: "#6e6e73",
+        accent: "#00e676",
+        negative: "#ff3b30",
+      };
+}
 
 const ASSET_TYPES: { value: PortfolioAssetType; label: string }[] = [
   { value: "stock", label: "Hisse" },
@@ -47,6 +68,7 @@ const ASSET_TYPES: { value: PortfolioAssetType; label: string }[] = [
 ];
 
 export function PortfolioPanel({ categoryId }: { categoryId: string }) {
+  const ROBINHOOD = getRobinhoodTheme(useThemeMode().theme === "dark");
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<DbPortfolioTransaction[]>([]);
   const [formOpen, setFormOpen] = useState(false);

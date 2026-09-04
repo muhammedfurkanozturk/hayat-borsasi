@@ -12,8 +12,9 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ActivityIndicator, Alert, Image, Pressable, View } from "react-native";
 import { ThemedText } from "@/components/themed-text";
-import { WHERING_LIME } from "@/components/wardrobe-panel";
+import { getWheringTheme, WHERING_LIME } from "@/components/wardrobe-panel";
 import { supabase } from "@/lib/supabase/client";
+import { useThemeMode } from "@/lib/theme-context";
 
 const BUCKET = "clothing-photos";
 const SIGNED_URL_TTL_SECONDS = 3600;
@@ -28,6 +29,7 @@ const SIGNED_URL_TTL_SECONDS = 3600;
 // Paketleme hâlâ ERTELENMİŞ — sadece zaten kaydedilmiş kombinleri listeleme
 // + "Bugün Giydim" işaretleme taşındı, yeni kombin oluşturma akışı YOK.
 export function OutfitGalleryPanel({ categoryId }: { categoryId: string }) {
+  const whering = getWheringTheme(useThemeMode().theme === "dark");
   const [loading, setLoading] = useState(true);
   const [outfits, setOutfits] = useState<DbOutfit[]>([]);
   const [items, setItems] = useState<DbClothingItem[]>([]);
@@ -102,12 +104,12 @@ export function OutfitGalleryPanel({ categoryId }: { categoryId: string }) {
 
   return (
     <View style={{ gap: 12, padding: 14 }}>
-      <ThemedText style={{ fontSize: 15, fontWeight: "700", color: "#f5f5f5", fontStyle: "italic" }}>
+      <ThemedText style={{ fontSize: 15, fontWeight: "700", color: whering.text, fontStyle: "italic" }}>
         03 Kombinlerim
       </ThemedText>
 
       {outfits.length === 0 ? (
-        <ThemedText style={{ color: "#9a9a9a", fontSize: 12 }}>
+        <ThemedText style={{ color: whering.muted, fontSize: 12 }}>
           {"Henüz kaydedilmiş bir kombinin yok — bu akış mobilde henüz yok, web'de “Kombin Oluştur” ile oluşturduklarınız burada listelenecek."}
         </ThemedText>
       ) : (
@@ -121,7 +123,7 @@ export function OutfitGalleryPanel({ categoryId }: { categoryId: string }) {
               <Pressable
                 key={outfit.id}
                 onLongPress={() => confirmDelete(outfit)}
-                style={{ width: "47%", gap: 8, borderWidth: 1, borderColor: "#2a2a2a", borderRadius: 12, padding: 10, backgroundColor: "#141414" }}
+                style={{ width: "47%", gap: 8, borderWidth: 1, borderColor: whering.border, borderRadius: 12, padding: 10, backgroundColor: whering.elevated }}
               >
                 <View style={{ flexDirection: "row", gap: 4 }}>
                   {outfitItems.slice(0, 4).map((item) =>
@@ -133,7 +135,7 @@ export function OutfitGalleryPanel({ categoryId }: { categoryId: string }) {
                         style={{ flex: 1, aspectRatio: 3 / 4, borderRadius: 8 }}
                       />
                     ) : (
-                      <View key={item.id} style={{ flex: 1, aspectRatio: 3 / 4, borderRadius: 8, backgroundColor: "#1c1c1c" }} />
+                      <View key={item.id} style={{ flex: 1, aspectRatio: 3 / 4, borderRadius: 8, backgroundColor: whering.elevated }} />
                     )
                   )}
                 </View>
@@ -145,16 +147,16 @@ export function OutfitGalleryPanel({ categoryId }: { categoryId: string }) {
                   </View>
                 </View>
                 {outfit.ai_comment ? (
-                  <ThemedText numberOfLines={3} style={{ color: "#9a9a9a", fontSize: 11 }}>
+                  <ThemedText numberOfLines={3} style={{ color: whering.muted, fontSize: 11 }}>
                     {outfit.ai_comment}
                   </ThemedText>
                 ) : null}
                 <Pressable
                   onPress={() => handleMarkWorn(outfit)}
-                  style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4, borderWidth: 1, borderColor: "#2a2a2a", borderRadius: 8, paddingVertical: 7 }}
+                  style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4, borderWidth: 1, borderColor: whering.border, borderRadius: 8, paddingVertical: 7 }}
                 >
-                  <MaterialCommunityIcons name="check" size={12} color="#9a9a9a" />
-                  <ThemedText style={{ color: "#9a9a9a", fontSize: 11, fontWeight: "600" }}>
+                  <MaterialCommunityIcons name="check" size={12} color={whering.muted} />
+                  <ThemedText style={{ color: whering.muted, fontSize: 11, fontWeight: "600" }}>
                     Bugün Giydim{wearCount > 0 ? ` · ${wearCount}` : ""}
                   </ThemedText>
                 </Pressable>

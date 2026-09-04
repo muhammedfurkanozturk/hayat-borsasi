@@ -13,13 +13,15 @@ import {
 } from "@hayat-borsasi/shared";
 import { useGlobalSearchParams } from "expo-router";
 import { ActivityIndicator, ScrollView, View } from "react-native";
-import { FREELETICS, LogTab } from "@/components/workout-panel";
+import { getFreeleticsTheme, LogTab } from "@/components/workout-panel";
 import { supabase } from "@/lib/supabase/client";
+import { useThemeMode } from "@/lib/theme-context";
 
 // Spor & Vücut'un Seviye 2 "Hareketlerim" route'u (bkz. CLAUDE.md bölüm 9)
 // — workout-panel.tsx'teki LogTab'ın kendi verisini kendi yüklediği hali,
 // eskiden paylaşılan WorkoutPanel state'inden geliyordu.
 export default function HareketlerimTab() {
+  const FREELETICS = getFreeleticsTheme(useThemeMode().theme === "dark");
   const { categoryId } = useGlobalSearchParams<{ categoryId: string }>();
   const [loading, setLoading] = useState(true);
   const [exercises, setExercises] = useState<DbExercise[]>([]);

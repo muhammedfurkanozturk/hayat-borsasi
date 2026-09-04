@@ -9,6 +9,21 @@ import { Platform } from 'react-native';
 
 // Web'deki (globals.css) borsa terminali paletiyle eşleşir — koyu tema
 // varsayılan (bkz. CLAUDE.md bölüm 7).
+//
+// Kritik düzeltme (2026-09-03, madde 3 — "eksikler" envanteri): web
+// 2026-08-31'de "Terminal Ledger" tasarım revizyonuyla vurgu rengini
+// camgöbeği/mavi'den bakıra (#d9713a, DESIGN.md — 1867'nin mekanik
+// ticker-tape makinelerinin pirinç/bakır mekanizmasına gönderme)
+// çevirmişti — mobil bu revizyondan HABERSİZ kalmıştı, hem açık
+// (#0071e3, eski Apple mavisi) hem koyu (#0ad1eb, eski camgöbeği) tema
+// hâlâ web'den ÖNCEKİ renklerdeydi. İkisi de web'in `--accent`'iyle
+// (her iki modda da AYNI #d9713a — web'in kendi "tek vurgu rengi"
+// kuralı) eşitlendi. positive/negative zaten web ile birebir aynıydı,
+// dokunulmadı. Kategori bazlı modül renkleri (Freeletics mavisi,
+// Robinhood yeşili vb., bkz. `[categoryId]/_layout.tsx`) AYRI bir
+// sistem — kategori kimliği sabit kalıyor, buradaki değişiklik SADECE
+// genel/kategori-dışı alanları (Dashboard, Kategoriler listesi, Ayarlar
+// vb.) etkiliyor, web'deki ayrımla birebir tutarlı.
 export const Colors = {
   light: {
     text: '#1d1d1f',
@@ -17,7 +32,7 @@ export const Colors = {
     backgroundSelected: '#f0f0f2',
     textSecondary: '#48484c',
     border: '#e8e8ed',
-    accent: '#0071e3',
+    accent: '#d9713a',
     positive: '#16a34a',
     negative: '#dc2626',
   },
@@ -28,7 +43,7 @@ export const Colors = {
     backgroundSelected: '#15191e',
     textSecondary: '#9ba0ab',
     border: '#1a212b',
-    accent: '#0ad1eb',
+    accent: '#d9713a',
     positive: '#36d39f',
     negative: '#f43e5c',
   },

@@ -5,6 +5,7 @@ import { ActivityIndicator, Alert, Pressable, StyleSheet, TextInput, View } from
 import { ThemedText } from "@/components/themed-text";
 import { ALPHA2_TO_TURKISH_NAME } from "@/lib/travel/world-country-codes";
 import { supabase } from "@/lib/supabase/client";
+import { useThemeMode } from "@/lib/theme-context";
 
 // Kategori Bazlı Tasarım Farklılaştırma (bkz. CLAUDE.md bölüm 9) — Seyahat'in
 // mobil karşılığı, SON kategori. Polarsteps'in koyu lacivert + teal/pembe-
@@ -23,16 +24,35 @@ import { supabase } from "@/lib/supabase/client";
 // çökertiyordu).
 // **Bilinçli kapsam dışı bırakılan:** ilçe seviyesi (Level 3) ve "mekan"
 // (Level 4) — sadece ülke (Level 1) ve Türkiye illeri (Level 2) taşındı.
-const POLARSTEPS = {
-  bg: "#0d1b2a",
-  surface: "#152a3d",
-  elevated: "#1c3650",
-  border: "rgba(255,255,255,0.12)",
-  text: "#f2f6f9",
-  muted: "#8fa3b3",
-  accent: "#2dd4bf",
-  negative: "#e91e63",
-};
+// Kritik düzeltme (2026-09-03, madde 3) — sabit/tek moda kilitliydi
+// (web'in bu turda düzeltilen 6 kategorisiyle AYNI hata sınıfı, bkz.
+// CLAUDE.md "Kategori Temaları" kritik düzeltme notu). Artık genel site
+// temasına göre (koyu/açık) iki varyant arasında geçiş yapıyor — teal
+// vurgu (#2dd4bf) ve pembe-kırmızı "ziyareti kaldır" rengi (#e91e63)
+// HER İKİ modda da aynı.
+function getPolarstepsTheme(isDark: boolean) {
+  return isDark
+    ? {
+        bg: "#0d1b2a",
+        surface: "#152a3d",
+        elevated: "#1c3650",
+        border: "rgba(255,255,255,0.12)",
+        text: "#f2f6f9",
+        muted: "#8fa3b3",
+        accent: "#2dd4bf",
+        negative: "#e91e63",
+      }
+    : {
+        bg: "#f4f8fa",
+        surface: "#ffffff",
+        elevated: "#eaf1f4",
+        border: "#d7e3e8",
+        text: "#0d1b2a",
+        muted: "#5f7385",
+        accent: "#2dd4bf",
+        negative: "#e91e63",
+      };
+}
 
 const TURKEY_REF_CODE = "TR";
 
@@ -42,6 +62,7 @@ interface CountryRow {
 }
 
 export function TravelPanel({ categoryId }: { categoryId: string }) {
+  const POLARSTEPS = getPolarstepsTheme(useThemeMode().theme === "dark");
   const [view, setView] = useState<"world" | "turkey">("world");
   const [loading, setLoading] = useState(true);
   const [visits, setVisits] = useState<DbTravelVisit[]>([]);

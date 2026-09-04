@@ -18,6 +18,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { ThemedText } from "@/components/themed-text";
 import { supabase } from "@/lib/supabase/client";
+import { useThemeMode } from "@/lib/theme-context";
 
 // Kategori Bazlı Tasarım Farklılaştırma (bkz. CLAUDE.md bölüm 9) — Yol
 // Haritam'ın mobil karşılığı. Web'de React Flow + Dagre ile görsel bir
@@ -28,20 +29,41 @@ import { supabase } from "@/lib/supabase/client";
 // kimliği (web Bölüm 6) burada da sabit renklerle uygulanıyor — mobil
 // tema sisteminden (useTheme) BAĞIMSIZ, tıpkı web'deki kök-token-ezme
 // scope'unun mobildeki karşılığı.
-const MIRO = {
-  bg: "#fafafa",
-  surface: "#ffffff",
-  elevated: "#f4f4f5",
-  border: "#e4e4e7",
-  text: "#27272a",
-  muted: "#71717a",
-  accent: "#a78bfa",
-  accentSoft: "#a78bfa26",
-  accentFg: "#211a3d",
-  positive: "#16a34a",
-};
+// Kritik düzeltme (2026-09-03, madde 3) — sabit/tek moda kilitliydi
+// (web'in bu turda düzeltilen 6 kategorisiyle AYNI hata sınıfı, bkz.
+// CLAUDE.md "Kategori Temaları" kritik düzeltme notu). Artık genel site
+// temasına göre (koyu/açık) iki varyant arasında geçiş yapıyor — leylak
+// vurgu (#a78bfa) HER İKİ modda da aynı.
+function getMiroTheme(isDark: boolean) {
+  return isDark
+    ? {
+        bg: "#1a1a1d",
+        surface: "#1f1f23",
+        elevated: "#232326",
+        border: "rgba(255,255,255,0.12)",
+        text: "#f4f4f5",
+        muted: "#a1a1aa",
+        accent: "#a78bfa",
+        accentSoft: "#a78bfa26",
+        accentFg: "#211a3d",
+        positive: "#36d39f",
+      }
+    : {
+        bg: "#fafafa",
+        surface: "#ffffff",
+        elevated: "#f4f4f5",
+        border: "#e4e4e7",
+        text: "#27272a",
+        muted: "#71717a",
+        accent: "#a78bfa",
+        accentSoft: "#a78bfa26",
+        accentFg: "#211a3d",
+        positive: "#16a34a",
+      };
+}
 
 export function RoadmapPanel({ categoryId }: { categoryId: string }) {
+  const MIRO = getMiroTheme(useThemeMode().theme === "dark");
   const [loading, setLoading] = useState(true);
   const [roadmaps, setRoadmaps] = useState<DbRoadmap[]>([]);
   const [nodes, setNodes] = useState<DbRoadmapNode[]>([]);

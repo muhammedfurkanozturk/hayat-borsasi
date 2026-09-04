@@ -4,11 +4,20 @@ import { useGlobalSearchParams } from "expo-router";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { ThemedText } from "@/components/themed-text";
 import { supabase } from "@/lib/supabase/client";
+import { useThemeMode } from "@/lib/theme-context";
 
 // nutrition-panel.tsx'teki FastingTab'ın Seviye 2 route'una taşınmış hali
 // (bkz. CLAUDE.md bölüm 9) — mantık DEĞİŞMEDİ, sadece kendi ekranı.
 const YAZIO_TEAL = "#00c896";
 const FASTING_PRESETS = [14, 16, 18, 20];
+
+// Kritik düzeltme (2026-09-03, madde 3) — su.tsx'teki AYNI palet (bkz. o
+// dosyadaki not).
+function getYazioTheme(isDark: boolean) {
+  return isDark
+    ? { bg: "#1c1c1e", text: "#f5f5f5", muted: "#a0a0a5", border: "rgba(255,255,255,0.12)" }
+    : { bg: "#fafafa", text: "#27272a", muted: "#71717a", border: "#e4e4e7" };
+}
 
 function formatDuration(ms: number): string {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
@@ -19,6 +28,8 @@ function formatDuration(ms: number): string {
 }
 
 export default function OrucTab() {
+  const yazio = getYazioTheme(useThemeMode().theme === "dark");
+  const styles = getStyles(yazio);
   const { categoryId } = useGlobalSearchParams<{ categoryId: string }>();
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
@@ -67,7 +78,7 @@ export default function OrucTab() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#fafafa" }}>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: yazio.bg }}>
         <ActivityIndicator color={YAZIO_TEAL} />
       </View>
     );
@@ -75,8 +86,8 @@ export default function OrucTab() {
 
   if (!session) {
     return (
-      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: "#fafafa" }]}>
-        <ThemedText style={{ fontSize: 13, color: "#71717a" }}>Kaç saatlik oruç tutmak istiyorsun?</ThemedText>
+      <ScrollView contentContainerStyle={styles.container}>
+        <ThemedText style={{ fontSize: 13, color: yazio.muted }}>Kaç saatlik oruç tutmak istiyorsun?</ThemedText>
         <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
           {FASTING_PRESETS.map((h) => (
             <Pressable key={h} disabled={starting} onPress={() => handleStart(h)} style={[styles.waterButton, { borderColor: YAZIO_TEAL }]}>
@@ -94,9 +105,9 @@ export default function OrucTab() {
   const progress = Math.min(1, elapsedMs / targetMs);
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: "#fafafa", alignItems: "center" }]}>
-      <ThemedText style={{ fontSize: 12, color: "#71717a" }}>Kalan süre</ThemedText>
-      <ThemedText style={{ fontSize: 34, fontWeight: "800", color: "#27272a", fontVariant: ["tabular-nums"] }}>
+    <ScrollView contentContainerStyle={[styles.container, { alignItems: "center" }]}>
+      <ThemedText style={{ fontSize: 12, color: yazio.muted }}>Kalan süre</ThemedText>
+      <ThemedText style={{ fontSize: 34, fontWeight: "800", color: yazio.text, fontVariant: ["tabular-nums"] }}>
         {formatDuration(remainingMs)}
       </ThemedText>
       <View style={[styles.progressTrack, { width: "100%" }]}>
@@ -109,10 +120,12 @@ export default function OrucTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 20, gap: 14 },
-  progressTrack: { height: 8, borderRadius: 999, backgroundColor: "#e4e4e7", overflow: "hidden", width: "80%" },
-  progressFill: { height: "100%", borderRadius: 999 },
-  waterButton: { flex: 1, borderWidth: 1.5, borderRadius: 10, paddingVertical: 10, alignItems: "center" },
-  primaryButton: { height: 44, borderRadius: 10, alignItems: "center", justifyContent: "center", paddingHorizontal: 20 },
-});
+function getStyles(yazio: ReturnType<typeof getYazioTheme>) {
+  return StyleSheet.create({
+    container: { padding: 20, gap: 14, backgroundColor: yazio.bg },
+    progressTrack: { height: 8, borderRadius: 999, backgroundColor: yazio.border, overflow: "hidden", width: "80%" },
+    progressFill: { height: "100%", borderRadius: 999 },
+    waterButton: { flex: 1, borderWidth: 1.5, borderRadius: 10, paddingVertical: 10, alignItems: "center" },
+    primaryButton: { height: 44, borderRadius: 10, alignItems: "center", justifyContent: "center", paddingHorizontal: 20 },
+  });
+}

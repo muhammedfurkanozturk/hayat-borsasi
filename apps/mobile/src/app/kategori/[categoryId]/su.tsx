@@ -14,6 +14,7 @@ import { useGlobalSearchParams } from "expo-router";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { ThemedText } from "@/components/themed-text";
 import { supabase } from "@/lib/supabase/client";
+import { useThemeMode } from "@/lib/theme-context";
 
 // nutrition-panel.tsx'teki WaterTab'ın Seviye 2 route'una taşınmış hali
 // (bkz. CLAUDE.md bölüm 9) — Supabase/shared mantığı DEĞİŞMEDİ, sadece
@@ -22,7 +23,21 @@ import { supabase } from "@/lib/supabase/client";
 const YAZIO_TEAL = "#00c896";
 const WATER_PRESETS = [200, 330, 500];
 
+// Kritik düzeltme (2026-09-03, madde 3) — zemin sabit/tek moda kilitliydi
+// (bkz. CLAUDE.md "Kategori Temaları" kritik düzeltme notu). Teal vurgu
+// (YAZIO_TEAL) HER İKİ modda da aynı. su.tsx/oruc.tsx/kalori.tsx'te AYNI
+// küçük palet bilinçli olarak tekrarlanıyor (ayrı dosyalar, ortak bir
+// component olmadığı için — PomodoroTimer/KategoriClient'taki AYNI
+// desen).
+function getYazioTheme(isDark: boolean) {
+  return isDark
+    ? { bg: "#1c1c1e", text: "#f5f5f5", muted: "#a0a0a5", border: "rgba(255,255,255,0.12)" }
+    : { bg: "#fafafa", text: "#27272a", muted: "#71717a", border: "#e4e4e7" };
+}
+
 export default function SuTab() {
+  const yazio = getYazioTheme(useThemeMode().theme === "dark");
+  const styles = getStyles(yazio);
   const { categoryId } = useGlobalSearchParams<{ categoryId: string }>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -83,17 +98,17 @@ export default function SuTab() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#fafafa" }}>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: yazio.bg }}>
         <ActivityIndicator color={YAZIO_TEAL} />
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: "#fafafa" }]}>
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.waterRing}>
-        <ThemedText style={{ fontSize: 30, fontWeight: "800", color: "#27272a" }}>{totalMl}</ThemedText>
-        <ThemedText style={{ fontSize: 12, color: "#71717a" }}>/ {goalMl} ml</ThemedText>
+        <ThemedText style={{ fontSize: 30, fontWeight: "800", color: yazio.text }}>{totalMl}</ThemedText>
+        <ThemedText style={{ fontSize: 12, color: yazio.muted }}>/ {goalMl} ml</ThemedText>
         <View style={[styles.progressTrack, { marginTop: 8 }]}>
           <View style={[styles.progressFill, { width: `${progress * 100}%`, backgroundColor: YAZIO_TEAL }]} />
         </View>
@@ -117,11 +132,11 @@ export default function SuTab() {
         )}
         <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
           <Pressable onPress={() => handleSetGoal(Math.max(500, goalMl - 250))}>
-            <MaterialCommunityIcons name="minus-circle-outline" size={18} color="#a1a1aa" />
+            <MaterialCommunityIcons name="minus-circle-outline" size={18} color={yazio.muted} />
           </Pressable>
-          <ThemedText style={{ fontSize: 12, color: "#71717a" }}>Hedef</ThemedText>
+          <ThemedText style={{ fontSize: 12, color: yazio.muted }}>Hedef</ThemedText>
           <Pressable onPress={() => handleSetGoal(goalMl + 250)}>
-            <MaterialCommunityIcons name="plus-circle-outline" size={18} color="#a1a1aa" />
+            <MaterialCommunityIcons name="plus-circle-outline" size={18} color={yazio.muted} />
           </Pressable>
         </View>
       </View>
@@ -129,10 +144,12 @@ export default function SuTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 20, gap: 14 },
-  waterRing: { alignItems: "center", borderWidth: 2, borderColor: "#e4e4e7", borderRadius: 16, paddingVertical: 20 },
-  progressTrack: { height: 8, borderRadius: 999, backgroundColor: "#e4e4e7", overflow: "hidden", width: "80%" },
-  progressFill: { height: "100%", borderRadius: 999 },
-  waterButton: { flex: 1, borderWidth: 1.5, borderRadius: 10, paddingVertical: 10, alignItems: "center" },
-});
+function getStyles(yazio: ReturnType<typeof getYazioTheme>) {
+  return StyleSheet.create({
+    container: { padding: 20, gap: 14, backgroundColor: yazio.bg },
+    waterRing: { alignItems: "center", borderWidth: 2, borderColor: yazio.border, borderRadius: 16, paddingVertical: 20 },
+    progressTrack: { height: 8, borderRadius: 999, backgroundColor: yazio.border, overflow: "hidden", width: "80%" },
+    progressFill: { height: "100%", borderRadius: 999 },
+    waterButton: { flex: 1, borderWidth: 1.5, borderRadius: 10, paddingVertical: 10, alignItems: "center" },
+  });
+}

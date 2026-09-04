@@ -6,6 +6,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { useTheme } from "@/hooks/use-theme";
 import { useAppData, type Category } from "@/lib/app-data-context";
+import { useThemeMode } from "@/lib/theme-context";
 
 // Seviye 2 — kategori-içi navigasyon (bkz. CLAUDE.md bölüm 9, "Mobil
 // Navigasyon Mimarisi" kararı). (app) grubunun DIŞINDA, kökte ayrı bir
@@ -16,26 +17,69 @@ import { useAppData, type Category } from "@/lib/app-data-context";
 // MODULE_TABS/MODULE_THEMES tablolarından okuyor.
 type FeatherIconName = keyof typeof Feather.glyphMap;
 type TabConfig = { name: string; title: string; icon: FeatherIconName; comingSoon?: boolean };
-export type FixedTheme = { mode: "fixed"; bg: string; text: string; muted: string; accent: string };
+type ThemeVariant = { bg: string; text: string; muted: string };
+// Kritik düzeltme (2026-09-03, madde 3 — "eksikler" envanteri): "fixed" mod
+// zemini genel site temasından (açık/koyu) BAĞIMSIZ SABİT tutuyordu — web'in
+// bu turda düzeltilen 6 kategorisiyle AYNI hata sınıfı (bkz. CLAUDE.md
+// "Kategori Temaları" kritik düzeltme notu). "themed" modu bunun yerini
+// alıyor: kategori KİMLİĞİ (accent) sabit kalıyor, zemin genel site
+// temasına göre `dark`/`light` arasında geçiş yapıyor — web'deki
+// "kimlik sabit, tema genel anahtara uyar" kuralının mobildeki karşılığı.
+export type ThemedCategoryTheme = { mode: "themed"; accent: string; dark: ThemeVariant; light: ThemeVariant };
 export type GlobalTheme = { mode: "global" };
 
-// Her kategorinin kendi sabit renk paleti zaten mobil panellerinde var
-// (bkz. nutrition-panel.tsx/workout-panel.tsx/vb.'nin kendi sabitleri) —
-// burada TEKRAR TANIMLANMIYOR, aynı hex değerleri kullanılıyor ki Seviye 2
+// Her kategorinin kendi renk paleti zaten mobil panellerinde var (bkz.
+// nutrition-panel.tsx/workout-panel.tsx/vb.'nin kendi get*Theme
+// fonksiyonları) — burada AYNI hex değerleri tekrarlanıyor ki Seviye 2
 // header'ı + alt bar, panelin kendi içeriğiyle birebir tutarlı olsun.
 // **habit istisna:** HabitTrackerPanel diğer 7'nin aksine sabit bir kimlik
 // KULLANMIYOR (her kart kendi rengini task.id hash'inden alıyor, panel
 // global açık/koyu temayı takip ediyor) — bu yüzden "global" modu var,
 // header de aynı şekilde cihazın temasını takip ediyor.
-export const MODULE_THEMES: Partial<Record<Category["moduleType"], FixedTheme | GlobalTheme>> = {
-  nutrition: { mode: "fixed", bg: "#fafafa", text: "#27272a", muted: "#71717a", accent: "#00c896" },
-  sport: { mode: "fixed", bg: "#141414", text: "#f5f5f5", muted: "#9a9a9a", accent: "#2e7dff" },
-  style: { mode: "fixed", bg: "#0a0a0a", text: "#f5f5f5", muted: "#a1a1aa", accent: "#d4ff00" },
-  finance: { mode: "fixed", bg: "#000000", text: "#ffffff", muted: "#8e8e93", accent: "#00e676" },
-  focus: { mode: "fixed", bg: "#ffffff", text: "#27272a", muted: "#71717a", accent: "#1cb0f6" },
-  digital: { mode: "fixed", bg: "#fafafa", text: "#27272a", muted: "#71717a", accent: "#a78bfa" },
+export const MODULE_THEMES: Partial<Record<Category["moduleType"], ThemedCategoryTheme | GlobalTheme>> = {
+  nutrition: {
+    mode: "themed",
+    accent: "#00c896",
+    dark: { bg: "#1c1c1e", text: "#f5f5f5", muted: "#a0a0a5" },
+    light: { bg: "#fafafa", text: "#27272a", muted: "#71717a" },
+  },
+  sport: {
+    mode: "themed",
+    accent: "#2e7dff",
+    dark: { bg: "#141414", text: "#f5f5f5", muted: "#9a9a9a" },
+    light: { bg: "#f2f2f2", text: "#141414", muted: "#6b6b6b" },
+  },
+  style: {
+    mode: "themed",
+    accent: "#d4ff00",
+    dark: { bg: "#0a0a0a", text: "#f5f5f5", muted: "#9a9a9a" },
+    light: { bg: "#fafafa", text: "#141414", muted: "#6b6b6b" },
+  },
+  finance: {
+    mode: "themed",
+    accent: "#00e676",
+    dark: { bg: "#000000", text: "#ffffff", muted: "#8e8e93" },
+    light: { bg: "#ffffff", text: "#000000", muted: "#6e6e73" },
+  },
+  focus: {
+    mode: "themed",
+    accent: "#1cb0f6",
+    dark: { bg: "#1c1c1e", text: "#f5f5f5", muted: "#a0a0a5" },
+    light: { bg: "#ffffff", text: "#27272a", muted: "#71717a" },
+  },
+  digital: {
+    mode: "themed",
+    accent: "#a78bfa",
+    dark: { bg: "#1a1a1d", text: "#f4f4f5", muted: "#a1a1aa" },
+    light: { bg: "#fafafa", text: "#27272a", muted: "#71717a" },
+  },
   habit: { mode: "global" },
-  travel: { mode: "fixed", bg: "#0d1b2a", text: "#f2f6f9", muted: "#8fa3b3", accent: "#2dd4bf" },
+  travel: {
+    mode: "themed",
+    accent: "#2dd4bf",
+    dark: { bg: "#0d1b2a", text: "#f2f6f9", muted: "#8fa3b3" },
+    light: { bg: "#f4f8fa", text: "#0d1b2a", muted: "#5f7385" },
+  },
 };
 
 // Tek gerçek sekmesi olan kategorilerde (digital/habit/travel — web'de de
@@ -99,6 +143,7 @@ export default function CategoryLevel2Layout() {
   const { categoryId } = useGlobalSearchParams<{ categoryId: string }>();
   const { loading, categories } = useAppData();
   const globalTheme = useTheme();
+  const { theme: themeMode } = useThemeMode();
   const category = categories.find((c) => c.id === categoryId);
 
   if (loading || !category) {
@@ -112,8 +157,8 @@ export default function CategoryLevel2Layout() {
   const moduleTheme = MODULE_THEMES[category.moduleType] ?? { mode: "global" as const };
   const tabs = MODULE_TABS[category.moduleType] ?? [];
   const resolved =
-    moduleTheme.mode === "fixed"
-      ? moduleTheme
+    moduleTheme.mode === "themed"
+      ? { ...(themeMode === "dark" ? moduleTheme.dark : moduleTheme.light), accent: moduleTheme.accent }
       : { bg: globalTheme.background, text: globalTheme.text, muted: globalTheme.textSecondary, accent: globalTheme.accent };
   const showTabBar = tabs.length > 1;
 

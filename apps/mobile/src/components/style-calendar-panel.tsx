@@ -11,8 +11,9 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ActivityIndicator, Pressable, View } from "react-native";
 import { StyleCalendar } from "@/components/style-calendar";
 import { ThemedText } from "@/components/themed-text";
-import { WHERING_LIME } from "@/components/wardrobe-panel";
+import { getWheringTheme, WHERING_LIME } from "@/components/wardrobe-panel";
 import { supabase } from "@/lib/supabase/client";
+import { useThemeMode } from "@/lib/theme-context";
 
 function toIso(date: Date) {
   const y = date.getFullYear();
@@ -30,6 +31,7 @@ function toIso(date: Date) {
 // (Kombinlerim'in "Bugün Giydim"iyle AYNI fonksiyonlar) — yeni bir
 // migration/sütun gerekmedi, sadece UI eklendi.
 export function StyleCalendarPanel({ categoryId }: { categoryId: string }) {
+  const whering = getWheringTheme(useThemeMode().theme === "dark");
   const [loading, setLoading] = useState(true);
   const [outfits, setOutfits] = useState<DbOutfit[]>([]);
   const [outfitWears, setOutfitWears] = useState<DbOutfitWear[]>([]);
@@ -90,12 +92,12 @@ export function StyleCalendarPanel({ categoryId }: { categoryId: string }) {
 
   return (
     <View style={{ gap: 16, padding: 14 }}>
-      <ThemedText style={{ fontSize: 15, fontWeight: "700", color: "#f5f5f5", fontStyle: "italic" }}>
+      <ThemedText style={{ fontSize: 15, fontWeight: "700", color: whering.text, fontStyle: "italic" }}>
         05 Stil Takvimi
       </ThemedText>
 
       {outfits.length === 0 ? (
-        <ThemedText style={{ color: "#9a9a9a", fontSize: 12 }}>
+        <ThemedText style={{ color: whering.muted, fontSize: 12 }}>
           {"Takvime kaydetmek için önce en az bir kombin oluştur (web'de “Kombin Oluştur” ile)."}
         </ThemedText>
       ) : (
@@ -103,10 +105,10 @@ export function StyleCalendarPanel({ categoryId }: { categoryId: string }) {
           <StyleCalendar month={month} onMonthChange={setMonth} selected={selected} onSelectDay={setSelected} daysWithWear={daysWithWear} />
 
           {!selected ? (
-            <ThemedText style={{ color: "#9a9a9a", fontSize: 12 }}>Bir gün seç, o gün ne giydiğini kaydet veya gör.</ThemedText>
+            <ThemedText style={{ color: whering.muted, fontSize: 12 }}>Bir gün seç, o gün ne giydiğini kaydet veya gör.</ThemedText>
           ) : (
             <View style={{ gap: 10 }}>
-              <ThemedText style={{ color: "#f5f5f5", fontSize: 13, fontWeight: "600" }}>
+              <ThemedText style={{ color: whering.text, fontSize: 13, fontWeight: "600" }}>
                 {selected.toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })}
               </ThemedText>
 
@@ -123,15 +125,15 @@ export function StyleCalendarPanel({ categoryId }: { categoryId: string }) {
                           alignItems: "center",
                           justifyContent: "space-between",
                           borderWidth: 1,
-                          borderColor: "#2a2a2a",
+                          borderColor: whering.border,
                           borderRadius: 10,
                           paddingHorizontal: 12,
                           paddingVertical: 8,
                         }}
                       >
-                        <ThemedText style={{ color: "#f5f5f5", fontSize: 12 }}>{outfit.name || "İsimsiz kombin"}</ThemedText>
+                        <ThemedText style={{ color: whering.text, fontSize: 12 }}>{outfit.name || "İsimsiz kombin"}</ThemedText>
                         <Pressable onPress={() => handleDeleteWear(wear)} hitSlop={8}>
-                          <MaterialCommunityIcons name="trash-can-outline" size={15} color="#9a9a9a" />
+                          <MaterialCommunityIcons name="trash-can-outline" size={15} color={whering.muted} />
                         </Pressable>
                       </View>
                     );
@@ -141,7 +143,7 @@ export function StyleCalendarPanel({ categoryId }: { categoryId: string }) {
 
               {availableOutfits.length > 0 && (
                 <View style={{ gap: 6 }}>
-                  <ThemedText style={{ color: "#9a9a9a", fontSize: 11 }}>Bir kombin ekle:</ThemedText>
+                  <ThemedText style={{ color: whering.muted, fontSize: 11 }}>Bir kombin ekle:</ThemedText>
                   <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
                     {availableOutfits.map((outfit) => (
                       <Pressable

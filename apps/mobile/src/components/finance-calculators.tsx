@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
 import { ThemedText } from "@/components/themed-text";
-import { ROBINHOOD } from "@/components/portfolio-panel";
+import { getRobinhoodTheme } from "@/components/portfolio-panel";
+import { useThemeMode } from "@/lib/theme-context";
 
 function num(value: string): number {
   const n = Number(value.replace(",", "."));
@@ -13,6 +14,7 @@ function fmt(value: number, digits = 2) {
 }
 
 function CalculatorCard({ title, children }: { title: string; children: React.ReactNode }) {
+  const ROBINHOOD = getRobinhoodTheme(useThemeMode().theme === "dark");
   return (
     <View style={[styles.card, { borderColor: ROBINHOOD.border }]}>
       <ThemedText style={[styles.cardTitle, { color: ROBINHOOD.muted }]}>{title}</ThemedText>
@@ -32,6 +34,7 @@ function NumberField({
   onChange: (v: string) => void;
   suffix?: string;
 }) {
+  const ROBINHOOD = getRobinhoodTheme(useThemeMode().theme === "dark");
   return (
     <View style={styles.field}>
       <ThemedText style={[styles.fieldLabel, { color: ROBINHOOD.muted }]}>{label}</ThemedText>
@@ -55,6 +58,7 @@ function NumberField({
 // İÇERMİYOR. Tamamen istemci-taraflı, Supabase'e hiç dokunmuyor — Spor &
 // Vücut'un CalcTab'ıyla (1RM hesaplayıcı) AYNI mimari desen.
 function AverageCostCalculator() {
+  const ROBINHOOD = getRobinhoodTheme(useThemeMode().theme === "dark");
   const [curLot, setCurLot] = useState("100");
   const [curCost, setCurCost] = useState("50");
   const [newLot, setNewLot] = useState("50");
@@ -85,6 +89,7 @@ function AverageCostCalculator() {
 }
 
 function ProfitLossCalculator() {
+  const ROBINHOOD = getRobinhoodTheme(useThemeMode().theme === "dark");
   const [buyPrice, setBuyPrice] = useState("50");
   const [sellPrice, setSellPrice] = useState("60");
   const [lot, setLot] = useState("100");
@@ -120,6 +125,7 @@ function ProfitLossCalculator() {
 }
 
 function TargetPriceCalculator() {
+  const ROBINHOOD = getRobinhoodTheme(useThemeMode().theme === "dark");
   const [costPrice, setCostPrice] = useState("50");
   const [targetProfitPct, setTargetProfitPct] = useState("20");
   const [commissionPct, setCommissionPct] = useState("0.15");
@@ -145,6 +151,7 @@ function TargetPriceCalculator() {
 }
 
 function DividendCompoundCalculator() {
+  const ROBINHOOD = getRobinhoodTheme(useThemeMode().theme === "dark");
   const [initial, setInitial] = useState("10000");
   const [dividendYield, setDividendYield] = useState("4");
   const [priceGrowth, setPriceGrowth] = useState("5");

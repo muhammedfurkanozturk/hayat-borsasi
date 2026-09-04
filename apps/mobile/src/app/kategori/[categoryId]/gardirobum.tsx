@@ -1,6 +1,7 @@
 import { useGlobalSearchParams } from "expo-router";
 import { ScrollView } from "react-native";
-import { WardrobePanel } from "@/components/wardrobe-panel";
+import { getWheringTheme, WardrobePanel } from "@/components/wardrobe-panel";
+import { useThemeMode } from "@/lib/theme-context";
 
 // Stil & Giyim'in Seviye 2 route'u (bkz. CLAUDE.md bölüm 9) — WardrobePanel
 // zaten tek-amaçlı (sadece Gardırobum), mantığa dokunulmadan doğrudan
@@ -8,8 +9,9 @@ import { WardrobePanel } from "@/components/wardrobe-panel";
 // dış ScrollView'ına güveniyordu) — bu yüzden burada bir ScrollView ekleniyor.
 export default function GardirobumTab() {
   const { categoryId } = useGlobalSearchParams<{ categoryId: string }>();
+  const whering = getWheringTheme(useThemeMode().theme === "dark");
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }} style={{ backgroundColor: "#0a0a0a" }}>
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }} style={{ backgroundColor: whering.bg }}>
       <WardrobePanel categoryId={categoryId} />
     </ScrollView>
   );
