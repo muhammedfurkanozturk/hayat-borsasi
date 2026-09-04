@@ -100,8 +100,8 @@ const MODULE_TABS: Partial<Record<Category["moduleType"], TabConfig[]>> = {
     { name: "hareketlerim", title: "Hareketlerim", icon: "activity" },
     { name: "kutuphane", title: "Kütüphane", icon: "book" },
     { name: "hesaplayicilar", title: "Hesap", icon: "percent" },
-    { name: "kas-haritasi", title: "Kas Haritası", icon: "user", comingSoon: true },
-    { name: "antrenman-olustur", title: "Antrenman", icon: "zap", comingSoon: true },
+    { name: "kas-haritasi", title: "Kas Haritası", icon: "user" },
+    { name: "antrenman-olustur", title: "Antrenman", icon: "zap" },
   ],
   style: [
     { name: "checklist", title: "Checklist", icon: "check-square" },
